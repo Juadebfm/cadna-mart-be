@@ -1,0 +1,15 @@
+export const ERROR_MESSAGES = {
+  INTERNAL_SERVER_ERROR: 'An unexpected error occurred',
+  UNAUTHORIZED: 'You are not authorized to access this resource',
+  FORBIDDEN: 'You do not have permission to perform this action',
+  NOT_FOUND: 'The requested resource was not found',
+  VALIDATION_FAILED: 'Validation failed',
+  DUPLICATE_ENTRY: 'A record with this value already exists',
+  INVALID_OBJECT_ID: 'Invalid ObjectId format',
+  INVALID_CREDENTIALS: 'Invalid email or password',
+  USER_NOT_FOUND: 'User not found',
+  USER_ALREADY_EXISTS: 'A user with this email already exists',
+  TOKEN_EXPIRED: 'Token has expired',
+  INVALID_TOKEN: 'Invalid token',
+  SESSION_EXPIRED: 'Session has expired',
+} as const;
