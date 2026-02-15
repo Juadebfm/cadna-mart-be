@@ -45,6 +45,5 @@ UserSchema.virtual('fullName').get(function (this: User) {
   return `${this.firstName} ${this.lastName}`;
 });
 
-UserSchema.index({ email: 1 });
 UserSchema.index({ role: 1 });
 UserSchema.index({ createdAt: -1 });
