@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 export const envSchema = z.object({
   NODE_ENV: z.enum(['dev', 'staging', 'prod']).default('dev'),
+  PORT: z.coerce.number().optional(),
   APP_PORT: z.coerce.number().default(3000),
   APP_NAME: z.string().default('cadna-mart-backend'),
   API_PREFIX: z.string().default('api'),

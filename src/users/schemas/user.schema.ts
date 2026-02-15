@@ -32,10 +32,10 @@ export class User extends BaseSchema {
   @Prop({ default: true })
   isActive!: boolean;
 
-  @Prop({ default: null })
+  @Prop({ type: Date, default: null })
   lastLoginAt!: Date | null;
 
-  @Prop({ default: null })
+  @Prop({ type: String, default: null })
   refreshToken!: string | null;
 }
 

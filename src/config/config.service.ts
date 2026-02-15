@@ -39,7 +39,7 @@ export class ConfigService {
   get app(): AppConfig {
     return {
       nodeEnv: this.envConfig.NODE_ENV,
-      port: this.envConfig.APP_PORT,
+      port: this.envConfig.PORT || this.envConfig.APP_PORT,
       name: this.envConfig.APP_NAME,
       apiPrefix: this.envConfig.API_PREFIX,
       apiDefaultVersion: this.envConfig.API_DEFAULT_VERSION,
