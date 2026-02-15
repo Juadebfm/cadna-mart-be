@@ -92,7 +92,6 @@ async function bootstrap(): Promise<void> {
       .setDescription('Enterprise e-commerce backend API')
       .setVersion('1.0')
       .addBearerAuth()
-      .addServer(`http://localhost:${configService.app.port}`)
       .build();
 
     const document = SwaggerModule.createDocument(app, swaggerConfig);
