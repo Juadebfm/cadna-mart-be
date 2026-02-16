@@ -23,7 +23,7 @@ export interface SessionConfig {
 }
 
 export interface CorsConfig {
-  origin: string;
+  origin: string | string[] | boolean;
 }
 
 export interface ThrottleConfig {

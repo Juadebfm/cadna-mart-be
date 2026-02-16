@@ -32,6 +32,30 @@ export class ConfigService {
     this.logger.log(`Configuration loaded from ${envFile} (${nodeEnv})`);
   }
 
+  private parseCorsOrigin(value: string): string | string[] | boolean {
+    const raw = (value ?? '').trim();
+    if (!raw) {
+      return true;
+    }
+    if (raw === '*') {
+      this.logger.warn(
+        'CORS_ORIGIN is "*" which allows any origin with credentials; prefer explicit origins.',
+      );
+      return true;
+    }
+
+    const origins = raw
+      .split(',')
+      .map((origin) => origin.trim())
+      .filter((origin) => origin.length > 0);
+
+    if (origins.length === 0) {
+      return true;
+    }
+
+    return origins.length === 1 ? origins[0] : origins;
+  }
+
   get<K extends keyof EnvConfig>(key: K): EnvConfig[K] {
     return this.envConfig[key];
   }
@@ -70,7 +94,7 @@ export class ConfigService {
 
   get cors(): CorsConfig {
     return {
-      origin: this.envConfig.CORS_ORIGIN,
+      origin: this.parseCorsOrigin(this.envConfig.CORS_ORIGIN),
     };
   }
 
