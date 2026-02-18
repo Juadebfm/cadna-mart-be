@@ -15,7 +15,10 @@ export class AuthService {
     private readonly configService: ConfigService,
   ) {}
 
-  async validateUser(email: string, password: string): Promise<unknown> {
+  async validateUser(
+    email: string,
+    password: string,
+  ): Promise<{ userId: string; email: string; role: string } | null> {
     const user = await this.usersService.findByEmailWithPassword(email);
     if (!user || !user.isActive) {
       return null;
@@ -26,7 +29,11 @@ export class AuthService {
       return null;
     }
 
-    return user.toJSON();
+    return {
+      userId: (user as unknown as { _id: { toString(): string } })._id.toString(),
+      email: user.email,
+      role: user.role,
+    };
   }
 
   async login(user: { userId: string; email: string; role: string }): Promise<TokenResponse> {
