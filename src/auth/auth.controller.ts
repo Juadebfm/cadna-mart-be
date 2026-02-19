@@ -35,7 +35,12 @@ export class AuthController {
       });
     });
 
-    return this.authService.login(user);
+    const tokens = await this.authService.login(user);
+    const fullUser = await this.usersService.findById(user.userId);
+    return {
+      ...tokens,
+      user: this.usersService.toPublicUser(fullUser),
+    };
   }
 
   @Public()
@@ -57,7 +62,8 @@ export class AuthController {
   @Get('profile')
   @ApiOperation({ summary: 'Get current user profile (protected route)' })
   async getProfile(@CurrentUser('userId') userId: string) {
-    return this.usersService.findById(userId);
+    const user = await this.usersService.findById(userId);
+    return this.usersService.toPublicUser(user);
   }
 
   @ApiBearerAuth()

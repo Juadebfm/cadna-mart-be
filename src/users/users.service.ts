@@ -83,4 +83,22 @@ export class UsersService {
   async updateLastLogin(userId: string): Promise<void> {
     await this.usersRepository.updateLastLogin(userId);
   }
+
+  toPublicUser(user: User): {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    role: User['role'];
+    fullName?: string;
+  } {
+    return {
+      id: (user as unknown as { id?: string }).id ?? user._id.toString(),
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      role: user.role,
+      fullName: (user as unknown as { fullName?: string }).fullName,
+    };
+  }
 }
