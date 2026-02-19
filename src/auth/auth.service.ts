@@ -69,8 +69,23 @@ export class AuthService {
     return tokens;
   }
 
-  async refreshTokens(refreshToken: string, userId: string): Promise<TokenResponse> {
-    const user = await this.usersService.findById(userId);
+  async refreshTokens(refreshToken: string): Promise<TokenResponse> {
+    let payload: JwtPayload;
+    try {
+      payload = await this.jwtService.verifyAsync<JwtPayload>(refreshToken, {
+        secret: this.configService.jwt.refreshSecret,
+      });
+    } catch {
+      throw new UnauthorizedException(ERROR_MESSAGES.INVALID_TOKEN);
+    }
+
+    let user;
+    try {
+      user = await this.usersService.findById(payload.sub);
+    } catch {
+      throw new UnauthorizedException(ERROR_MESSAGES.INVALID_TOKEN);
+    }
+
     if (!user || !user.refreshToken) {
       throw new UnauthorizedException(ERROR_MESSAGES.INVALID_TOKEN);
     }
@@ -80,13 +95,13 @@ export class AuthService {
       throw new UnauthorizedException(ERROR_MESSAGES.INVALID_TOKEN);
     }
 
-    const payload: JwtPayload = {
+    const newPayload: JwtPayload = {
       sub: (user as unknown as { _id: { toString(): string } })._id.toString(),
       email: user.email,
       role: user.role,
     };
 
-    const tokens = await this.generateTokens(payload);
+    const tokens = await this.generateTokens(newPayload);
 
     const hashedRefreshToken = await hashPassword(tokens.refreshToken);
     await this.usersService.updateRefreshToken(payload.sub, hashedRefreshToken);

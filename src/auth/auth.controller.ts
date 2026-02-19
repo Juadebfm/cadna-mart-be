@@ -49,8 +49,8 @@ export class AuthController {
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Refresh access token' })
-  async refresh(@Body() refreshTokenDto: RefreshTokenDto, @CurrentUser('userId') userId: string) {
-    return this.authService.refreshTokens(refreshTokenDto.refreshToken, userId);
+  async refresh(@Body() refreshTokenDto: RefreshTokenDto) {
+    return this.authService.refreshTokens(refreshTokenDto.refreshToken);
   }
 
   @ApiBearerAuth()
