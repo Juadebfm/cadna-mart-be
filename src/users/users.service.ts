@@ -20,9 +20,12 @@ export class UsersService {
     }
 
     const hashedPassword = await hashPassword(createUserDto.password);
+    const { dateOfBirth, termsAccepted, ...rest } = createUserDto;
     return this.usersRepository.create({
-      ...createUserDto,
+      ...rest,
       password: hashedPassword,
+      dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
+      termsAcceptedAt: termsAccepted ? new Date() : null,
     });
   }
 
@@ -37,8 +40,8 @@ export class UsersService {
       ];
     }
 
-    if (query.role) {
-      filter.role = query.role;
+    if (query.accountType) {
+      filter.accountType = query.accountType;
     }
 
     return this.usersRepository.findAll(filter, query);
@@ -58,6 +61,10 @@ export class UsersService {
 
   async findByEmailWithPassword(email: string): Promise<User | null> {
     return this.usersRepository.findByEmailWithPassword(email);
+  }
+
+  async findByClerkId(clerkId: string): Promise<User | null> {
+    return this.usersRepository.findByClerkId(clerkId);
   }
 
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
@@ -84,20 +91,29 @@ export class UsersService {
     await this.usersRepository.updateLastLogin(userId);
   }
 
-  toPublicUser(user: User): {
-    id: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-    role: User['role'];
-    fullName?: string;
-  } {
+  async verifyUser(userId: string): Promise<void> {
+    await this.usersRepository.verifyUser(userId);
+  }
+
+  async setTwoFactor(userId: string, enabled: boolean): Promise<void> {
+    await this.usersRepository.setTwoFactor(userId, enabled);
+  }
+
+  async updatePassword(userId: string, hashedPassword: string): Promise<void> {
+    await this.usersRepository.updatePassword(userId, hashedPassword);
+  }
+
+  toPublicUser(user: User) {
     return {
       id: (user as unknown as { id?: string }).id ?? user._id.toString(),
       firstName: user.firstName,
       lastName: user.lastName,
       email: user.email,
-      role: user.role,
+      accountType: user.accountType,
+      phoneNumber: user.phoneNumber,
+      dateOfBirth: user.dateOfBirth,
+      isVerified: user.isVerified,
+      isTwoFactorEnabled: user.isTwoFactorEnabled,
       fullName: (user as unknown as { fullName?: string }).fullName,
     };
   }

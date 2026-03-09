@@ -7,11 +7,17 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
 import { SessionSerializer } from './serializers/session.serializer';
 import { UsersModule } from '@users/users.module';
+import { OtpModule } from '@otp/otp.module';
+import { EmailModule } from '@email/email.module';
+import { RegistrationSessionModule } from '@registration-session/registration-session.module';
 import { ConfigService } from '@config/config.service';
 
 @Module({
   imports: [
     UsersModule,
+    OtpModule,
+    EmailModule,
+    RegistrationSessionModule,
     PassportModule.register({ session: true }),
     JwtModule.registerAsync({
       useFactory: (configService: ConfigService) => ({

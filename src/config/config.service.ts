@@ -9,6 +9,8 @@ import {
   SessionConfig,
   CorsConfig,
   ThrottleConfig,
+  EmailConfig,
+  ClerkConfig,
 } from './config.interface';
 
 @Injectable()
@@ -102,6 +104,19 @@ export class ConfigService {
     return {
       ttl: this.envConfig.THROTTLE_TTL,
       limit: this.envConfig.THROTTLE_LIMIT,
+    };
+  }
+
+  get clerk(): ClerkConfig {
+    return {
+      webhookSecret: this.envConfig.CLERK_WEBHOOK_SECRET,
+    };
+  }
+
+  get email(): EmailConfig {
+    return {
+      resendApiKey: this.envConfig.RESEND_API_KEY,
+      fromAddress: this.envConfig.EMAIL_FROM,
     };
   }
 

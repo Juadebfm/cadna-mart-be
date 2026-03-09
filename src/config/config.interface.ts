@@ -30,3 +30,12 @@ export interface ThrottleConfig {
   ttl: number;
   limit: number;
 }
+
+export interface EmailConfig {
+  resendApiKey: string;
+  fromAddress: string;
+}
+
+export interface ClerkConfig {
+  webhookSecret: string;
+}

@@ -103,7 +103,7 @@ async function bootstrap(): Promise<void> {
   }
 
   const port = configService.app.port;
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
   loggerService.log(
     `Application running on http://localhost:${port}/${configService.app.apiPrefix}/v${configService.app.apiDefaultVersion}`,
     'Bootstrap',

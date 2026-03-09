@@ -26,7 +26,10 @@
       "@common/*": ["src/common/*"],
       "@logger/*": ["src/logger/*"],
       "@health/*": ["src/health/*"],
-      "@shared/*": ["src/shared/*"]
+      "@shared/*": ["src/shared/*"],
+      "@otp/*": ["src/otp/*"],
+      "@email/*": ["src/email/*"],
+      "@registration-session/*": ["src/registration-session/*"]
     }
   }
 }

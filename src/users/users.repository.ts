@@ -28,4 +28,20 @@ export class UsersRepository extends BaseRepository<User> {
   async updateLastLogin(userId: string): Promise<void> {
     await this.userModel.updateOne({ _id: userId }, { lastLoginAt: new Date() }).exec();
   }
+
+  async findByClerkId(clerkId: string): Promise<User | null> {
+    return this.userModel.findOne({ clerkId, deletedAt: null }).exec();
+  }
+
+  async verifyUser(userId: string): Promise<void> {
+    await this.userModel.updateOne({ _id: userId }, { isVerified: true }).exec();
+  }
+
+  async setTwoFactor(userId: string, enabled: boolean): Promise<void> {
+    await this.userModel.updateOne({ _id: userId }, { isTwoFactorEnabled: enabled }).exec();
+  }
+
+  async updatePassword(userId: string, hashedPassword: string): Promise<void> {
+    await this.userModel.updateOne({ _id: userId }, { password: hashedPassword }).exec();
+  }
 }

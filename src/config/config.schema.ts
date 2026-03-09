@@ -28,6 +28,11 @@ export const envSchema = z.object({
   THROTTLE_TTL: z.coerce.number().default(60000),
   THROTTLE_LIMIT: z.coerce.number().default(100),
 
+  RESEND_API_KEY: z.string().min(1).default('re_placeholder'),
+  EMAIL_FROM: z.string().default('Cadna Mart <noreply@cadnamart.com>'),
+
+  CLERK_WEBHOOK_SECRET: z.string().default(''),
+
   LOG_LEVEL: z.enum(['error', 'warn', 'info', 'debug', 'verbose']).default('debug'),
 });
 

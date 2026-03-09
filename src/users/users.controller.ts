@@ -16,8 +16,8 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserQueryDto } from './dto/user-query.dto';
 import { ParseObjectIdPipe } from '@common/pipes/parse-object-id.pipe';
-import { Roles } from '@auth/decorators/roles.decorator';
-import { Role } from './enums/role.enum';
+import { AccountTypes } from '@auth/decorators/account-types.decorator';
+import { AccountType } from './enums/account-type.enum';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -26,14 +26,14 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  @AccountTypes(AccountType.ADMIN)
   @ApiOperation({ summary: 'Create a new user (Admin only)' })
   async create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
 
   @Get()
-  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  @AccountTypes(AccountType.ADMIN)
   @ApiOperation({ summary: 'Get all users with pagination (Admin only)' })
   async findAll(@Query() query: UserQueryDto) {
     return this.usersService.findAll(query);
@@ -52,7 +52,7 @@ export class UsersController {
   }
 
   @Delete(':id')
-  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  @AccountTypes(AccountType.ADMIN)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Soft delete user (Admin only)' })
   async remove(@Param('id', ParseObjectIdPipe) id: string) {

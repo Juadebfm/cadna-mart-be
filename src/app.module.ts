@@ -7,10 +7,11 @@ import { LoggerModule } from '@logger/logger.module';
 import { DatabaseModule } from '@database/database.module';
 import { AuthModule } from '@auth/auth.module';
 import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
-import { RolesGuard } from '@auth/guards/roles.guard';
+import { AccountTypesGuard } from '@auth/guards/account-types.guard';
 import { UsersModule } from '@users/users.module';
 import { HealthModule } from '@health/health.module';
 import { SharedModule } from '@shared/shared.module';
+import { WebhooksModule } from './webhooks/webhooks.module';
 import { CorrelationIdMiddleware } from '@common/middleware/correlation-id.middleware';
 import { RequestLoggerMiddleware } from '@common/middleware/request-logger.middleware';
 import { AppController } from './app.controller';
@@ -34,6 +35,7 @@ import { AppService } from './app.service';
     AuthModule,
     UsersModule,
     HealthModule,
+    WebhooksModule,
   ],
   controllers: [AppController],
   providers: [
@@ -44,7 +46,7 @@ import { AppService } from './app.service';
     },
     {
       provide: APP_GUARD,
-      useClass: RolesGuard,
+      useClass: AccountTypesGuard,
     },
     {
       provide: APP_GUARD,
