@@ -1,0 +1,17 @@
+import { Controller, Get, Query } from '@nestjs/common';
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { Public } from '@auth/decorators/public.decorator';
+import { SearchService } from './search.service';
+
+@ApiTags('Search')
+@Controller('search')
+export class SearchController {
+  constructor(private readonly searchService: SearchService) {}
+
+  @Public()
+  @Get('suggest')
+  @ApiOperation({ summary: 'Search suggestions/autocomplete' })
+  async suggest(@Query('q') q: string, @Query('limit') limit: number = 8) {
+    return this.searchService.suggest(q, Math.min(+limit || 8, 20));
+  }
+}

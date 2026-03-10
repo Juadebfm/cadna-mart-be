@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc --noEmit)",
+      "Bash(git add src/users/schemas/user.schema.ts)",
+      "Bash(git commit:*)",
+      "Bash(git push origin dev)",
+      "Bash(git push origin dev --force)"
+    ]
+  }
+}
