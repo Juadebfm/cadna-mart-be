@@ -25,7 +25,7 @@ export class User extends BaseSchema {
   @Prop({ required: true, unique: true, lowercase: true, trim: true })
   email!: string;
 
-  @Prop({ select: false, default: null })
+  @Prop({ type: String, select: false, default: null })
   password!: string | null;
 
   @Prop({ type: String, enum: AccountType, required: true })
