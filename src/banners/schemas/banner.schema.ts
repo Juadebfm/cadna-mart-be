@@ -46,6 +46,19 @@ export class Banner extends BaseSchema {
   @Prop({ type: Date, default: null })
   endAt!: Date | null;
 
+  @Prop({
+    type: [String],
+    default: [],
+    set: (value: unknown) =>
+      Array.isArray(value)
+        ? value
+            .filter((location): location is string => typeof location === 'string')
+            .map((location) => location.trim().toLowerCase())
+            .filter((location) => location.length > 0)
+        : [],
+  })
+  locations!: string[];
+
   @Prop({ default: 0 })
   order!: number;
 
@@ -56,3 +69,4 @@ export class Banner extends BaseSchema {
 export const BannerSchema = SchemaFactory.createForClass(Banner);
 
 BannerSchema.index({ type: 1, isActive: 1, order: 1 });
+BannerSchema.index({ type: 1, isActive: 1, locations: 1, order: 1 });

@@ -12,7 +12,8 @@ export class HomeService {
     private readonly bannersRepository: BannersRepository,
   ) {}
 
-  async getHomepage(limitPerSection: number) {
+  async getHomepage(limitPerSection: number, location?: string) {
+    const normalizedLocation = location?.trim().toLowerCase() || undefined;
     const sections = ['best_deals', 'recommended', 'top_sellers', 'new_arrivals'];
     const sectionTitles: Record<string, string> = {
       best_deals: 'Get the best deals',
@@ -23,9 +24,9 @@ export class HomeService {
 
     const [heroBanners, campaignBanners, growthCards, topCategories, ...sectionProducts] =
       await Promise.all([
-        this.bannersRepository.findByType(BannerType.HERO),
-        this.bannersRepository.findByType(BannerType.CAMPAIGN),
-        this.bannersRepository.findByType(BannerType.GROWTH_CARD),
+        this.bannersRepository.findByType(BannerType.HERO, normalizedLocation),
+        this.bannersRepository.findByType(BannerType.CAMPAIGN, normalizedLocation),
+        this.bannersRepository.findByType(BannerType.GROWTH_CARD, normalizedLocation),
         this.categoriesService.findAll(false, true),
         ...sections.map((section) => this.productsService.findBySection(section, limitPerSection)),
       ]);

@@ -1,5 +1,5 @@
 import { Controller, Get, Query } from '@nestjs/common';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { Public } from '@auth/decorators/public.decorator';
 import { HomeService } from './home.service';
 
@@ -11,7 +11,12 @@ export class HomeController {
   @Public()
   @Get()
   @ApiOperation({ summary: 'Get composite homepage payload' })
-  async getHomepage(@Query('limitPerSection') limitPerSection: number = 8) {
-    return this.homeService.getHomepage(Math.min(+limitPerSection || 8, 20));
+  @ApiQuery({ name: 'limitPerSection', required: false, example: 8 })
+  @ApiQuery({ name: 'location', required: false, example: 'lagos' })
+  async getHomepage(
+    @Query('limitPerSection') limitPerSection: number = 8,
+    @Query('location') location?: string,
+  ) {
+    return this.homeService.getHomepage(Math.min(+limitPerSection || 8, 20), location);
   }
 }
