@@ -39,3 +39,9 @@ export interface EmailConfig {
 export interface ClerkConfig {
   webhookSecret: string;
 }
+
+export interface StorageConfig {
+  cloudName: string;
+  apiKey: string;
+  apiSecret: string;
+}

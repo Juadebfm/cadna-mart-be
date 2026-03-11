@@ -25,6 +25,8 @@ import { PoliciesModule } from '@policies/policies.module';
 import { NewsletterModule } from '@newsletter/newsletter.module';
 import { SearchModule } from '@search/search.module';
 import { SiteConfigModule } from '@site-config/site-config.module';
+import { UploadModule } from './upload/upload.module';
+import { AdminModule } from './admin/admin.module';
 import { CorrelationIdMiddleware } from '@common/middleware/correlation-id.middleware';
 import { RequestLoggerMiddleware } from '@common/middleware/request-logger.middleware';
 import { AppController } from './app.controller';
@@ -62,6 +64,8 @@ import { AppService } from './app.service';
     NewsletterModule,
     SearchModule,
     SiteConfigModule,
+    UploadModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [

@@ -75,6 +75,15 @@ class ProductVariant {
 }
 
 @Schema({ _id: false })
+class ProductTab {
+  @Prop({ required: true })
+  label!: string;
+
+  @Prop({ required: true })
+  contentHtml!: string;
+}
+
+@Schema({ _id: false })
 class Specification {
   @Prop({ required: true })
   name!: string;
@@ -138,6 +147,9 @@ export class Product extends BaseSchema {
 
   @Prop({ type: String, default: null })
   descriptionHtml!: string | null;
+
+  @Prop({ type: [Object], default: [] })
+  tabs!: ProductTab[];
 
   @Prop({ type: [Object], default: [] })
   specifications!: Specification[];

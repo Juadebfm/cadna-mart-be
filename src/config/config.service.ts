@@ -11,6 +11,7 @@ import {
   ThrottleConfig,
   EmailConfig,
   ClerkConfig,
+  StorageConfig,
 } from './config.interface';
 
 @Injectable()
@@ -134,5 +135,13 @@ export class ConfigService {
 
   get isProd(): boolean {
     return this.envConfig.NODE_ENV === 'prod';
+  }
+
+  get storage(): StorageConfig {
+    return {
+      cloudName: this.envConfig.CLOUDINARY_CLOUD_NAME,
+      apiKey: this.envConfig.CLOUDINARY_API_KEY,
+      apiSecret: this.envConfig.CLOUDINARY_API_SECRET,
+    };
   }
 }

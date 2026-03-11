@@ -34,6 +34,12 @@ export class Store extends BaseSchema {
   @Prop({ type: Number, default: null })
   joinedYear!: number | null;
 
+  @Prop({ type: String, default: null })
+  location!: string | null;
+
+  @Prop({ type: String, default: null })
+  deliveryTimeRange!: string | null;
+
   @Prop({ default: true })
   isActive!: boolean;
 }

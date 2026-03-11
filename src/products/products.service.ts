@@ -1,8 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { ProductsRepository } from './products.repository';
 import { ProductQueryDto } from './dto/product-query.dto';
 import { CategoriesService } from '@categories/categories.service';
 import { Product } from './schemas/product.schema';
+import { CreateProductDto } from './dto/create-product.dto';
+import { UpdateProductDto } from './dto/update-product.dto';
+import { AccountType } from '@users/enums/account-type.enum';
 
 @Injectable()
 export class ProductsService {
@@ -67,6 +70,168 @@ export class ProductsService {
     return this.productsRepository.findBySection(section, limit);
   }
 
+  private toMoney(amount: number) {
+    return {
+      amount,
+      currency: 'NGN',
+      formatted: `₦${amount.toLocaleString('en-NG')}`,
+    };
+  }
+
+  private slugify(value: string): string {
+    return value
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+
+  async createProduct(
+    dto: CreateProductDto,
+    currentUser: { userId: string; accountType: string },
+  ) {
+    const { priceAmount, originalPriceAmount } = dto;
+
+    const discountPercent =
+      dto.discountPercent ??
+      (originalPriceAmount && originalPriceAmount > priceAmount
+        ? Math.round(((originalPriceAmount - priceAmount) / originalPriceAmount) * 100)
+        : 0);
+
+    const savings =
+      originalPriceAmount && originalPriceAmount > priceAmount
+        ? this.toMoney(originalPriceAmount - priceAmount)
+        : null;
+
+    const variants = (dto.variants ?? []).map((v) => ({
+      id: v.id,
+      sku: v.sku,
+      attributes: v.attributes,
+      price: this.toMoney(v.priceAmount),
+      stockQty: v.stockQty ?? 0,
+      isInStock: v.isInStock ?? (v.stockQty ?? 0) > 0,
+      images: v.images ?? [],
+    }));
+
+    const baseSlug = this.slugify(dto.name);
+    const slug = `${baseSlug}-${Date.now().toString(36)}`;
+
+    const product = await this.productsRepository.create({
+      name: dto.name,
+      slug,
+      sku: dto.sku ?? null,
+      brand: dto.brand ?? null,
+      thumbnailUrl: dto.thumbnailUrl ?? null,
+      price: this.toMoney(priceAmount),
+      originalPrice: originalPriceAmount ? this.toMoney(originalPriceAmount) : null,
+      discountPercent,
+      savings,
+      gallery: dto.gallery ?? [],
+      variantAxes: dto.variantAxes ?? [],
+      variants,
+      defaultVariantId: dto.defaultVariantId ?? (variants[0]?.id ?? null),
+      descriptionHtml: dto.descriptionHtml ?? null,
+      tabs: dto.tabs ?? [],
+      specifications: dto.specifications ?? [],
+      breadcrumbs: dto.breadcrumbs ?? [],
+      badge: dto.badge ?? null,
+      sections: dto.sections ?? [],
+      inventoryStatus: dto.inventoryStatus ?? 'in_stock',
+      isActive: dto.isActive ?? true,
+      store: dto.storeId as any,
+      category: (dto.categoryId as any) ?? null,
+      subCategory: (dto.subCategoryId as any) ?? null,
+      rating: 0,
+      reviewCount: 0,
+      salesCount: 0,
+      deletedAt: null,
+    } as any);
+
+    return this.toCard(product as any);
+  }
+
+  async updateProduct(
+    id: string,
+    dto: UpdateProductDto,
+    currentUser: { userId: string; accountType: string },
+  ) {
+    const product = await this.productsRepository.findByIdWithStoreOwner(id);
+    if (!product) throw new NotFoundException('Product not found');
+
+    if (currentUser.accountType !== AccountType.ADMIN) {
+      const storeOwner = (product.store as any)?.owner?.toString();
+      if (storeOwner !== currentUser.userId) {
+        throw new ForbiddenException('You do not own this product');
+      }
+    }
+
+    const updates: Record<string, unknown> = {};
+
+    if (dto.name !== undefined) {
+      updates.name = dto.name;
+    }
+    if (dto.brand !== undefined) updates.brand = dto.brand;
+    if (dto.sku !== undefined) updates.sku = dto.sku;
+    if (dto.thumbnailUrl !== undefined) updates.thumbnailUrl = dto.thumbnailUrl;
+    if (dto.descriptionHtml !== undefined) updates.descriptionHtml = dto.descriptionHtml;
+    if (dto.badge !== undefined) updates.badge = dto.badge;
+    if (dto.sections !== undefined) updates.sections = dto.sections;
+    if (dto.isActive !== undefined) updates.isActive = dto.isActive;
+    if (dto.inventoryStatus !== undefined) updates.inventoryStatus = dto.inventoryStatus;
+    if (dto.gallery !== undefined) updates.gallery = dto.gallery;
+    if (dto.variantAxes !== undefined) updates.variantAxes = dto.variantAxes;
+    if (dto.tabs !== undefined) updates.tabs = dto.tabs;
+    if (dto.specifications !== undefined) updates.specifications = dto.specifications;
+    if (dto.breadcrumbs !== undefined) updates.breadcrumbs = dto.breadcrumbs;
+    if (dto.categoryId !== undefined) updates.category = dto.categoryId;
+    if (dto.subCategoryId !== undefined) updates.subCategory = dto.subCategoryId;
+    if (dto.defaultVariantId !== undefined) updates.defaultVariantId = dto.defaultVariantId;
+
+    if (dto.priceAmount !== undefined) updates.price = this.toMoney(dto.priceAmount);
+    if (dto.originalPriceAmount !== undefined) {
+      updates.originalPrice = this.toMoney(dto.originalPriceAmount);
+      if (dto.priceAmount !== undefined && dto.originalPriceAmount > dto.priceAmount) {
+        updates.savings = this.toMoney(dto.originalPriceAmount - dto.priceAmount);
+        updates.discountPercent = Math.round(
+          ((dto.originalPriceAmount - dto.priceAmount) / dto.originalPriceAmount) * 100,
+        );
+      }
+    }
+    if (dto.discountPercent !== undefined) updates.discountPercent = dto.discountPercent;
+
+    if (dto.variants !== undefined) {
+      updates.variants = dto.variants.map((v) => ({
+        id: v.id,
+        sku: v.sku,
+        attributes: v.attributes,
+        price: this.toMoney(v.priceAmount),
+        stockQty: v.stockQty ?? 0,
+        isInStock: v.isInStock ?? (v.stockQty ?? 0) > 0,
+        images: v.images ?? [],
+      }));
+    }
+
+    const updated = await this.productsRepository.update(id, updates as any);
+    if (!updated) throw new NotFoundException('Product not found');
+    return this.toCard(updated as any);
+  }
+
+  async removeProduct(
+    id: string,
+    currentUser: { userId: string; accountType: string },
+  ): Promise<void> {
+    const product = await this.productsRepository.findByIdWithStoreOwner(id);
+    if (!product) throw new NotFoundException('Product not found');
+
+    if (currentUser.accountType !== AccountType.ADMIN) {
+      const storeOwner = (product.store as any)?.owner?.toString();
+      if (storeOwner !== currentUser.userId) {
+        throw new ForbiddenException('You do not own this product');
+      }
+    }
+
+    await this.productsRepository.softDelete(id);
+  }
+
   toCard(product: Product) {
     const id = (product as unknown as { _id: { toString(): string } })._id.toString();
     const store = product.store as unknown as {
@@ -74,6 +239,8 @@ export class ProductsService {
       name: string;
       slug: string;
       isVerified: boolean;
+      location: string | null;
+      deliveryTimeRange: string | null;
     } | null;
 
     return {
@@ -94,6 +261,8 @@ export class ProductsService {
             id: store._id.toString(),
             name: store.name,
             isVerified: store.isVerified,
+            location: store.location,
+            deliveryTimeRange: store.deliveryTimeRange,
           }
         : null,
     };
@@ -130,7 +299,10 @@ export class ProductsService {
       variants: product.variants,
       defaultVariantId: product.defaultVariantId,
       selectedVariantId: variantId || product.defaultVariantId,
+      inventoryStatus: product.inventoryStatus,
+      badge: product.badge,
       descriptionHtml: product.descriptionHtml,
+      tabs: product.tabs,
       specifications: product.specifications,
       store: store
         ? {

@@ -42,7 +42,9 @@
       "@policies/*": ["src/policies/*"],
       "@newsletter/*": ["src/newsletter/*"],
       "@search/*": ["src/search/*"],
-      "@site-config/*": ["src/site-config/*"]
+      "@site-config/*": ["src/site-config/*"],
+      "@upload/*": ["src/upload/*"],
+      "@admin/*": ["src/admin/*"]
     }
   }
 }

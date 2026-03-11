@@ -58,7 +58,7 @@ export class ProductsRepository {
         .sort(sort)
         .skip(skip)
         .limit(query.limit)
-        .populate('store', 'name slug isVerified')
+        .populate('store', 'name slug isVerified location deliveryTimeRange')
         .lean()
         .exec(),
       this.productModel.countDocuments(filter).exec(),
@@ -87,7 +87,7 @@ export class ProductsRepository {
       .find({ deletedAt: null, isActive: true, sections: section })
       .sort({ salesCount: -1, createdAt: -1 })
       .limit(limit)
-      .populate('store', 'name slug isVerified')
+      .populate('store', 'name slug isVerified location deliveryTimeRange')
       .lean()
       .exec() as unknown as Promise<Product[]>;
   }
@@ -108,7 +108,7 @@ export class ProductsRepository {
       })
       .sort({ salesCount: -1 })
       .limit(limit)
-      .populate('store', 'name slug isVerified')
+      .populate('store', 'name slug isVerified location deliveryTimeRange')
       .lean()
       .exec() as unknown as Promise<Product[]>;
   }
@@ -124,6 +124,44 @@ export class ProductsRepository {
       .limit(limit)
       .lean()
       .exec() as unknown as Promise<Product[]>;
+  }
+
+  async create(data: Partial<Product>): Promise<Product> {
+    const product = new this.productModel(data);
+    return product.save() as unknown as Product;
+  }
+
+  async update(id: string, data: Partial<Product>): Promise<Product | null> {
+    return this.productModel
+      .findByIdAndUpdate(id, data, { new: true })
+      .lean()
+      .exec() as unknown as Promise<Product | null>;
+  }
+
+  async softDelete(id: string): Promise<void> {
+    await this.productModel.updateOne({ _id: id }, { $set: { deletedAt: new Date(), isActive: false } });
+  }
+
+  async findByIdWithStoreOwner(id: string): Promise<Product | null> {
+    return this.productModel
+      .findOne({ _id: id, deletedAt: null })
+      .populate('store', 'owner')
+      .lean()
+      .exec() as unknown as Promise<Product | null>;
+  }
+
+  async findAllAdmin(
+    page: number,
+    limit: number,
+    includeInactive = true,
+  ): Promise<{ items: Product[]; totalItems: number }> {
+    const filter = includeInactive ? {} : { deletedAt: null, isActive: true };
+    const skip = (page - 1) * limit;
+    const [items, totalItems] = await Promise.all([
+      this.productModel.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).populate('store', 'name slug').lean().exec(),
+      this.productModel.countDocuments(filter),
+    ]);
+    return { items: items as unknown as Product[], totalItems };
   }
 
   private buildSort(sortOption: ProductSortOption): Record<string, MongoSortOrder> {

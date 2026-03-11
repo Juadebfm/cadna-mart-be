@@ -34,6 +34,10 @@ export const envSchema = z.object({
   CLERK_WEBHOOK_SECRET: z.string().default(''),
 
   LOG_LEVEL: z.enum(['error', 'warn', 'info', 'debug', 'verbose']).default('debug'),
+
+  CLOUDINARY_CLOUD_NAME: z.string().default(''),
+  CLOUDINARY_API_KEY: z.string().default(''),
+  CLOUDINARY_API_SECRET: z.string().default(''),
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;
