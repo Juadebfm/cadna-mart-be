@@ -22,7 +22,7 @@ export class ConfigService {
   constructor() {
     const nodeEnv = process.env.NODE_ENV || 'dev';
     const envFile = `.env.${nodeEnv}`;
-    dotenvConfig({ path: resolve(process.cwd(), envFile) });
+    dotenvConfig({ path: resolve(process.cwd(), envFile), override: false });
 
     const result = envSchema.safeParse(process.env);
     if (!result.success) {
