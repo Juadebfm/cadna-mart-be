@@ -6,8 +6,8 @@ export class LoggerService implements NestLoggerService {
   private readonly logger: winston.Logger;
 
   constructor() {
-    const nodeEnv = process.env.NODE_ENV || 'dev';
-    const isProduction = nodeEnv === 'prod';
+    const nodeEnv = (process.env.NODE_ENV || 'dev').toLowerCase();
+    const isProduction = nodeEnv === 'prod' || nodeEnv === 'production';
 
     this.logger = winston.createLogger({
       level: process.env.LOG_LEVEL || 'debug',

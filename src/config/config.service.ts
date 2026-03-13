@@ -19,20 +19,52 @@ export class ConfigService {
   private readonly envConfig: EnvConfig;
   private readonly logger = new Logger(ConfigService.name);
 
+  private normalizeNodeEnv(value: string | undefined): 'dev' | 'staging' | 'prod' {
+    const normalized = (value ?? '').trim().toLowerCase();
+    if (normalized === 'production' || normalized === 'prod') {
+      return 'prod';
+    }
+    if (normalized === 'staging') {
+      return 'staging';
+    }
+    if (normalized === 'development' || normalized === 'dev') {
+      return 'dev';
+    }
+    return 'dev';
+  }
+
   constructor() {
-    const nodeEnv = process.env.NODE_ENV || 'dev';
+    const originalNodeEnv = process.env.NODE_ENV;
+    const nodeEnv = this.normalizeNodeEnv(originalNodeEnv);
+    process.env.NODE_ENV = nodeEnv;
+
     const envFile = `.env.${nodeEnv}`;
+    const baseEnvFile = '.env';
+
+    // Load env-specific file first; then fill missing values from base .env.
     dotenvConfig({ path: resolve(process.cwd(), envFile), override: false });
+    dotenvConfig({ path: resolve(process.cwd(), baseEnvFile), override: false });
 
     const result = envSchema.safeParse(process.env);
     if (!result.success) {
-      this.logger.error(`Invalid environment variables in ${envFile}:`);
       const formatted = result.error.format();
-      this.logger.error(JSON.stringify(formatted, null, 2));
+      const errorDetails = JSON.stringify(formatted, null, 2);
+      const summary =
+        `Invalid environment variables for NODE_ENV="${originalNodeEnv ?? 'undefined'}"` +
+        ` (normalized to "${nodeEnv}") using ${envFile} + ${baseEnvFile}.`;
+
+      // Keep console output so startup failures are visible even before custom logger init.
+      // eslint-disable-next-line no-console
+      console.error(summary);
+      // eslint-disable-next-line no-console
+      console.error(errorDetails);
+      this.logger.error(summary);
+      this.logger.error(errorDetails);
       process.exit(1);
     }
+
     this.envConfig = result.data;
-    this.logger.log(`Configuration loaded from ${envFile} (${nodeEnv})`);
+    this.logger.log(`Configuration loaded from ${envFile} + ${baseEnvFile} (${nodeEnv})`);
   }
 
   private parseCorsOrigin(value: string): string | string[] | boolean {
