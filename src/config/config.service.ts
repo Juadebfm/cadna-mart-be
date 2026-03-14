@@ -18,6 +18,7 @@ import {
 export class ConfigService {
   private readonly envConfig: EnvConfig;
   private readonly logger = new Logger(ConfigService.name);
+  private hasLoggedCorsOrigin = false;
 
   private normalizeNodeEnv(value: string | undefined): 'dev' | 'staging' | 'prod' {
     const normalized = (value ?? '').trim().toLowerCase();
@@ -67,6 +68,14 @@ export class ConfigService {
     this.logger.log(`Configuration loaded from ${envFile} + ${baseEnvFile} (${nodeEnv})`);
   }
 
+  private normalizeCorsOrigin(origin: string): string {
+    // Render/hosting UIs sometimes store quoted values or trailing slashes.
+    return origin
+      .trim()
+      .replace(/^['"]|['"]$/g, '')
+      .replace(/\/+$/, '');
+  }
+
   private parseCorsOrigin(value: string): string | string[] | boolean {
     const raw = (value ?? '').trim();
     if (!raw) {
@@ -81,14 +90,15 @@ export class ConfigService {
 
     const origins = raw
       .split(',')
-      .map((origin) => origin.trim())
+      .map((origin) => this.normalizeCorsOrigin(origin))
       .filter((origin) => origin.length > 0);
 
     if (origins.length === 0) {
       return true;
     }
 
-    return origins.length === 1 ? origins[0] : origins;
+    const uniqueOrigins = [...new Set(origins)];
+    return uniqueOrigins.length === 1 ? uniqueOrigins[0] : uniqueOrigins;
   }
 
   get<K extends keyof EnvConfig>(key: K): EnvConfig[K] {
@@ -128,8 +138,16 @@ export class ConfigService {
   }
 
   get cors(): CorsConfig {
+    const origin = this.parseCorsOrigin(this.envConfig.CORS_ORIGIN);
+    if (!this.hasLoggedCorsOrigin) {
+      this.logger.log(
+        `Resolved CORS origin: ${Array.isArray(origin) ? origin.join(', ') : String(origin)}`,
+      );
+      this.hasLoggedCorsOrigin = true;
+    }
+
     return {
-      origin: this.parseCorsOrigin(this.envConfig.CORS_ORIGIN),
+      origin,
     };
   }
 
