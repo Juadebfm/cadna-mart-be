@@ -87,7 +87,7 @@ export class ProductsService {
 
   async createProduct(
     dto: CreateProductDto,
-    currentUser: { userId: string; accountType: string },
+    _currentUser: { userId: string; accountType: string },
   ) {
     const { priceAmount, originalPriceAmount } = dto;
 
@@ -128,7 +128,7 @@ export class ProductsService {
       gallery: dto.gallery ?? [],
       variantAxes: dto.variantAxes ?? [],
       variants,
-      defaultVariantId: dto.defaultVariantId ?? (variants[0]?.id ?? null),
+      defaultVariantId: dto.defaultVariantId ?? variants[0]?.id ?? null,
       descriptionHtml: dto.descriptionHtml ?? null,
       tabs: dto.tabs ?? [],
       specifications: dto.specifications ?? [],
@@ -251,6 +251,7 @@ export class ProductsService {
       thumbnailUrl: product.thumbnailUrl,
       price: product.price,
       originalPrice: product.originalPrice,
+      savings: product.savings,
       discountPercent: product.discountPercent,
       rating: product.rating,
       reviewCount: product.reviewCount,
@@ -274,17 +275,24 @@ export class ProductsService {
       _id: { toString(): string };
       name: string;
       slug: string;
+      logoUrl: string | null;
       isVerified: boolean;
       responseRatePercent: number;
       averageRating: number;
       joinedYear: number;
       reviewCount: number;
+      location: string | null;
+      deliveryTimeRange: string | null;
     } | null;
+    const selectedVariantId = this.resolveSelectedVariantId(product, variantId);
+    const selectedVariant =
+      product.variants.find((variant) => variant.id === selectedVariantId) ?? null;
 
     return {
       id,
       slug: product.slug,
       sku: product.sku,
+      productCode: product.sku,
       name: product.name,
       brand: product.brand,
       breadcrumbs: product.breadcrumbs,
@@ -298,7 +306,8 @@ export class ProductsService {
       variantAxes: product.variantAxes,
       variants: product.variants,
       defaultVariantId: product.defaultVariantId,
-      selectedVariantId: variantId || product.defaultVariantId,
+      selectedVariantId,
+      selectedVariant,
       inventoryStatus: product.inventoryStatus,
       badge: product.badge,
       descriptionHtml: product.descriptionHtml,
@@ -308,12 +317,35 @@ export class ProductsService {
         ? {
             id: store._id.toString(),
             name: store.name,
+            logoUrl: store.logoUrl ?? null,
             isVerified: store.isVerified,
             responseRatePercent: store.responseRatePercent,
             rating: store.averageRating,
             joinedYear: store.joinedYear,
+            reviewCount: store.reviewCount,
+            location: store.location ?? null,
+            deliveryTimeRange: store.deliveryTimeRange ?? null,
+            storeUrl: `/stores/${store.slug}`,
           }
         : null,
     };
+  }
+
+  private resolveSelectedVariantId(product: Product, preferredVariantId?: string): string | null {
+    if (
+      preferredVariantId &&
+      product.variants.some((variant) => variant.id === preferredVariantId)
+    ) {
+      return preferredVariantId;
+    }
+
+    if (
+      product.defaultVariantId &&
+      product.variants.some((variant) => variant.id === product.defaultVariantId)
+    ) {
+      return product.defaultVariantId;
+    }
+
+    return product.variants[0]?.id ?? null;
   }
 }

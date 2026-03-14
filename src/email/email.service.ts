@@ -73,7 +73,11 @@ export class EmailService {
         html,
       });
     } catch (error) {
-      this.logger.error(`Failed to send email to ${to}: ${(error as Error).message}`, (error as Error).stack, 'EmailService');
+      this.logger.error(
+        `Failed to send email to ${to}: ${(error as Error).message}`,
+        (error as Error).stack,
+        'EmailService',
+      );
     }
   }
 }

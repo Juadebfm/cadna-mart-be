@@ -1,4 +1,14 @@
-import { Controller, Get, Patch, Delete, Param, Query, Body, HttpCode, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Patch,
+  Delete,
+  Param,
+  Query,
+  Body,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AccountTypes } from '@auth/decorators/account-types.decorator';
 import { CurrentUser } from '@auth/decorators/current-user.decorator';
@@ -49,7 +59,10 @@ export class AdminProductsController {
 
   @Patch(':id/status')
   @ApiOperation({ summary: 'Toggle product active/inactive status' })
-  async toggleStatus(@Param('id', ParseObjectIdPipe) id: string, @Body('isActive') isActive: boolean) {
+  async toggleStatus(
+    @Param('id', ParseObjectIdPipe) id: string,
+    @Body('isActive') isActive: boolean,
+  ) {
     return this.productsRepository.update(id, { isActive } as any);
   }
 

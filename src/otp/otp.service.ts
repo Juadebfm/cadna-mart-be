@@ -40,18 +40,18 @@ export class OtpService {
     }
 
     if (otp.attempts >= OTP_MAX_ATTEMPTS) {
-      await this.otpRepository.markAsUsed((otp._id as unknown as string));
+      await this.otpRepository.markAsUsed(otp._id as unknown as string);
       throw new BadRequestException(ERROR_MESSAGES.OTP_MAX_ATTEMPTS);
     }
 
     const isValid = await comparePassword(code, otp.code);
 
     if (!isValid) {
-      await this.otpRepository.incrementAttempts((otp._id as unknown as string));
+      await this.otpRepository.incrementAttempts(otp._id as unknown as string);
       throw new BadRequestException(ERROR_MESSAGES.OTP_INVALID);
     }
 
-    await this.otpRepository.markAsUsed((otp._id as unknown as string));
+    await this.otpRepository.markAsUsed(otp._id as unknown as string);
     return true;
   }
 

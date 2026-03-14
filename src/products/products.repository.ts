@@ -69,8 +69,11 @@ export class ProductsRepository {
 
   async findBySlug(slug: string): Promise<Product | null> {
     return this.productModel
-      .findOne({ slug, deletedAt: null })
-      .populate('store', 'name slug isVerified responseRatePercent averageRating joinedYear reviewCount')
+      .findOne({ slug, deletedAt: null, isActive: true })
+      .populate(
+        'store',
+        'name slug logoUrl isVerified responseRatePercent averageRating joinedYear reviewCount location deliveryTimeRange',
+      )
       .lean()
       .exec() as unknown as Promise<Product | null>;
   }
@@ -101,10 +104,7 @@ export class ProductsRepository {
         _id: { $ne: productId },
         deletedAt: null,
         isActive: true,
-        $or: [
-          { category: product.category },
-          { brand: product.brand },
-        ],
+        $or: [{ category: product.category }, { brand: product.brand }],
       })
       .sort({ salesCount: -1 })
       .limit(limit)
@@ -139,7 +139,10 @@ export class ProductsRepository {
   }
 
   async softDelete(id: string): Promise<void> {
-    await this.productModel.updateOne({ _id: id }, { $set: { deletedAt: new Date(), isActive: false } });
+    await this.productModel.updateOne(
+      { _id: id },
+      { $set: { deletedAt: new Date(), isActive: false } },
+    );
   }
 
   async findByIdWithStoreOwner(id: string): Promise<Product | null> {
@@ -158,7 +161,14 @@ export class ProductsRepository {
     const filter = includeInactive ? {} : { deletedAt: null, isActive: true };
     const skip = (page - 1) * limit;
     const [items, totalItems] = await Promise.all([
-      this.productModel.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).populate('store', 'name slug').lean().exec(),
+      this.productModel
+        .find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate('store', 'name slug')
+        .lean()
+        .exec(),
       this.productModel.countDocuments(filter),
     ]);
     return { items: items as unknown as Product[], totalItems };

@@ -10,10 +10,7 @@ export class PoliciesService {
   ) {}
 
   async getProductPolicy(productId: string) {
-    const policy = await this.policyModel
-      .findOne({ product: productId })
-      .lean()
-      .exec();
+    const policy = await this.policyModel.findOne({ product: productId }).lean().exec();
 
     if (!policy) {
       return {

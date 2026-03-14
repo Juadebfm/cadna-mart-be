@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 function formatMoney(amount: number, currency = 'NGN') {
-  return { amount, currency, formatted: `${currency} ${amount.toLocaleString()}` };
+  return { amount, currency, formatted: `₦${amount.toLocaleString('en-NG')}` };
 }
 
 @Injectable()

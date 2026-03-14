@@ -42,7 +42,11 @@ export class ProductVariantDto {
   @ApiProperty() @IsNumber() @Min(0) priceAmount!: number;
   @ApiPropertyOptional() @IsNumber() @IsOptional() @Min(0) stockQty?: number;
   @ApiPropertyOptional() @IsBoolean() @IsOptional() isInStock?: boolean;
-  @ApiPropertyOptional({ type: [String] }) @IsArray() @IsOptional() @IsString({ each: true }) images?: string[];
+  @ApiPropertyOptional({ type: [String] })
+  @IsArray()
+  @IsOptional()
+  @IsString({ each: true })
+  images?: string[];
 }
 
 export class ProductTabDto {

@@ -12,7 +12,7 @@ function formatMoney(amount: number, currency = 'NGN'): MoneyDto {
   return {
     amount,
     currency,
-    formatted: `${currency} ${amount.toLocaleString()}`,
+    formatted: `₦${amount.toLocaleString('en-NG')}`,
   };
 }
 

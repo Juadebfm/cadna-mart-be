@@ -5,9 +5,7 @@ import { WishlistItem } from './schemas/wishlist.schema';
 
 @Injectable()
 export class WishlistRepository {
-  constructor(
-    @InjectModel(WishlistItem.name) public readonly wishlistModel: Model<WishlistItem>,
-  ) {}
+  constructor(@InjectModel(WishlistItem.name) public readonly wishlistModel: Model<WishlistItem>) {}
 
   async findByUser(userId: string): Promise<WishlistItem[]> {
     return this.wishlistModel

@@ -34,10 +34,7 @@ export class OtpRepository {
 
   async invalidateAll(email: string, type: OtpType): Promise<void> {
     await this.otpModel
-      .updateMany(
-        { email: email.toLowerCase(), type, isUsed: false },
-        { isUsed: true },
-      )
+      .updateMany({ email: email.toLowerCase(), type, isUsed: false }, { isUsed: true })
       .exec();
   }
 

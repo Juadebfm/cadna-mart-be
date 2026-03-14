@@ -24,7 +24,12 @@ export class CartRepository {
     return cart;
   }
 
-  async addItem(userId: string, productId: string, variantId: string | null, quantity: number): Promise<Cart> {
+  async addItem(
+    userId: string,
+    productId: string,
+    variantId: string | null,
+    quantity: number,
+  ): Promise<Cart> {
     const cart = await this.findOrCreate(userId);
 
     const existingItem = cart.items.find(
@@ -54,10 +59,7 @@ export class CartRepository {
   }
 
   async removeItem(userId: string, itemId: string): Promise<Cart | null> {
-    await this.cartModel.updateOne(
-      { user: userId },
-      { $pull: { items: { _id: itemId } } },
-    );
+    await this.cartModel.updateOne({ user: userId }, { $pull: { items: { _id: itemId } } });
     return this.findByUser(userId);
   }
 }

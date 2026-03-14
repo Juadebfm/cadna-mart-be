@@ -57,7 +57,11 @@ export class ClerkWebhookController {
         'svix-signature': svixSignature,
       }) as typeof event;
     } catch (err) {
-      this.logger.error(`Clerk webhook verification failed: ${(err as Error).message}`, undefined, 'ClerkWebhook');
+      this.logger.error(
+        `Clerk webhook verification failed: ${(err as Error).message}`,
+        undefined,
+        'ClerkWebhook',
+      );
       return res.status(400).json({ error: 'Webhook verification failed' });
     }
 
@@ -76,7 +80,11 @@ export class ClerkWebhookController {
           this.logger.debug(`Unhandled Clerk event: ${event.type}`, 'ClerkWebhook');
       }
     } catch (err) {
-      this.logger.error(`Clerk webhook handler error: ${(err as Error).message}`, (err as Error).stack, 'ClerkWebhook');
+      this.logger.error(
+        `Clerk webhook handler error: ${(err as Error).message}`,
+        (err as Error).stack,
+        'ClerkWebhook',
+      );
       return res.status(500).json({ error: 'Webhook handler failed' });
     }
 

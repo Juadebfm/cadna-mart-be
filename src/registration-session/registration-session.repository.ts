@@ -15,15 +15,14 @@ export class RegistrationSessionRepository {
   }
 
   async findBySessionId(sessionId: string): Promise<RegistrationSession | null> {
-    return this.model
-      .findOne({ sessionId, expiresAt: { $gt: new Date() } })
-      .exec();
+    return this.model.findOne({ sessionId, expiresAt: { $gt: new Date() } }).exec();
   }
 
-  async update(sessionId: string, data: Partial<RegistrationSession>): Promise<RegistrationSession | null> {
-    return this.model
-      .findOneAndUpdate({ sessionId }, data, { new: true })
-      .exec();
+  async update(
+    sessionId: string,
+    data: Partial<RegistrationSession>,
+  ): Promise<RegistrationSession | null> {
+    return this.model.findOneAndUpdate({ sessionId }, data, { new: true }).exec();
   }
 
   async delete(sessionId: string): Promise<void> {

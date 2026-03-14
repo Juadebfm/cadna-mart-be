@@ -23,12 +23,23 @@ export class AdminStoresController {
   async findAll(@Query('page') page = 1, @Query('limit') limit = 20) {
     const skip = (+page - 1) * +limit;
     const [items, totalItems] = await Promise.all([
-      this.storesRepository.storeModel.find({ deletedAt: null }).sort({ createdAt: -1 }).skip(skip).limit(+limit).lean().exec(),
+      this.storesRepository.storeModel
+        .find({ deletedAt: null })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(+limit)
+        .lean()
+        .exec(),
       this.storesRepository.storeModel.countDocuments({ deletedAt: null }),
     ]);
     return {
       items,
-      pagination: { page: +page, limit: +limit, totalItems, totalPages: Math.ceil(totalItems / +limit) },
+      pagination: {
+        page: +page,
+        limit: +limit,
+        totalItems,
+        totalPages: Math.ceil(totalItems / +limit),
+      },
     };
   }
 
@@ -44,7 +55,10 @@ export class AdminStoresController {
 
   @Patch(':id/verify')
   @ApiOperation({ summary: 'Toggle store verified status' })
-  async toggleVerify(@Param('id', ParseObjectIdPipe) id: string, @Body('isVerified') isVerified: boolean) {
+  async toggleVerify(
+    @Param('id', ParseObjectIdPipe) id: string,
+    @Body('isVerified') isVerified: boolean,
+  ) {
     return this.storesRepository.update(id, { isVerified } as any);
   }
 }

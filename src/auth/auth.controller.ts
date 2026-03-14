@@ -10,7 +10,11 @@ import { RegisterDetailsDto } from './dto/register-details.dto';
 import { RegisterPasswordDto } from './dto/register-password.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
 import { ResendOtpDto } from './dto/resend-otp.dto';
-import { ForgotPasswordDto, ForgotPasswordVerifyDto, ForgotPasswordResetDto } from './dto/forgot-password.dto';
+import {
+  ForgotPasswordDto,
+  ForgotPasswordVerifyDto,
+  ForgotPasswordResetDto,
+} from './dto/forgot-password.dto';
 import { Verify2faLoginDto, Enable2faDto } from './dto/verify-2fa.dto';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { Public } from './decorators/public.decorator';

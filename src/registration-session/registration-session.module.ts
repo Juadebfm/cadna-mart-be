@@ -1,6 +1,9 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { RegistrationSession, RegistrationSessionSchema } from './schemas/registration-session.schema';
+import {
+  RegistrationSession,
+  RegistrationSessionSchema,
+} from './schemas/registration-session.schema';
 import { RegistrationSessionRepository } from './registration-session.repository';
 import { RegistrationSessionService } from './registration-session.service';
 

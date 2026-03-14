@@ -18,11 +18,9 @@ export function validatePasswordStrength(password: string, context?: PasswordCon
 
   if (context) {
     const lowerPassword = password.toLowerCase();
-    const nameParts = [
-      context.firstName,
-      context.lastName,
-      context.email?.split('@')[0],
-    ].filter((part): part is string => !!part && part.length >= 3);
+    const nameParts = [context.firstName, context.lastName, context.email?.split('@')[0]].filter(
+      (part): part is string => !!part && part.length >= 3,
+    );
 
     for (const part of nameParts) {
       if (lowerPassword.includes(part.toLowerCase())) {

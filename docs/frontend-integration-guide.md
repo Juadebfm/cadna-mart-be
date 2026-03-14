@@ -48,6 +48,150 @@ Production  : https://<your-domain>/api/v1
 
 Store this in an env variable (e.g. `NEXT_PUBLIC_API_URL`). All paths below are relative to this base.
 
+Important:
+- Use `/api/v1` in your base URL. Do **not** point frontend requests to the domain root (`/`).
+- Backend root (`/`) may return `404` in production; this is expected.
+- Example deployed base URL: `https://cadna-mart-be-nsz2.onrender.com/api/v1`
+
+### FE Quick Implementation Checklist (Required)
+
+1. Set one environment variable for API base URL:
+   - Dev: `http://localhost:3000/api/v1`
+   - Prod: `https://<backend-domain>/api/v1`
+2. Create a single shared API client (`axios` or `fetch` wrapper); do not scatter raw HTTP calls across components.
+3. Always parse backend envelope (`success`, `data`, `message`, `errorCode`) before returning data to UI.
+4. Save `accessToken` and `refreshToken` after login. Attach `Authorization: Bearer <accessToken>` on protected calls.
+5. Implement 401 refresh flow with `POST /auth/refresh`, then retry original request once.
+6. If refresh fails, clear auth state and redirect user to login.
+7. Add role-based route guards for `buyer`, `seller`, `admin` using decoded user/account data.
+8. For uploads, send `multipart/form-data` via `FormData` and call `POST /upload?folder=<folder>`.
+9. For create/update endpoints, send only documented fields. Extra fields can trigger `400`.
+10. Configure frontend domain in backend `CORS_ORIGIN` for production.
+11. Use `/health` under the API base for runtime checks (`GET /health` => `/api/v1/health`).
+12. Generate and send `x-correlation-id` per request for traceability.
+
+### API Client Skeleton (Recommended)
+
+```typescript
+// api/client.ts
+import axios, { AxiosError, AxiosRequestConfig } from 'axios';
+import { v4 as uuid } from 'uuid';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL!; // e.g. https://.../api/v1
+
+type ApiSuccess<T> = {
+  success: true;
+  statusCode: number;
+  data: T;
+  meta: { timestamp: string; correlationId: string };
+};
+
+type ApiFailure = {
+  success: false;
+  statusCode: number;
+  error: string;
+  message: string | string[];
+  errorCode?: string;
+  details?: unknown[];
+  meta?: { timestamp: string; correlationId?: string; path?: string };
+};
+
+type ApiEnvelope<T> = ApiSuccess<T> | ApiFailure;
+
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  timeout: 15000,
+  headers: { 'Content-Type': 'application/json' },
+});
+
+api.interceptors.request.use((config) => {
+  config.headers = config.headers ?? {};
+  config.headers['x-correlation-id'] = uuid();
+  const accessToken = localStorage.getItem('accessToken');
+  if (accessToken) config.headers.Authorization = `Bearer ${accessToken}`;
+  return config;
+});
+
+let isRefreshing = false;
+let waiters: Array<(token: string | null) => void> = [];
+
+const subscribe = (cb: (token: string | null) => void) => waiters.push(cb);
+const publish = (token: string | null) => {
+  waiters.forEach((cb) => cb(token));
+  waiters = [];
+};
+
+async function refreshTokens(): Promise<string> {
+  const refreshToken = localStorage.getItem('refreshToken');
+  if (!refreshToken) throw new Error('Missing refresh token');
+
+  const res = await axios.post<ApiEnvelope<{ accessToken: string; refreshToken: string }>>(
+    `${API_BASE_URL}/auth/refresh`,
+    { refreshToken },
+    { headers: { 'Content-Type': 'application/json', 'x-correlation-id': uuid() } },
+  );
+
+  if (!res.data.success) throw new Error(String(res.data.message));
+  localStorage.setItem('accessToken', res.data.data.accessToken);
+  localStorage.setItem('refreshToken', res.data.data.refreshToken);
+  return res.data.data.accessToken;
+}
+
+api.interceptors.response.use(
+  async (response) => {
+    const envelope = response.data as ApiEnvelope<unknown>;
+    if (envelope && typeof envelope === 'object' && 'success' in envelope && !envelope.success) {
+      return Promise.reject(envelope);
+    }
+    return response;
+  },
+  async (error: AxiosError<ApiFailure>) => {
+    const original = error.config as AxiosRequestConfig & { _retry?: boolean };
+    const status = error.response?.status;
+    const isAuthPath = original?.url?.includes('/auth/login') || original?.url?.includes('/auth/refresh');
+
+    if (status !== 401 || original?._retry || isAuthPath) {
+      return Promise.reject(error.response?.data ?? error);
+    }
+
+    original._retry = true;
+    if (isRefreshing) {
+      return new Promise((resolve, reject) => {
+        subscribe((token) => {
+          if (!token) return reject(error);
+          original.headers = original.headers ?? {};
+          original.headers.Authorization = `Bearer ${token}`;
+          resolve(api(original));
+        });
+      });
+    }
+
+    isRefreshing = true;
+    try {
+      const token = await refreshTokens();
+      publish(token);
+      original.headers = original.headers ?? {};
+      original.headers.Authorization = `Bearer ${token}`;
+      return api(original);
+    } catch (refreshError) {
+      publish(null);
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      window.location.assign('/login');
+      return Promise.reject(refreshError);
+    } finally {
+      isRefreshing = false;
+    }
+  },
+);
+
+export async function apiGet<T>(path: string): Promise<T> {
+  const res = await api.get<ApiEnvelope<T>>(path);
+  if (!res.data.success) throw res.data;
+  return res.data.data;
+}
+```
+
 ### Required Headers
 
 Every request should include:
@@ -715,6 +859,11 @@ GET /products?q=phone&category=electronics&sort=price_asc&page=1&limit=10
     currency: "NGN",
     formatted: string
   } | null,
+  savings: {                 // null if no discount
+    amount: number,
+    currency: "NGN",
+    formatted: string
+  } | null,
   discountPercent: number,   // 0 if no discount
   rating: number,            // 0–5
   reviewCount: number,
@@ -759,6 +908,7 @@ GET /products/:slug?variantId=optional
   id: string,
   slug: string,
   sku: string | null,
+  productCode: string | null,         // alias of sku for direct UI display
   name: string,
   brand: string | null,
 
@@ -812,7 +962,8 @@ GET /products/:slug?variantId=optional
     }
   ],
   defaultVariantId: string | null,
-  selectedVariantId: string,
+  selectedVariantId: string | null,
+  selectedVariant: ProductVariant | null,
 
   // Content
   descriptionHtml: string | null,       // Rich HTML — render with dangerouslySetInnerHTML
@@ -830,10 +981,15 @@ GET /products/:slug?variantId=optional
   store: {
     id: string,
     name: string,
+    logoUrl: string | null,
     isVerified: boolean,
     responseRatePercent: number,
     rating: number,
-    joinedYear: number
+    joinedYear: number,
+    reviewCount: number,
+    location: string | null,
+    deliveryTimeRange: string | null,
+    storeUrl: string
   } | null
 }
 ```
@@ -843,6 +999,7 @@ GET /products/:slug?variantId=optional
 - **Breadcrumbs**: render from `breadcrumbs[]`, skip link on last item (where `url` is null)
 - **Gallery**: use `gallery[]` for the image carousel. When user selects a variant, check `variants[].images` for variant-specific images
 - **Variant selection**: render `variantAxes` as selectors (colour swatches, size buttons). On selection, find matching variant in `variants[]` by `attributes`, update price/stock/images accordingly
+- **Selected variant**: backend returns `selectedVariantId` and `selectedVariant` (already resolved from `variantId` query when valid, otherwise default/first variant)
 - **Tabs**: render `tabs[]` as a tab component. `contentHtml` is sanitized HTML — render with `dangerouslySetInnerHTML` (or a sanitizer like DOMPurify)
 - **Specifications**: render as a 2-column table
 - **Store card**: use `store.id` to link to `/stores/{store.id}` and call `GET /stores/:storeId/summary` if more detail is needed
@@ -1772,6 +1929,7 @@ interface ProductCard {
   thumbnailUrl: string | null;
   price: Money;
   originalPrice: Money | null;
+  savings: Money | null;
   discountPercent: number;
   rating: number;
   reviewCount: number;
@@ -1792,6 +1950,7 @@ interface ProductDetail {
   id: string;
   slug: string;
   sku: string | null;
+  productCode: string | null;
   name: string;
   brand: string | null;
   breadcrumbs: Breadcrumb[];
@@ -1807,7 +1966,8 @@ interface ProductDetail {
   variantAxes: VariantAxis[];
   variants: ProductVariant[];
   defaultVariantId: string | null;
-  selectedVariantId: string;
+  selectedVariantId: string | null;
+  selectedVariant: ProductVariant | null;
   descriptionHtml: string | null;
   tabs: ProductTab[];
   specifications: Specification[];
@@ -1860,10 +2020,15 @@ interface Specification {
 interface ProductDetailStore {
   id: string;
   name: string;
+  logoUrl: string | null;
   isVerified: boolean;
   responseRatePercent: number;
   rating: number;
   joinedYear: number;
+  reviewCount: number;
+  location: string | null;
+  deliveryTimeRange: string | null;
+  storeUrl: string;
 }
 
 // ─── Cart ─────────────────────────────────────────

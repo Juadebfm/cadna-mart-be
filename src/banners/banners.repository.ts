@@ -34,7 +34,9 @@ export class BannersRepository {
     }
 
     const seen = new Set(
-      targeted.map((banner) => (banner as unknown as { _id: { toString(): string } })._id.toString()),
+      targeted.map((banner) =>
+        (banner as unknown as { _id: { toString(): string } })._id.toString(),
+      ),
     );
 
     return [
@@ -61,6 +63,8 @@ export class BannersRepository {
   }
 
   private findMany(filter: FilterQuery<Banner>): Promise<Banner[]> {
-    return this.bannerModel.find(filter).sort({ order: 1 }).lean().exec() as unknown as Promise<Banner[]>;
+    return this.bannerModel.find(filter).sort({ order: 1 }).lean().exec() as unknown as Promise<
+      Banner[]
+    >;
   }
 }

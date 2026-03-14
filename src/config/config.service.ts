@@ -54,9 +54,9 @@ export class ConfigService {
         ` (normalized to "${nodeEnv}") using ${envFile} + ${baseEnvFile}.`;
 
       // Keep console output so startup failures are visible even before custom logger init.
-      // eslint-disable-next-line no-console
+
       console.error(summary);
-      // eslint-disable-next-line no-console
+
       console.error(errorDetails);
       this.logger.error(summary);
       this.logger.error(errorDetails);

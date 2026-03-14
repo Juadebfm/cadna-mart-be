@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Patch, Delete, Param, Query, Body, HttpCode, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Param,
+  Query,
+  Body,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { Public } from '@auth/decorators/public.decorator';
 import { AccountTypes } from '@auth/decorators/account-types.decorator';
@@ -24,20 +35,14 @@ export class ProductsController {
   @Public()
   @Get(':slug')
   @ApiOperation({ summary: 'Get product detail by slug' })
-  async findBySlug(
-    @Param('slug') slug: string,
-    @Query('variantId') variantId?: string,
-  ) {
+  async findBySlug(@Param('slug') slug: string, @Query('variantId') variantId?: string) {
     return this.productsService.findBySlug(slug, variantId);
   }
 
   @Public()
   @Get(':productId/related')
   @ApiOperation({ summary: 'Get related products' })
-  async findRelated(
-    @Param('productId') productId: string,
-    @Query('limit') limit: number = 8,
-  ) {
+  async findRelated(@Param('productId') productId: string, @Query('limit') limit: number = 8) {
     return this.productsService.findRelated(productId, Math.min(limit, 20));
   }
 

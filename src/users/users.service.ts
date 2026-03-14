@@ -112,8 +112,10 @@ export class UsersService {
       accountType: user.accountType,
       phoneNumber: user.phoneNumber,
       dateOfBirth: user.dateOfBirth,
-      isVerified: user.isVerified,
+      isEmailVerified: user.isVerified,
+      isVerified: user.isVerified, // Backward compatibility for existing clients
       isTwoFactorEnabled: user.isTwoFactorEnabled,
+      createdAt: user.createdAt,
       fullName: (user as unknown as { fullName?: string }).fullName,
     };
   }

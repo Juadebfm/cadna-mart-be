@@ -24,10 +24,7 @@ export class StoresController {
   @AccountTypes(AccountType.SELLER)
   @Post()
   @ApiOperation({ summary: 'Create your store (Seller only — one store per seller)' })
-  async createStore(
-    @Body() dto: CreateStoreDto,
-    @CurrentUser('userId') userId: string,
-  ) {
+  async createStore(@Body() dto: CreateStoreDto, @CurrentUser('userId') userId: string) {
     return this.storesService.createStore(dto, userId);
   }
 

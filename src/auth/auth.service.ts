@@ -1,4 +1,9 @@
-import { Injectable, UnauthorizedException, BadRequestException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  BadRequestException,
+  ConflictException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@config/config.service';
 import { UsersService } from '@users/users.service';
@@ -35,7 +40,10 @@ export class AuthService {
     return { sessionId: session.sessionId };
   }
 
-  async registerAccountType(sessionId: string, accountType: AccountType): Promise<{ sessionId: string }> {
+  async registerAccountType(
+    sessionId: string,
+    accountType: AccountType,
+  ): Promise<{ sessionId: string }> {
     await this.registrationSessionService.setAccountType(sessionId, accountType);
     return { sessionId };
   }
@@ -54,7 +62,11 @@ export class AuthService {
     return { sessionId };
   }
 
-  async registerPassword(sessionId: string, password: string, confirmPassword: string): Promise<{ message: string }> {
+  async registerPassword(
+    sessionId: string,
+    password: string,
+    confirmPassword: string,
+  ): Promise<{ message: string }> {
     if (password !== confirmPassword) {
       throw new BadRequestException('Passwords do not match');
     }
@@ -99,7 +111,9 @@ export class AuthService {
       throw new BadRequestException(ERROR_MESSAGES.USER_NOT_FOUND);
     }
 
-    await this.usersService.verifyUser((user as unknown as { _id: { toString(): string } })._id.toString());
+    await this.usersService.verifyUser(
+      (user as unknown as { _id: { toString(): string } })._id.toString(),
+    );
 
     return { message: 'Email verified successfully' };
   }
@@ -219,7 +233,11 @@ export class AuthService {
     return { resetToken };
   }
 
-  async forgotPasswordReset(resetToken: string, password: string, confirmPassword: string): Promise<{ message: string }> {
+  async forgotPasswordReset(
+    resetToken: string,
+    password: string,
+    confirmPassword: string,
+  ): Promise<{ message: string }> {
     if (password !== confirmPassword) {
       throw new BadRequestException('Passwords do not match');
     }

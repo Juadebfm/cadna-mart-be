@@ -2,18 +2,6 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { BaseSchema } from '@shared/base/base.schema';
 import * as mongoose from 'mongoose';
 
-@Schema({ _id: false })
-class Money {
-  @Prop({ required: true })
-  amount!: number;
-
-  @Prop({ default: 'NGN' })
-  currency!: string;
-
-  @Prop({ required: true })
-  formatted!: string;
-}
-
 @Schema({ timestamps: true })
 class CartItem {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true })

@@ -31,7 +31,19 @@ export class HomeService {
         ...sections.map((section) => this.productsService.findBySection(section, limitPerSection)),
       ]);
 
-    const toDto = (banner: { _id?: unknown; title: string; subtitle?: string | null; description?: string | null; imageUrl?: string | null; mobileImageUrl?: string | null; ctaLabel?: string | null; ctaUrl?: string | null; discountLabel?: string | null; startAt?: Date | null; endAt?: Date | null }) => {
+    const toDto = (banner: {
+      _id?: unknown;
+      title: string;
+      subtitle?: string | null;
+      description?: string | null;
+      imageUrl?: string | null;
+      mobileImageUrl?: string | null;
+      ctaLabel?: string | null;
+      ctaUrl?: string | null;
+      discountLabel?: string | null;
+      startAt?: Date | null;
+      endAt?: Date | null;
+    }) => {
       const id = (banner as unknown as { _id: { toString(): string } })._id.toString();
       return {
         id,

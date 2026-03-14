@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, ConflictException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { StoresRepository } from './stores.repository';
 import { CreateStoreDto } from './dto/create-store.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
@@ -14,11 +19,13 @@ export class StoresService {
       throw new ConflictException('You already have a store. A seller can only have one store.');
     }
 
-    const slug = dto.name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '')
-      + '-' + Date.now().toString(36);
+    const slug =
+      dto.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '') +
+      '-' +
+      Date.now().toString(36);
 
     const store = await this.storesRepository.create({
       name: dto.name,

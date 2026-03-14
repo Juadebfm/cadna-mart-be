@@ -1,4 +1,13 @@
-import { IsOptional, IsString, IsNumber, IsBoolean, IsEnum, Min, Max, IsInt } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsNumber,
+  IsBoolean,
+  IsEnum,
+  Min,
+  Max,
+  IsInt,
+} from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 
@@ -17,7 +26,9 @@ export class ProductQueryDto {
   @IsString()
   q?: string;
 
-  @ApiPropertyOptional({ description: 'Section filter (best_deals, recommended, top_sellers, new_arrivals)' })
+  @ApiPropertyOptional({
+    description: 'Section filter (best_deals, recommended, top_sellers, new_arrivals)',
+  })
   @IsOptional()
   @IsString()
   section?: string;
