@@ -5,13 +5,16 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { createClerkClient } from '@clerk/backend';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { createClerkClient, verifyToken } from '@clerk/backend';
 import { ConfigService } from '@config/config.service';
 import { UsersService } from '@users/users.service';
 import { OtpService } from '@otp/otp.service';
 import { OtpType } from '@otp/enums/otp-type.enum';
 import { EmailService } from '@email/email.service';
 import { RegistrationSessionService } from '@registration-session/registration-session.service';
+import { SellerProfile } from '@sellers/schemas/seller-profile.schema';
 import { JwtPayload, TokenResponse } from './interfaces/jwt-payload.interface';
 import { comparePassword, hashPassword } from '@common/utils/hash.util';
 import { ERROR_MESSAGES } from '@common/constants/error-messages.constants';
@@ -28,6 +31,7 @@ export class AuthService {
     private readonly otpService: OtpService,
     private readonly emailService: EmailService,
     private readonly registrationSessionService: RegistrationSessionService,
+    @InjectModel(SellerProfile.name) private readonly sellerProfileModel: Model<SellerProfile>,
   ) {}
 
   // ─── MULTI-STEP REGISTRATION ─────────────────────────────────
@@ -40,14 +44,6 @@ export class AuthService {
 
     const session = await this.registrationSessionService.createSession(email);
     return { sessionId: session.sessionId };
-  }
-
-  async registerAccountType(
-    sessionId: string,
-    accountType: AccountType,
-  ): Promise<{ sessionId: string }> {
-    await this.registrationSessionService.setAccountType(sessionId, accountType);
-    return { sessionId };
   }
 
   async registerDetails(
@@ -73,7 +69,7 @@ export class AuthService {
       throw new BadRequestException('Passwords do not match');
     }
 
-    const session = await this.registrationSessionService.validateStep(sessionId, 3);
+    const session = await this.registrationSessionService.validateStep(sessionId, 2);
 
     validatePasswordStrength(password, {
       firstName: session.firstName ?? undefined,
@@ -81,15 +77,13 @@ export class AuthService {
       email: session.email,
     });
 
-    const hashedPassword = await hashPassword(password);
-
-    // Create the user (isVerified: false)
+    // Create the user (isVerified: false) — usersService.create() handles hashing
     await this.usersService.create({
       email: session.email,
-      password: hashedPassword,
+      password,
       firstName: session.firstName!,
       lastName: session.lastName!,
-      accountType: session.accountType!,
+      accountType: AccountType.BUYER,
       phoneNumber: session.phoneNumber ?? undefined,
       dateOfBirth: session.dateOfBirth ? session.dateOfBirth.toISOString() : undefined,
       termsAccepted: session.termsAccepted,
@@ -133,6 +127,121 @@ export class AuthService {
     await this.emailService.sendVerificationCode(email, code);
 
     return { message: 'Verification code sent' };
+  }
+
+  // ─── SELLER REGISTRATION ───────────────────────────────────
+
+  async registerSellerEmail(email: string): Promise<{ sessionId: string }> {
+    const existing = await this.usersService.findByEmail(email);
+    if (existing) {
+      throw new ConflictException(ERROR_MESSAGES.USER_ALREADY_EXISTS);
+    }
+
+    const session = await this.registrationSessionService.createSession(email);
+    return { sessionId: session.sessionId };
+  }
+
+  async registerSellerDetails(
+    sessionId: string,
+    details: {
+      firstName: string;
+      lastName: string;
+      dateOfBirth?: string;
+      phoneNumber?: string;
+      businessName: string;
+      businessRegistrationNumber?: string;
+      businessAddress: string;
+      businessType: string;
+      bankName: string;
+      bankAccountNumber: string;
+      bankAccountName: string;
+      termsAccepted: boolean;
+    },
+  ): Promise<{ sessionId: string }> {
+    await this.registrationSessionService.setDetails(sessionId, {
+      firstName: details.firstName,
+      lastName: details.lastName,
+      dateOfBirth: details.dateOfBirth,
+      phoneNumber: details.phoneNumber,
+      termsAccepted: details.termsAccepted,
+    });
+
+    // Store business details in session metadata (we'll read them back at password step)
+    const session = await this.registrationSessionService.getSession(sessionId);
+    (session as any).businessDetails = {
+      businessName: details.businessName,
+      businessRegistrationNumber: details.businessRegistrationNumber ?? null,
+      businessAddress: details.businessAddress,
+      businessType: details.businessType,
+      bankName: details.bankName,
+      bankAccountNumber: details.bankAccountNumber,
+      bankAccountName: details.bankAccountName,
+    };
+
+    return { sessionId };
+  }
+
+  async registerSellerPassword(
+    sessionId: string,
+    password: string,
+    confirmPassword: string,
+    businessDetails: {
+      businessName: string;
+      businessRegistrationNumber?: string;
+      businessAddress: string;
+      businessType: string;
+      bankName: string;
+      bankAccountNumber: string;
+      bankAccountName: string;
+    },
+  ): Promise<{ message: string }> {
+    if (password !== confirmPassword) {
+      throw new BadRequestException('Passwords do not match');
+    }
+
+    const session = await this.registrationSessionService.validateStep(sessionId, 2);
+
+    validatePasswordStrength(password, {
+      firstName: session.firstName ?? undefined,
+      lastName: session.lastName ?? undefined,
+      email: session.email,
+    });
+
+    // Create user as SELLER — usersService.create() handles hashing
+    const user = await this.usersService.create({
+      email: session.email,
+      password,
+      firstName: session.firstName!,
+      lastName: session.lastName!,
+      accountType: AccountType.SELLER,
+      phoneNumber: session.phoneNumber ?? undefined,
+      dateOfBirth: session.dateOfBirth ? session.dateOfBirth.toISOString() : undefined,
+      termsAccepted: session.termsAccepted,
+    });
+
+    const userId = (user as any)._id.toString();
+
+    // Create SellerProfile
+    await this.sellerProfileModel.create({
+      user: userId,
+      businessName: businessDetails.businessName,
+      businessRegistrationNumber: businessDetails.businessRegistrationNumber ?? null,
+      businessAddress: businessDetails.businessAddress,
+      businessType: businessDetails.businessType,
+      bankName: businessDetails.bankName,
+      bankAccountNumber: businessDetails.bankAccountNumber,
+      bankAccountName: businessDetails.bankAccountName,
+      isApproved: false,
+    });
+
+    // Send verification OTP
+    const code = await this.otpService.generateAndStore(session.email, OtpType.EMAIL_VERIFICATION);
+    await this.emailService.sendVerificationCode(session.email, code);
+
+    // Clean up registration session
+    await this.registrationSessionService.completeAndDelete(sessionId);
+
+    return { message: 'Seller account created. Please verify your email.' };
   }
 
   // ─── LOGIN ───────────────────────────────────────────────────
@@ -314,17 +423,25 @@ export class AuthService {
   // ─── CLERK OAUTH LOGIN ─────────────────────────────────────
 
   async clerkLogin(clerkToken: string): Promise<TokenResponse & { user: object }> {
-    const clerkClient = createClerkClient({
-      secretKey: this.configService.clerk.secretKey,
-    });
+    const secretKey = this.configService.clerk.secretKey;
+    if (!secretKey) {
+      throw new UnauthorizedException('Clerk secret key is not configured');
+    }
+
+    const clerkClient = createClerkClient({ secretKey });
 
     // Verify the Clerk session token
     let clerkUser;
     try {
-      const { sub: clerkUserId } = await clerkClient.verifyToken(clerkToken);
-      clerkUser = await clerkClient.users.getUser(clerkUserId);
-    } catch {
-      throw new UnauthorizedException('Invalid Clerk token');
+      const payload = await verifyToken(clerkToken, {
+        secretKey,
+        authorizedParties: undefined,
+      });
+      clerkUser = await clerkClient.users.getUser(payload.sub);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error('[ClerkLogin] Token verification failed:', message);
+      throw new UnauthorizedException(`Invalid Clerk token: ${message}`);
     }
 
     const email = clerkUser.emailAddresses?.[0]?.emailAddress;
@@ -336,26 +453,51 @@ export class AuthService {
     let user = await this.usersService.findByEmail(email);
 
     if (!user) {
-      // First time — create user on the spot (no waiting for webhook)
-      await this.usersService.create({
-        email,
-        firstName: clerkUser.firstName || 'User',
-        lastName: clerkUser.lastName || '',
-        password: 'CLERK_OAUTH_NO_PASSWORD',
-        accountType: AccountType.BUYER,
-      });
+      // Check if a soft-deleted user exists with this email — reactivate them
+      const deletedUser = await (this.usersService as any).usersRepository.userModel
+        .findOne({ email: email.toLowerCase() })
+        .lean()
+        .exec();
 
-      user = await this.usersService.findByEmail(email);
-      if (!user) throw new UnauthorizedException('Failed to create user');
+      if (deletedUser) {
+        // Reactivate the soft-deleted user
+        await (this.usersService as any).usersRepository.userModel.updateOne(
+          { _id: deletedUser._id },
+          {
+            $set: {
+              deletedAt: null,
+              isActive: true,
+              isVerified: true,
+              authProvider: AuthProvider.CLERK,
+              clerkId: clerkUser.id,
+              firstName: clerkUser.firstName || deletedUser.firstName,
+              lastName: clerkUser.lastName || deletedUser.lastName,
+            },
+          },
+        );
+        user = await this.usersService.findById(deletedUser._id.toString());
+      } else {
+        // First time — create user on the spot
+        await this.usersService.create({
+          email,
+          firstName: clerkUser.firstName || 'User',
+          lastName: clerkUser.lastName || '',
+          password: 'CLERK_OAUTH_NO_PASSWORD',
+          accountType: AccountType.BUYER,
+        });
 
-      const userId = (user as any)._id.toString();
-      await this.usersService.verifyUser(userId);
-      await (this.usersService as any).usersRepository.userModel.updateOne(
-        { _id: userId },
-        { authProvider: AuthProvider.CLERK, clerkId: clerkUser.id },
-      );
+        user = await this.usersService.findByEmail(email);
+        if (!user) throw new UnauthorizedException('Failed to create user');
 
-      user = await this.usersService.findById(userId);
+        const userId = (user as any)._id.toString();
+        await this.usersService.verifyUser(userId);
+        await (this.usersService as any).usersRepository.userModel.updateOne(
+          { _id: userId },
+          { authProvider: AuthProvider.CLERK, clerkId: clerkUser.id },
+        );
+
+        user = await this.usersService.findById(userId);
+      }
     } else if (!user.clerkId) {
       // Existing email user linking to Clerk for the first time
       const userId = (user as any)._id.toString();

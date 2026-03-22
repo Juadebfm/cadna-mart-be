@@ -1,7 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { RegistrationSessionRepository } from './registration-session.repository';
 import { RegistrationSession } from './schemas/registration-session.schema';
-import { AccountType } from '@users/enums/account-type.enum';
 import { ERROR_MESSAGES } from '@common/constants/error-messages.constants';
 
 const SESSION_TTL_MINUTES = 30;
@@ -33,14 +32,6 @@ export class RegistrationSessionService {
     return session;
   }
 
-  async setAccountType(sessionId: string, accountType: AccountType): Promise<RegistrationSession> {
-    const session = await this.validateStep(sessionId, 1);
-    return this.repository.update(session.sessionId, {
-      accountType,
-      currentStep: 2,
-    }) as Promise<RegistrationSession>;
-  }
-
   async setDetails(
     sessionId: string,
     details: {
@@ -51,14 +42,14 @@ export class RegistrationSessionService {
       termsAccepted: boolean;
     },
   ): Promise<RegistrationSession> {
-    const session = await this.validateStep(sessionId, 2);
+    const session = await this.validateStep(sessionId, 1);
     return this.repository.update(session.sessionId, {
       firstName: details.firstName,
       lastName: details.lastName,
       dateOfBirth: details.dateOfBirth ? new Date(details.dateOfBirth) : null,
       phoneNumber: details.phoneNumber || null,
       termsAccepted: details.termsAccepted,
-      currentStep: 3,
+      currentStep: 2,
     }) as Promise<RegistrationSession>;
   }
 

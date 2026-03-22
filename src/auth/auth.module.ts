@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { AuthService } from './auth.service';
@@ -11,6 +12,7 @@ import { OtpModule } from '@otp/otp.module';
 import { EmailModule } from '@email/email.module';
 import { RegistrationSessionModule } from '@registration-session/registration-session.module';
 import { ConfigService } from '@config/config.service';
+import { SellerProfile, SellerProfileSchema } from '@sellers/schemas/seller-profile.schema';
 
 @Module({
   imports: [
@@ -18,6 +20,7 @@ import { ConfigService } from '@config/config.service';
     OtpModule,
     EmailModule,
     RegistrationSessionModule,
+    MongooseModule.forFeature([{ name: SellerProfile.name, schema: SellerProfileSchema }]),
     PassportModule.register({ session: true }),
     JwtModule.registerAsync({
       useFactory: (configService: ConfigService) => ({

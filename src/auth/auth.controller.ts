@@ -5,7 +5,6 @@ import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { RegisterEmailDto } from './dto/register-email.dto';
-import { RegisterAccountTypeDto } from './dto/register-account-type.dto';
 import { RegisterDetailsDto } from './dto/register-details.dto';
 import { RegisterPasswordDto } from './dto/register-password.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
@@ -17,6 +16,8 @@ import {
 } from './dto/forgot-password.dto';
 import { Verify2faLoginDto, Enable2faDto } from './dto/verify-2fa.dto';
 import { ClerkLoginDto } from './dto/clerk-login.dto';
+import { RegisterSellerDetailsDto } from './dto/register-seller-details.dto';
+import { RegisterSellerPasswordDto } from './dto/register-seller-password.dto';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { Public } from './decorators/public.decorator';
 import { CurrentUser } from './decorators/current-user.decorator';
@@ -40,15 +41,8 @@ export class AuthController {
   }
 
   @Public()
-  @Post('register/account-type')
-  @ApiOperation({ summary: 'Step 2: Select account type' })
-  async registerAccountType(@Body() dto: RegisterAccountTypeDto) {
-    return this.authService.registerAccountType(dto.sessionId, dto.accountType);
-  }
-
-  @Public()
   @Post('register/details')
-  @ApiOperation({ summary: 'Step 3: Provide personal details' })
+  @ApiOperation({ summary: 'Step 2: Provide personal details' })
   async registerDetails(@Body() dto: RegisterDetailsDto) {
     return this.authService.registerDetails(dto.sessionId, {
       firstName: dto.firstName,
@@ -61,7 +55,7 @@ export class AuthController {
 
   @Public()
   @Post('register/password')
-  @ApiOperation({ summary: 'Step 4: Set password and create account' })
+  @ApiOperation({ summary: 'Step 3: Set password and create account' })
   async registerPassword(@Body() dto: RegisterPasswordDto) {
     return this.authService.registerPassword(dto.sessionId, dto.password, dto.confirmPassword);
   }
@@ -69,7 +63,7 @@ export class AuthController {
   @Public()
   @Post('register/verify')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Step 5: Verify email with OTP code' })
+  @ApiOperation({ summary: 'Step 4: Verify email with OTP code' })
   async verifyEmail(@Body() dto: VerifyEmailDto) {
     return this.authService.verifyEmail(dto.email, dto.code);
   }
@@ -80,6 +74,50 @@ export class AuthController {
   @ApiOperation({ summary: 'Resend email verification OTP' })
   async resendOtp(@Body() dto: ResendOtpDto) {
     return this.authService.resendVerificationOtp(dto.email);
+  }
+
+  // ─── SELLER REGISTRATION ───────────────────────────────────
+
+  @Public()
+  @Post('register/seller/email')
+  @ApiOperation({ summary: 'Seller Step 1: Start registration with email' })
+  async registerSellerEmail(@Body() dto: RegisterEmailDto) {
+    return this.authService.registerSellerEmail(dto.email);
+  }
+
+  @Public()
+  @Post('register/seller/details')
+  @ApiOperation({ summary: 'Seller Step 2: Provide personal + business details' })
+  async registerSellerDetails(@Body() dto: RegisterSellerDetailsDto) {
+    return this.authService.registerSellerDetails(dto.sessionId, dto);
+  }
+
+  @Public()
+  @Post('register/seller/password')
+  @ApiOperation({ summary: 'Seller Step 3: Set password and create account' })
+  async registerSellerPassword(@Body() dto: RegisterSellerPasswordDto) {
+    return this.authService.registerSellerPassword(
+      dto.sessionId,
+      dto.password,
+      dto.confirmPassword,
+      {
+        businessName: dto.businessName,
+        businessRegistrationNumber: dto.businessRegistrationNumber,
+        businessAddress: dto.businessAddress,
+        businessType: dto.businessType,
+        bankName: dto.bankName,
+        bankAccountNumber: dto.bankAccountNumber,
+        bankAccountName: dto.bankAccountName,
+      },
+    );
+  }
+
+  @Public()
+  @Post('register/seller/verify')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Seller Step 4: Verify email with OTP code' })
+  async verifySellerEmail(@Body() dto: VerifyEmailDto) {
+    return this.authService.verifyEmail(dto.email, dto.code);
   }
 
   // ─── LOGIN ───────────────────────────────────────────────────

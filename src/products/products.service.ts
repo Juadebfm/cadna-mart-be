@@ -1,8 +1,11 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import { ProductsRepository } from './products.repository';
 import { ProductQueryDto } from './dto/product-query.dto';
 import { CategoriesService } from '@categories/categories.service';
 import { Product } from './schemas/product.schema';
+import { SellerProfile } from '@sellers/schemas/seller-profile.schema';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { AccountType } from '@users/enums/account-type.enum';
@@ -12,6 +15,7 @@ export class ProductsService {
   constructor(
     private readonly productsRepository: ProductsRepository,
     private readonly categoriesService: CategoriesService,
+    @InjectModel(SellerProfile.name) private readonly sellerProfileModel: Model<SellerProfile>,
   ) {}
 
   async findAll(query: ProductQueryDto) {
@@ -120,10 +124,20 @@ export class ProductsService {
       .replace(/^-+|-+$/g, '');
   }
 
-  async createProduct(
-    dto: CreateProductDto,
-    _currentUser: { userId: string; accountType: string },
-  ) {
+  async createProduct(dto: CreateProductDto, currentUser: { userId: string; accountType: string }) {
+    // Check seller approval before allowing product creation
+    if (currentUser.accountType === AccountType.SELLER) {
+      const profile = await this.sellerProfileModel
+        .findOne({ user: currentUser.userId })
+        .lean()
+        .exec();
+      if (!profile || !(profile as any).isApproved) {
+        throw new ForbiddenException(
+          'Your seller account is pending approval. You cannot upload products yet.',
+        );
+      }
+    }
+
     const { priceAmount, originalPriceAmount } = dto;
 
     const discountPercent =

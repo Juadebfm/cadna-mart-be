@@ -1,6 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
-import { AccountType } from '@users/enums/account-type.enum';
 import { v4 as uuidv4 } from 'uuid';
 
 @Schema({ timestamps: true })
@@ -10,9 +9,6 @@ export class RegistrationSession extends Document {
 
   @Prop({ required: true, lowercase: true, trim: true })
   email!: string;
-
-  @Prop({ type: String, enum: AccountType, default: null })
-  accountType!: AccountType | null;
 
   @Prop({ type: String, default: null, trim: true })
   firstName!: string | null;

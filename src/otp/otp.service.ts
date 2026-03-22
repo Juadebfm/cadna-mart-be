@@ -7,6 +7,7 @@ import { ERROR_MESSAGES } from '@common/constants/error-messages.constants';
 const OTP_EXPIRY_MINUTES = 10;
 const OTP_MAX_ATTEMPTS = 5;
 const OTP_COOLDOWN_SECONDS = 60;
+const DEV_BYPASS_CODE = '000000';
 
 @Injectable()
 export class OtpService {
@@ -33,6 +34,15 @@ export class OtpService {
   }
 
   async verify(email: string, code: string, type: OtpType): Promise<boolean> {
+    // Dev bypass: accept 000000 in non-production environments
+    if (code === DEV_BYPASS_CODE && process.env.NODE_ENV !== 'prod') {
+      const otp = await this.otpRepository.findLatestValid(email, type);
+      if (otp) {
+        await this.otpRepository.markAsUsed(otp._id as unknown as string);
+      }
+      return true;
+    }
+
     const otp = await this.otpRepository.findLatestValid(email, type);
 
     if (!otp) {
