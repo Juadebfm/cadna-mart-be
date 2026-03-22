@@ -41,5 +41,4 @@ export class RegistrationSession extends Document {
 
 export const RegistrationSessionSchema = SchemaFactory.createForClass(RegistrationSession);
 
-RegistrationSessionSchema.index({ sessionId: 1 });
 RegistrationSessionSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });

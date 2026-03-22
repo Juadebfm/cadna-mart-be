@@ -27,6 +27,9 @@ export class Review extends BaseSchema {
 
   @Prop({ default: false })
   isVerifiedPurchase!: boolean;
+
+  @Prop({ default: 0 })
+  helpfulCount!: number;
 }
 
 export const ReviewSchema = SchemaFactory.createForClass(Review);

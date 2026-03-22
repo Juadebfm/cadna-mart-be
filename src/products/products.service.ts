@@ -70,6 +70,41 @@ export class ProductsService {
     return this.productsRepository.findBySection(section, limit);
   }
 
+  async findBySeller(sellerSlug: string, query: ProductQueryDto) {
+    const seller = await this.productsRepository.productModel.db
+      .collection('stores')
+      .findOne({ slug: sellerSlug, deletedAt: null });
+
+    if (!seller) throw new NotFoundException('Seller not found');
+
+    const sellerId = seller._id.toString();
+    const { items, totalItems } = await this.productsRepository.findBySellerWithPagination(
+      sellerId,
+      query,
+    );
+
+    const totalPages = Math.ceil(totalItems / query.limit);
+
+    return {
+      seller: {
+        id: sellerId,
+        name: seller.name,
+        slug: seller.slug,
+        logoUrl: seller.logoUrl ?? null,
+        isVerified: seller.isVerified ?? false,
+      },
+      items: items.map((p: Product) => this.toCard(p)),
+      pagination: {
+        page: query.page,
+        limit: query.limit,
+        totalItems,
+        totalPages,
+        hasNextPage: query.page < totalPages,
+        hasPrevPage: query.page > 1,
+      },
+    };
+  }
+
   private toMoney(amount: number) {
     return {
       amount,
@@ -137,9 +172,10 @@ export class ProductsService {
       sections: dto.sections ?? [],
       inventoryStatus: dto.inventoryStatus ?? 'in_stock',
       isActive: dto.isActive ?? true,
-      store: dto.storeId as any,
+      seller: dto.sellerId as any,
       category: (dto.categoryId as any) ?? null,
       subCategory: (dto.subCategoryId as any) ?? null,
+      returnPolicy: dto.returnPolicy ?? null,
       rating: 0,
       reviewCount: 0,
       salesCount: 0,
@@ -154,12 +190,12 @@ export class ProductsService {
     dto: UpdateProductDto,
     currentUser: { userId: string; accountType: string },
   ) {
-    const product = await this.productsRepository.findByIdWithStoreOwner(id);
+    const product = await this.productsRepository.findByIdWithSellerOwner(id);
     if (!product) throw new NotFoundException('Product not found');
 
     if (currentUser.accountType !== AccountType.ADMIN) {
-      const storeOwner = (product.store as any)?.owner?.toString();
-      if (storeOwner !== currentUser.userId) {
+      const sellerOwner = (product.seller as any)?.owner?.toString();
+      if (sellerOwner !== currentUser.userId) {
         throw new ForbiddenException('You do not own this product');
       }
     }
@@ -185,6 +221,7 @@ export class ProductsService {
     if (dto.categoryId !== undefined) updates.category = dto.categoryId;
     if (dto.subCategoryId !== undefined) updates.subCategory = dto.subCategoryId;
     if (dto.defaultVariantId !== undefined) updates.defaultVariantId = dto.defaultVariantId;
+    if (dto.returnPolicy !== undefined) updates.returnPolicy = dto.returnPolicy;
 
     if (dto.priceAmount !== undefined) updates.price = this.toMoney(dto.priceAmount);
     if (dto.originalPriceAmount !== undefined) {
@@ -219,12 +256,12 @@ export class ProductsService {
     id: string,
     currentUser: { userId: string; accountType: string },
   ): Promise<void> {
-    const product = await this.productsRepository.findByIdWithStoreOwner(id);
+    const product = await this.productsRepository.findByIdWithSellerOwner(id);
     if (!product) throw new NotFoundException('Product not found');
 
     if (currentUser.accountType !== AccountType.ADMIN) {
-      const storeOwner = (product.store as any)?.owner?.toString();
-      if (storeOwner !== currentUser.userId) {
+      const sellerOwner = (product.seller as any)?.owner?.toString();
+      if (sellerOwner !== currentUser.userId) {
         throw new ForbiddenException('You do not own this product');
       }
     }
@@ -234,7 +271,7 @@ export class ProductsService {
 
   toCard(product: Product) {
     const id = (product as unknown as { _id: { toString(): string } })._id.toString();
-    const store = product.store as unknown as {
+    const seller = product.seller as unknown as {
       _id: { toString(): string };
       name: string;
       slug: string;
@@ -257,13 +294,13 @@ export class ProductsService {
       reviewCount: product.reviewCount,
       inventoryStatus: product.inventoryStatus,
       badge: product.badge,
-      store: store
+      seller: seller
         ? {
-            id: store._id.toString(),
-            name: store.name,
-            isVerified: store.isVerified,
-            location: store.location,
-            deliveryTimeRange: store.deliveryTimeRange,
+            id: seller._id.toString(),
+            name: seller.name,
+            isVerified: seller.isVerified,
+            location: seller.location,
+            deliveryTimeRange: seller.deliveryTimeRange,
           }
         : null,
     };
@@ -271,7 +308,7 @@ export class ProductsService {
 
   private toDetail(product: Product, variantId?: string) {
     const id = (product as unknown as { _id: { toString(): string } })._id.toString();
-    const store = product.store as unknown as {
+    const seller = product.seller as unknown as {
       _id: { toString(): string };
       name: string;
       slug: string;
@@ -281,6 +318,7 @@ export class ProductsService {
       averageRating: number;
       joinedYear: number;
       reviewCount: number;
+      followerCount: number;
       location: string | null;
       deliveryTimeRange: string | null;
     } | null;
@@ -313,19 +351,21 @@ export class ProductsService {
       descriptionHtml: product.descriptionHtml,
       tabs: product.tabs,
       specifications: product.specifications,
-      store: store
+      returnPolicy: product.returnPolicy,
+      seller: seller
         ? {
-            id: store._id.toString(),
-            name: store.name,
-            logoUrl: store.logoUrl ?? null,
-            isVerified: store.isVerified,
-            responseRatePercent: store.responseRatePercent,
-            rating: store.averageRating,
-            joinedYear: store.joinedYear,
-            reviewCount: store.reviewCount,
-            location: store.location ?? null,
-            deliveryTimeRange: store.deliveryTimeRange ?? null,
-            storeUrl: `/stores/${store.slug}`,
+            id: seller._id.toString(),
+            name: seller.name,
+            logoUrl: seller.logoUrl ?? null,
+            isVerified: seller.isVerified,
+            responseRatePercent: seller.responseRatePercent,
+            rating: seller.averageRating,
+            joinedYear: seller.joinedYear,
+            reviewCount: seller.reviewCount,
+            followerCount: seller.followerCount,
+            location: seller.location ?? null,
+            deliveryTimeRange: seller.deliveryTimeRange ?? null,
+            sellerUrl: `/sellers/${seller.slug}`,
           }
         : null,
     };

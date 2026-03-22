@@ -32,7 +32,7 @@
       "@registration-session/*": ["src/registration-session/*"],
       "@categories/*": ["src/categories/*"],
       "@products/*": ["src/products/*"],
-      "@stores/*": ["src/stores/*"],
+      "@sellers/*": ["src/sellers/*"],
       "@reviews/*": ["src/reviews/*"],
       "@banners/*": ["src/banners/*"],
       "@home/*": ["src/home/*"],

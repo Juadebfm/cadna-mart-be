@@ -3,9 +3,10 @@ import { config as dotenvConfig } from 'dotenv';
 import { resolve } from 'path';
 import mongoose, { Model, Schema, Types } from 'mongoose';
 import { User, UserSchema } from '../users/schemas/user.schema';
-import { Store, StoreSchema } from '../stores/schemas/store.schema';
+import { Seller, SellerSchema } from '../sellers/schemas/seller.schema';
 import { Category, CategorySchema } from '../categories/schemas/category.schema';
 import { Product, ProductSchema } from '../products/schemas/product.schema';
+import { Review, ReviewSchema } from '../reviews/schemas/review.schema';
 import { AccountType } from '../users/enums/account-type.enum';
 import { AuthProvider } from '../users/enums/auth-provider.enum';
 
@@ -167,37 +168,37 @@ const CATEGORY_SEEDS: CategorySeed[] = [
   {
     name: 'Electronics',
     slug: 'electronics',
-    iconUrl: 'https://cdn.cadnamart.dev/categories/electronics.png',
+    iconUrl: 'https://images.unsplash.com/photo-1626806819282-2c1dc01a5e0c?w=200&h=200&fit=crop',
     order: 1,
   },
   {
     name: 'Home & Living',
     slug: 'home-living',
-    iconUrl: 'https://cdn.cadnamart.dev/categories/home-living.png',
+    iconUrl: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=200&h=200&fit=crop',
     order: 2,
   },
   {
     name: 'Beauty',
     slug: 'beauty',
-    iconUrl: 'https://cdn.cadnamart.dev/categories/beauty.png',
+    iconUrl: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=200&h=200&fit=crop',
     order: 3,
   },
   {
     name: 'Groceries',
     slug: 'groceries',
-    iconUrl: 'https://cdn.cadnamart.dev/categories/groceries.png',
+    iconUrl: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=200&h=200&fit=crop',
     order: 4,
   },
   {
     name: 'Gadgets',
     slug: 'gadgets',
-    iconUrl: 'https://cdn.cadnamart.dev/categories/gadgets.png',
+    iconUrl: 'https://images.unsplash.com/photo-1605236453806-6ff36851218e?w=200&h=200&fit=crop',
     order: 5,
   },
   {
     name: 'Fashion',
     slug: 'fashion',
-    iconUrl: 'https://cdn.cadnamart.dev/categories/fashion.png',
+    iconUrl: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=200&h=200&fit=crop',
     order: 6,
   },
 ];
@@ -207,89 +208,89 @@ const SUB_CATEGORY_SEEDS: SubCategorySeed[] = [
     name: 'TV & Audio',
     slug: 'tv-audio',
     parentSlug: 'electronics',
-    iconUrl: 'https://cdn.cadnamart.dev/categories/tv-audio.png',
+    iconUrl: 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=200&h=200&fit=crop',
     order: 101,
   },
   {
     name: 'Computing',
     slug: 'computing',
     parentSlug: 'electronics',
-    iconUrl: 'https://cdn.cadnamart.dev/categories/computing.png',
+    iconUrl: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=200&h=200&fit=crop',
     order: 102,
   },
   {
     name: 'Kitchen',
     slug: 'kitchen',
     parentSlug: 'home-living',
-    iconUrl: 'https://cdn.cadnamart.dev/categories/kitchen.png',
+    iconUrl: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=200&h=200&fit=crop',
     order: 201,
   },
   {
     name: 'Furniture',
     slug: 'furniture',
     parentSlug: 'home-living',
-    iconUrl: 'https://cdn.cadnamart.dev/categories/furniture.png',
+    iconUrl: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=200&h=200&fit=crop',
     order: 202,
   },
   {
     name: 'Skincare',
     slug: 'skincare',
     parentSlug: 'beauty',
-    iconUrl: 'https://cdn.cadnamart.dev/categories/skincare.png',
+    iconUrl: 'https://images.unsplash.com/photo-1570194065650-d99fb4b38b17?w=200&h=200&fit=crop',
     order: 301,
   },
   {
     name: 'Haircare',
     slug: 'haircare',
     parentSlug: 'beauty',
-    iconUrl: 'https://cdn.cadnamart.dev/categories/haircare.png',
+    iconUrl: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=200&h=200&fit=crop',
     order: 302,
   },
   {
     name: 'Pantry',
     slug: 'pantry',
     parentSlug: 'groceries',
-    iconUrl: 'https://cdn.cadnamart.dev/categories/pantry.png',
+    iconUrl: 'https://images.unsplash.com/photo-1584568694244-14fbdf83bd30?w=200&h=200&fit=crop',
     order: 401,
   },
   {
     name: 'Beverages',
     slug: 'beverages',
     parentSlug: 'groceries',
-    iconUrl: 'https://cdn.cadnamart.dev/categories/beverages.png',
+    iconUrl: 'https://images.unsplash.com/photo-1544145945-f90425340c7e?w=200&h=200&fit=crop',
     order: 402,
   },
   {
     name: 'Smart Devices',
     slug: 'smart-devices',
     parentSlug: 'gadgets',
-    iconUrl: 'https://cdn.cadnamart.dev/categories/smart-devices.png',
+    iconUrl: 'https://images.unsplash.com/photo-1558089687-f282ffcbc126?w=200&h=200&fit=crop',
     order: 501,
   },
   {
     name: 'Accessories',
     slug: 'accessories',
     parentSlug: 'gadgets',
-    iconUrl: 'https://cdn.cadnamart.dev/categories/accessories.png',
+    iconUrl: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200&h=200&fit=crop',
     order: 502,
   },
   {
     name: 'Men',
     slug: 'men-fashion',
     parentSlug: 'fashion',
-    iconUrl: 'https://cdn.cadnamart.dev/categories/men-fashion.png',
+    iconUrl: 'https://images.unsplash.com/photo-1617137968427-85924c800a22?w=200&h=200&fit=crop',
     order: 601,
   },
   {
     name: 'Women',
     slug: 'women-fashion',
     parentSlug: 'fashion',
-    iconUrl: 'https://cdn.cadnamart.dev/categories/women-fashion.png',
+    iconUrl: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=200&h=200&fit=crop',
     order: 602,
   },
 ];
 
-const STORE_BY_CATEGORY: Record<string, string> = {
+const SELLER_BY_CATEGORY: Record<string, string> = {
   electronics: 'steppers-store-ng',
   'home-living': 'home-haven',
   beauty: 'glow-hub',
@@ -907,6 +908,71 @@ const PRODUCTS: ProductSeed[] = [
   },
 ];
 
+// ─── Review Seed Data ─────────────────────────────────────────
+
+const REVIEWER_NAMES = [
+  'Chioma A.',
+  'Emeka O.',
+  'Fatima B.',
+  'Tunde M.',
+  'Blessing I.',
+  'Yusuf K.',
+  'Grace N.',
+  'Ibrahim S.',
+  'Ngozi E.',
+  'David O.',
+  'Aisha M.',
+  'Kemi L.',
+  'Chidi U.',
+  'Funke A.',
+  'Segun T.',
+];
+
+const REVIEW_COMMENTS: Record<string, string[]> = {
+  electronics: [
+    'Great picture quality and easy to set up. Very happy with this purchase.',
+    'Sound quality is excellent, exceeded my expectations for the price.',
+    'Good value for money. Works perfectly with my home setup.',
+    'Delivery was fast and the product was well packaged. No complaints.',
+    'Been using for 3 months now, still works like new. Highly recommend.',
+  ],
+  'home-living': [
+    'Very comfortable and looks great in my living room.',
+    'Quality is excellent for the price. Assembly was straightforward.',
+    'Exactly as described. My family loves it.',
+    'Good build quality. Would recommend to friends.',
+    'Perfect addition to our home. Very satisfied with the purchase.',
+  ],
+  beauty: [
+    'My skin feels so much smoother after just two weeks of use.',
+    'Love this product! No irritation and results are visible.',
+    'Great formula, absorbs quickly and smells lovely.',
+    'Been using for a month, definitely seeing improvement.',
+    'Perfect for my skin type. Will definitely repurchase.',
+  ],
+  groceries: [
+    'Fresh and well-packaged on arrival. Great quality.',
+    'My family loves this product. We buy it every month.',
+    'Good value for money. Tastes great and cooks well.',
+    'Always reliable quality. Fast delivery too.',
+    'Excellent product, exactly what we needed for our kitchen.',
+  ],
+  gadgets: [
+    'Battery life is amazing! Easily lasts the whole day.',
+    'Sleek design and very responsive. Love the features.',
+    'Pairs quickly with my phone. Sound quality is top-notch.',
+    'Great build quality for the price point. Very impressed.',
+    'Using daily for workouts. Comfortable and accurate tracking.',
+  ],
+  fashion: [
+    'Perfect fit and the material feels premium. Very comfortable.',
+    'Looks even better in person. Got many compliments.',
+    'Great quality fabric, washes well and no fading.',
+    'True to size and very comfortable for all-day wear.',
+    'Beautiful piece, exactly as shown in the pictures.',
+  ],
+};
+
 // ─── Utility Functions ─────────────────────────────────────────
 
 function getModel<T>(name: string, schema: Schema): Model<T> {
@@ -928,13 +994,61 @@ function slugify(value: string): string {
     .replace(/^-+|-+$/g, '');
 }
 
-function clamp(value: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, value));
-}
-
 function placeholderUrl(label: string, w = 600, h = 600): string {
   const clean = label.replace(/['"]/g, '').replace(/\s+/g, '+');
   return `https://placehold.co/${w}x${h}/e2e8f0/475569?text=${clean}`;
+}
+
+function getReturnPolicy(categorySlug: string): {
+  eligible: boolean;
+  returnWindow: number;
+  conditions: string;
+} {
+  switch (categorySlug) {
+    case 'electronics':
+      return {
+        eligible: true,
+        returnWindow: 7,
+        conditions: 'Item must be in original packaging with all accessories',
+      };
+    case 'gadgets':
+      return {
+        eligible: true,
+        returnWindow: 7,
+        conditions: 'Item must be in original packaging with all accessories',
+      };
+    case 'home-living':
+      return {
+        eligible: true,
+        returnWindow: 14,
+        conditions: 'Item must be unused and in original packaging',
+      };
+    case 'fashion':
+      return {
+        eligible: true,
+        returnWindow: 14,
+        conditions: 'Item must be unworn with tags attached',
+      };
+    case 'beauty':
+      return { eligible: true, returnWindow: 7, conditions: 'Item must be unopened and sealed' };
+    case 'groceries':
+      return {
+        eligible: false,
+        returnWindow: 0,
+        conditions: 'Perishable items are not eligible for return',
+      };
+    default:
+      return {
+        eligible: true,
+        returnWindow: 7,
+        conditions: 'Item must be in original packaging with all accessories',
+      };
+  }
+}
+
+function getCategorySlugForProduct(_product: any, productIndex: number): string {
+  if (productIndex < PRODUCTS.length) return PRODUCTS[productIndex].categorySlug;
+  return 'electronics';
 }
 
 // ─── Variant Builders ──────────────────────────────────────────
@@ -1036,6 +1150,7 @@ function buildVariants(
 
   if (seed.variantType === 'none') {
     const variantId = `${baseSlug}-default`;
+    const outOfStock = index % 20 === 0;
     return {
       variantAxes: [],
       variants: [
@@ -1044,8 +1159,8 @@ function buildVariants(
           sku: seed.skuCode,
           attributes: {},
           price: formatMoney(baseAmount),
-          stockQty: 15 + (index % 20),
-          isInStock: true,
+          stockQty: outOfStock ? 0 : 15 + (index % 20),
+          isInStock: !outOfStock,
           images: [img1],
         },
       ],
@@ -1064,15 +1179,23 @@ function buildVariants(
       displayName: 'RAM / Storage',
       options: storageOptions.map(({ id, label }) => ({ id, label, swatchHex: null })),
     };
-    const variants: ProductVariant[] = storageOptions.map((opt, i) => ({
-      id: `${baseSlug}-${opt.id}`,
-      sku: `${seed.skuCode}-${opt.id.toUpperCase()}`,
-      attributes: { storage: opt.id },
-      price: formatMoney(baseAmount + opt.priceDelta),
-      stockQty: 5 + ((index + i) % 12),
-      isInStock: true,
-      images: [img1],
-    }));
+    const variants: ProductVariant[] = storageOptions.map((opt, variantIndex) => {
+      const outOfStock = (index + variantIndex) % 7 === 0;
+      const lowStock = !outOfStock && (index + variantIndex) % 5 === 0;
+      return {
+        id: `${baseSlug}-${opt.id}`,
+        sku: `${seed.skuCode}-${opt.id.toUpperCase()}`,
+        attributes: { storage: opt.id },
+        price: formatMoney(baseAmount + opt.priceDelta),
+        stockQty: outOfStock
+          ? 0
+          : lowStock
+            ? 1 + ((index + variantIndex) % 5)
+            : 5 + ((index + variantIndex) % 12),
+        isInStock: !outOfStock,
+        images: [img1],
+      };
+    });
     return { variantAxes: [axis], variants, defaultVariantId: variants[0].id };
   }
 
@@ -1099,15 +1222,23 @@ function buildVariants(
       displayName: 'Size',
       options: sizeOptions.map(({ id, label }) => ({ id, label, swatchHex: null })),
     };
-    const variants: ProductVariant[] = sizeOptions.map((opt, i) => ({
-      id: `${baseSlug}-${opt.id}`,
-      sku: `${seed.skuCode}-${opt.id.toUpperCase()}`,
-      attributes: { size: opt.id },
-      price: formatMoney(baseAmount + opt.priceDelta),
-      stockQty: 20 + ((index + i) % 30),
-      isInStock: true,
-      images: [img1],
-    }));
+    const variants: ProductVariant[] = sizeOptions.map((opt, variantIndex) => {
+      const outOfStock = (index + variantIndex) % 7 === 0;
+      const lowStock = !outOfStock && (index + variantIndex) % 5 === 0;
+      return {
+        id: `${baseSlug}-${opt.id}`,
+        sku: `${seed.skuCode}-${opt.id.toUpperCase()}`,
+        attributes: { size: opt.id },
+        price: formatMoney(baseAmount + opt.priceDelta),
+        stockQty: outOfStock
+          ? 0
+          : lowStock
+            ? 1 + ((index + variantIndex) % 5)
+            : 20 + ((index + variantIndex) % 30),
+        isInStock: !outOfStock,
+        images: [img1],
+      };
+    });
     return { variantAxes: [axis], variants, defaultVariantId: variants[0].id };
   }
 
@@ -1140,30 +1271,46 @@ function buildVariants(
       displayName: 'Pack Size',
       options: weightOptions.map(({ id, label }) => ({ id, label, swatchHex: null })),
     };
-    const variants: ProductVariant[] = weightOptions.map((opt, i) => ({
-      id: `${baseSlug}-${opt.id}`,
-      sku: `${seed.skuCode}-${opt.id.toUpperCase()}`,
-      attributes: { size: opt.id },
-      price: formatMoney(baseAmount + opt.priceDelta),
-      stockQty: 50 + ((index + i) % 80),
-      isInStock: true,
-      images: [img1],
-    }));
+    const variants: ProductVariant[] = weightOptions.map((opt, variantIndex) => {
+      const outOfStock = (index + variantIndex) % 7 === 0;
+      const lowStock = !outOfStock && (index + variantIndex) % 5 === 0;
+      return {
+        id: `${baseSlug}-${opt.id}`,
+        sku: `${seed.skuCode}-${opt.id.toUpperCase()}`,
+        attributes: { size: opt.id },
+        price: formatMoney(baseAmount + opt.priceDelta),
+        stockQty: outOfStock
+          ? 0
+          : lowStock
+            ? 1 + ((index + variantIndex) % 5)
+            : 50 + ((index + variantIndex) % 80),
+        isInStock: !outOfStock,
+        images: [img1],
+      };
+    });
     return { variantAxes: [axis], variants, defaultVariantId: variants[0].id };
   }
 
   if (seed.variantType === 'colour') {
     const colours = getColourPalette(seed.name, seed.subCategorySlug).slice(0, 3);
     const axis: VariantAxis = { name: 'colour', displayName: 'Colour', options: colours };
-    const variants: ProductVariant[] = colours.map((c, i) => ({
-      id: `${baseSlug}-${c.id}`,
-      sku: `${seed.skuCode}-${c.id.toUpperCase().replace(/-/g, '')}`,
-      attributes: { colour: c.id },
-      price: formatMoney(baseAmount),
-      stockQty: 8 + ((index + i) % 20),
-      isInStock: true,
-      images: [placeholderUrl(`${seed.name} - ${c.label}`, 800, 800)],
-    }));
+    const variants: ProductVariant[] = colours.map((c, variantIndex) => {
+      const outOfStock = (index + variantIndex) % 7 === 0;
+      const lowStock = !outOfStock && (index + variantIndex) % 5 === 0;
+      return {
+        id: `${baseSlug}-${c.id}`,
+        sku: `${seed.skuCode}-${c.id.toUpperCase().replace(/-/g, '')}`,
+        attributes: { colour: c.id },
+        price: formatMoney(baseAmount),
+        stockQty: outOfStock
+          ? 0
+          : lowStock
+            ? 1 + ((index + variantIndex) % 5)
+            : 8 + ((index + variantIndex) % 20),
+        isInStock: !outOfStock,
+        images: [placeholderUrl(`${seed.name} - ${c.label}`, 800, 800)],
+      };
+    });
     return { variantAxes: [axis], variants, defaultVariantId: variants[0].id };
   }
 
@@ -1193,16 +1340,26 @@ function buildVariants(
       options: sizes.map(({ id, label }) => ({ id, label, swatchHex: null })),
     };
 
-    const variants: ProductVariant[] = colours.flatMap((colour, ci) =>
-      sizes.map((size, si) => ({
-        id: `${baseSlug}-${colour.id}-${size.id}`,
-        sku: `${seed.skuCode}-${colour.id.toUpperCase().replace(/-/g, '').slice(0, 4)}-${size.id.toUpperCase()}`,
-        attributes: { colour: colour.id, size: size.id },
-        price: formatMoney(baseAmount + size.priceDelta),
-        stockQty: 6 + ((index + ci + si) % 15),
-        isInStock: true,
-        images: [placeholderUrl(`${seed.name} - ${colour.label}`, 800, 800)],
-      })),
+    let flatIndex = 0;
+    const variants: ProductVariant[] = colours.flatMap((colour) =>
+      sizes.map((size) => {
+        const variantIndex = flatIndex++;
+        const outOfStock = (index + variantIndex) % 7 === 0;
+        const lowStock = !outOfStock && (index + variantIndex) % 5 === 0;
+        return {
+          id: `${baseSlug}-${colour.id}-${size.id}`,
+          sku: `${seed.skuCode}-${colour.id.toUpperCase().replace(/-/g, '').slice(0, 4)}-${size.id.toUpperCase()}`,
+          attributes: { colour: colour.id, size: size.id },
+          price: formatMoney(baseAmount + size.priceDelta),
+          stockQty: outOfStock
+            ? 0
+            : lowStock
+              ? 1 + ((index + variantIndex) % 5)
+              : 6 + ((index + variantIndex) % 15),
+          isInStock: !outOfStock,
+          images: [placeholderUrl(`${seed.name} - ${colour.label}`, 800, 800)],
+        };
+      }),
     );
 
     return { variantAxes: [colourAxis, sizeAxis], variants, defaultVariantId: variants[0].id };
@@ -1409,18 +1566,17 @@ async function seedUsers(userModel: Model<User>): Promise<Map<string, Types.Obje
   return ownerIds;
 }
 
-async function seedStores(
-  storeModel: Model<Store>,
+async function seedSellers(
+  sellerModel: Model<Seller>,
   ownerIdsByStoreSlug: Map<string, Types.ObjectId>,
 ): Promise<Map<string, Types.ObjectId>> {
-  const storeIds = new Map<string, Types.ObjectId>();
+  const sellerIds = new Map<string, Types.ObjectId>();
 
   for (const [index, seller] of SELLERS.entries()) {
     const ownerId = ownerIdsByStoreSlug.get(seller.storeSlug);
-    if (!ownerId) throw new Error(`Missing owner id for store: ${seller.storeSlug}`);
+    if (!ownerId) throw new Error(`Missing owner id for seller: ${seller.storeSlug}`);
 
-    const averageRating = clamp(4.2 + (index % 5) * 0.12, 0, 5);
-    const store = await storeModel
+    const doc = await sellerModel
       .findOneAndUpdate(
         { slug: seller.storeSlug },
         {
@@ -1429,10 +1585,10 @@ async function seedStores(
             slug: seller.storeSlug,
             logoUrl: placeholderUrl(seller.storeName, 200, 200),
             owner: ownerId,
-            isVerified: true,
+            isVerified: index < 4,
             responseRatePercent: 92 + (index % 6),
-            averageRating: Math.round(averageRating * 10) / 10,
-            reviewCount: 800 + index * 125,
+            averageRating: 0,
+            reviewCount: 0,
             joinedYear: seller.joinedYear,
             location: seller.location,
             deliveryTimeRange: seller.deliveryTimeRange,
@@ -1445,11 +1601,11 @@ async function seedStores(
       .select('_id')
       .exec();
 
-    if (!store?._id) throw new Error(`Failed to upsert store: ${seller.storeSlug}`);
-    storeIds.set(seller.storeSlug, new Types.ObjectId(String(store._id)));
+    if (!doc?._id) throw new Error(`Failed to upsert seller: ${seller.storeSlug}`);
+    sellerIds.set(seller.storeSlug, new Types.ObjectId(String(doc._id)));
   }
 
-  return storeIds;
+  return sellerIds;
 }
 
 async function seedCategories(categoryModel: Model<Category>): Promise<CategorySeedResult> {
@@ -1466,7 +1622,7 @@ async function seedCategories(categoryModel: Model<Category>): Promise<CategoryS
           $set: {
             name: category.name,
             slug: category.slug,
-            iconUrl: placeholderUrl(category.name, 80, 80),
+            iconUrl: category.iconUrl,
             parent: null,
             order: category.order,
             isActive: true,
@@ -1495,7 +1651,7 @@ async function seedCategories(categoryModel: Model<Category>): Promise<CategoryS
           $set: {
             name: subCategory.name,
             slug: subCategory.slug,
-            iconUrl: placeholderUrl(subCategory.name, 80, 80),
+            iconUrl: subCategory.iconUrl,
             parent: parentId,
             order: subCategory.order,
             isActive: true,
@@ -1519,7 +1675,7 @@ async function seedCategories(categoryModel: Model<Category>): Promise<CategoryS
 async function seedProducts(
   productModel: Model<Product>,
   categorySeedResult: CategorySeedResult,
-  storeIdsBySlug: Map<string, Types.ObjectId>,
+  sellerIdsBySlug: Map<string, Types.ObjectId>,
 ): Promise<{ inserted: number; updated: number }> {
   let inserted = 0;
   let updated = 0;
@@ -1527,10 +1683,10 @@ async function seedProducts(
   for (const [index, seed] of PRODUCTS.entries()) {
     const categoryId = categorySeedResult.parentIds.get(seed.categorySlug);
     const subCategoryId = categorySeedResult.subCategoryIds.get(seed.subCategorySlug);
-    const storeSlug = STORE_BY_CATEGORY[seed.categorySlug];
-    const storeId = storeIdsBySlug.get(storeSlug);
+    const sellerSlug = SELLER_BY_CATEGORY[seed.categorySlug];
+    const sellerId = sellerIdsBySlug.get(sellerSlug);
 
-    if (!categoryId || !subCategoryId || !storeId) {
+    if (!categoryId || !subCategoryId || !sellerId) {
       throw new Error(`Missing relation for product seed "${seed.name}"`);
     }
 
@@ -1549,6 +1705,15 @@ async function seedProducts(
     );
     const tabs = buildTabs(seed);
     const specifications = buildSpecifications(seed);
+
+    // Compute inventory status from variants
+    const allOutOfStock = variants.every((v) => !v.isInStock);
+    const anyLowStock = variants.some((v) => v.stockQty > 0 && v.stockQty <= 5);
+    const computedInventoryStatus = allOutOfStock
+      ? 'out_of_stock'
+      : anyLowStock
+        ? 'low_stock'
+        : 'in_stock';
 
     const categoryName = categorySeedResult.parentNames.get(seed.categorySlug) ?? 'Category';
     const subCategoryName =
@@ -1604,11 +1769,12 @@ async function seedProducts(
           ],
           rating,
           reviewCount,
-          inventoryStatus: 'in_stock',
+          inventoryStatus: computedInventoryStatus,
+          returnPolicy: getReturnPolicy(seed.categorySlug),
           badge: seed.badge ?? null,
           category: categoryId,
           subCategory: subCategoryId,
-          store: storeId,
+          seller: sellerId,
           sections,
           isActive: true,
           salesCount,
@@ -1651,6 +1817,93 @@ async function syncCategoryCounts(
   await Promise.all(tasks);
 }
 
+async function seedReviews(
+  reviewModel: Model<Review>,
+  productModel: Model<Product>,
+  sellerModel: Model<Seller>,
+): Promise<number> {
+  // Clear existing seed reviews
+  await reviewModel.deleteMany({ reviewerName: { $in: REVIEWER_NAMES } });
+
+  const products = await productModel
+    .find({ slug: /-seed$/, deletedAt: null })
+    .select('_id category seller')
+    .lean()
+    .exec();
+
+  // We need to create fake user IDs for reviews (since reviews require a user ref)
+  // Use deterministic ObjectIds based on reviewer index
+  const fakeUserIds = REVIEWER_NAMES.map(
+    (_, i) => new Types.ObjectId(`aaaaaaaaaaaa${String(i).padStart(12, '0')}`),
+  );
+
+  let totalReviews = 0;
+
+  for (const [productIndex, product] of products.entries()) {
+    const reviewCount = 3 + (productIndex % 3); // 3-5 reviews
+    const categorySlug = getCategorySlugForProduct(product, productIndex);
+    const comments = REVIEW_COMMENTS[categorySlug] || REVIEW_COMMENTS.electronics;
+
+    const reviews = [];
+    for (let i = 0; i < reviewCount; i++) {
+      const reviewerIndex = (productIndex * 3 + i) % REVIEWER_NAMES.length;
+      const rating = [5, 4, 5, 4, 3, 5, 4, 5, 5, 4][(productIndex + i) % 10];
+      reviews.push({
+        product: product._id,
+        user: fakeUserIds[reviewerIndex],
+        rating,
+        title: rating >= 4 ? 'Great product!' : 'Decent product',
+        comment: comments[i % comments.length],
+        reviewerName: REVIEWER_NAMES[reviewerIndex],
+        isVerifiedPurchase: (productIndex + i) % 3 !== 0,
+        deletedAt: null,
+      });
+    }
+
+    await reviewModel.insertMany(reviews);
+    totalReviews += reviews.length;
+
+    // Update product rating and reviewCount
+    const stats = await reviewModel.aggregate([
+      { $match: { product: product._id, deletedAt: null } },
+      { $group: { _id: null, avg: { $avg: '$rating' }, count: { $sum: 1 } } },
+    ]);
+    if (stats.length > 0) {
+      await productModel.updateOne(
+        { _id: product._id },
+        { $set: { rating: Math.round(stats[0].avg * 10) / 10, reviewCount: stats[0].count } },
+      );
+    }
+  }
+
+  // Update seller aggregate ratings
+  const sellers = await sellerModel.find({ deletedAt: null }).select('_id').lean().exec();
+  for (const seller of sellers) {
+    const sellerProducts = await productModel
+      .find({ seller: seller._id, deletedAt: null })
+      .select('_id')
+      .lean()
+      .exec();
+    const productIds = sellerProducts.map((p: any) => p._id);
+
+    const stats = await reviewModel.aggregate([
+      { $match: { product: { $in: productIds }, deletedAt: null } },
+      { $group: { _id: null, avg: { $avg: '$rating' }, count: { $sum: 1 } } },
+    ]);
+
+    if (stats.length > 0) {
+      await sellerModel.updateOne(
+        { _id: seller._id },
+        {
+          $set: { averageRating: Math.round(stats[0].avg * 10) / 10, reviewCount: stats[0].count },
+        },
+      );
+    }
+  }
+
+  return totalReviews;
+}
+
 // ─── Entry Point ───────────────────────────────────────────────
 
 async function run(): Promise<void> {
@@ -1669,22 +1922,26 @@ async function run(): Promise<void> {
   await mongoose.connect(mongoUri);
 
   const userModel = getModel<User>(User.name, UserSchema);
-  const storeModel = getModel<Store>(Store.name, StoreSchema);
+  const sellerModel = getModel<Seller>(Seller.name, SellerSchema);
   const categoryModel = getModel<Category>(Category.name, CategorySchema);
   const productModel = getModel<Product>(Product.name, ProductSchema);
+  const reviewModel = getModel<Review>(Review.name, ReviewSchema);
 
-  console.log('[seed-products] Seeding users and stores...');
+  console.log('[seed-products] Seeding users and sellers...');
   const ownerIds = await seedUsers(userModel);
-  const storeIds = await seedStores(storeModel, ownerIds);
+  const sellerIds = await seedSellers(sellerModel, ownerIds);
 
   console.log('[seed-products] Seeding categories...');
   const categorySeedResult = await seedCategories(categoryModel);
 
   console.log(`[seed-products] Seeding ${PRODUCTS.length} products...`);
-  const { inserted, updated } = await seedProducts(productModel, categorySeedResult, storeIds);
+  const { inserted, updated } = await seedProducts(productModel, categorySeedResult, sellerIds);
 
   console.log('[seed-products] Syncing category product counts...');
   await syncCategoryCounts(categoryModel, productModel, categorySeedResult);
+
+  console.log('[seed-products] Seeding reviews...');
+  const totalReviews = await seedReviews(reviewModel, productModel, sellerModel);
 
   const totalActive = await productModel.countDocuments({
     slug: /-seed$/,
@@ -1696,7 +1953,8 @@ async function run(): Promise<void> {
   console.log(`  Products inserted : ${inserted}`);
   console.log(`  Products updated  : ${updated}`);
   console.log(`  Active seeded     : ${totalActive}`);
-  console.log(`  Stores seeded     : ${SELLERS.length}`);
+  console.log(`  Sellers seeded    : ${SELLERS.length}`);
+  console.log(`  Reviews seeded    : ${totalReviews}`);
   console.log(
     `  Categories seeded : ${CATEGORY_SEEDS.length} parent + ${SUB_CATEGORY_SEEDS.length} sub`,
   );

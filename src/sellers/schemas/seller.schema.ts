@@ -5,8 +5,9 @@ import * as mongoose from 'mongoose';
 @Schema({
   timestamps: true,
   toJSON: { virtuals: true },
+  collection: 'stores',
 })
-export class Store extends BaseSchema {
+export class Seller extends BaseSchema {
   @Prop({ required: true, trim: true })
   name!: string;
 
@@ -31,6 +32,9 @@ export class Store extends BaseSchema {
   @Prop({ default: 0 })
   reviewCount!: number;
 
+  @Prop({ default: 0 })
+  followerCount!: number;
+
   @Prop({ type: Number, default: null })
   joinedYear!: number | null;
 
@@ -44,7 +48,6 @@ export class Store extends BaseSchema {
   isActive!: boolean;
 }
 
-export const StoreSchema = SchemaFactory.createForClass(Store);
+export const SellerSchema = SchemaFactory.createForClass(Seller);
 
-StoreSchema.index({ slug: 1 });
-StoreSchema.index({ owner: 1 });
+SellerSchema.index({ owner: 1 });

@@ -69,10 +69,10 @@ export class CreateProductDto {
   @ApiPropertyOptional() @IsString() @IsOptional() brand?: string;
   @ApiPropertyOptional() @IsString() @IsOptional() sku?: string;
 
-  @ApiProperty({ description: 'Store ID this product belongs to' })
+  @ApiProperty({ description: 'Seller ID this product belongs to' })
   @IsString()
   @IsNotEmpty()
-  storeId!: string;
+  sellerId!: string;
 
   @ApiPropertyOptional() @IsString() @IsOptional() categoryId?: string;
   @ApiPropertyOptional() @IsString() @IsOptional() subCategoryId?: string;
@@ -154,4 +154,9 @@ export class CreateProductDto {
   @ApiPropertyOptional() @IsBoolean() @IsOptional() isActive?: boolean;
 
   @ApiPropertyOptional() @IsString() @IsOptional() inventoryStatus?: string;
+
+  @ApiPropertyOptional({ description: 'Return policy for this product' })
+  @IsObject()
+  @IsOptional()
+  returnPolicy?: { eligible: boolean; returnWindow: number; conditions: string | null };
 }

@@ -175,8 +175,11 @@ export class Product extends BaseSchema {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Category', default: null })
   subCategory!: mongoose.Types.ObjectId | null;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Store', required: true })
-  store!: mongoose.Types.ObjectId;
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Seller', required: true })
+  seller!: mongoose.Types.ObjectId;
+
+  @Prop({ type: Object, default: null })
+  returnPolicy!: { eligible: boolean; returnWindow: number; conditions: string | null } | null;
 
   @Prop({ type: [String], default: [] })
   sections!: string[];
@@ -190,10 +193,9 @@ export class Product extends BaseSchema {
 
 export const ProductSchema = SchemaFactory.createForClass(Product);
 
-ProductSchema.index({ slug: 1 });
 ProductSchema.index({ category: 1 });
 ProductSchema.index({ subCategory: 1 });
-ProductSchema.index({ store: 1 });
+ProductSchema.index({ seller: 1 });
 ProductSchema.index({ sections: 1 });
 ProductSchema.index({ 'price.amount': 1 });
 ProductSchema.index({ rating: -1 });

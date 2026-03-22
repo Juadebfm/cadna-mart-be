@@ -31,6 +31,5 @@ export class Category extends BaseSchema {
 
 export const CategorySchema = SchemaFactory.createForClass(Category);
 
-CategorySchema.index({ slug: 1 });
 CategorySchema.index({ parent: 1 });
 CategorySchema.index({ order: 1 });

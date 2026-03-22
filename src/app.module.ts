@@ -14,7 +14,7 @@ import { SharedModule } from '@shared/shared.module';
 import { WebhooksModule } from './webhooks/webhooks.module';
 import { CategoriesModule } from '@categories/categories.module';
 import { ProductsModule } from '@products/products.module';
-import { StoresModule } from '@stores/stores.module';
+import { SellersModule } from '@sellers/sellers.module';
 import { ReviewsModule } from '@reviews/reviews.module';
 import { BannersModule } from '@banners/banners.module';
 import { HomeModule } from '@home/home.module';
@@ -53,7 +53,7 @@ import { AppService } from './app.service';
     WebhooksModule,
     CategoriesModule,
     ProductsModule,
-    StoresModule,
+    SellersModule,
     ReviewsModule,
     BannersModule,
     HomeModule,

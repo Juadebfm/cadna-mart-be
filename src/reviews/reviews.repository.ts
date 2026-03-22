@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, SortOrder as MongoSortOrder } from 'mongoose';
+import { Model, Types, SortOrder as MongoSortOrder } from 'mongoose';
 import { Review } from './schemas/review.schema';
 
 export type ReviewSortOption = 'most_recent' | 'highest_rating' | 'lowest_rating' | 'most_helpful';
@@ -8,6 +8,11 @@ export type ReviewSortOption = 'most_recent' | 'highest_rating' | 'lowest_rating
 @Injectable()
 export class ReviewsRepository {
   constructor(@InjectModel(Review.name) public readonly reviewModel: Model<Review>) {}
+
+  async create(data: Partial<Review>): Promise<Review> {
+    const review = new this.reviewModel(data);
+    return review.save() as unknown as Review;
+  }
 
   async findByProduct(
     productId: string,
@@ -27,18 +32,26 @@ export class ReviewsRepository {
     return { items: items as unknown as Review[], totalItems };
   }
 
+  async findByUserAndProduct(userId: string, productId: string): Promise<Review | null> {
+    return this.reviewModel
+      .findOne({ user: userId, product: productId, deletedAt: null })
+      .lean()
+      .exec() as unknown as Promise<Review | null>;
+  }
+
   async getSummary(productId: string): Promise<{
     averageRating: number;
     totalReviews: number;
     breakdown: Record<string, number>;
   }> {
+    const objectId = new Types.ObjectId(productId);
     const [stats, breakdownAgg] = await Promise.all([
       this.reviewModel.aggregate([
-        { $match: { product: productId, deletedAt: null } },
+        { $match: { product: objectId, deletedAt: null } },
         { $group: { _id: null, avg: { $avg: '$rating' }, count: { $sum: 1 } } },
       ]),
       this.reviewModel.aggregate([
-        { $match: { product: productId, deletedAt: null } },
+        { $match: { product: objectId, deletedAt: null } },
         { $group: { _id: '$rating', count: { $sum: 1 } } },
       ]),
     ]);

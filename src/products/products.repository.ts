@@ -58,7 +58,7 @@ export class ProductsRepository {
         .sort(sort)
         .skip(skip)
         .limit(query.limit)
-        .populate('store', 'name slug isVerified location deliveryTimeRange')
+        .populate('seller', 'name slug isVerified location deliveryTimeRange')
         .lean()
         .exec(),
       this.productModel.countDocuments(filter).exec(),
@@ -71,8 +71,8 @@ export class ProductsRepository {
     return this.productModel
       .findOne({ slug, deletedAt: null, isActive: true })
       .populate(
-        'store',
-        'name slug logoUrl isVerified responseRatePercent averageRating joinedYear reviewCount location deliveryTimeRange',
+        'seller',
+        'name slug logoUrl isVerified responseRatePercent averageRating joinedYear reviewCount followerCount location deliveryTimeRange',
       )
       .lean()
       .exec() as unknown as Promise<Product | null>;
@@ -90,7 +90,7 @@ export class ProductsRepository {
       .find({ deletedAt: null, isActive: true, sections: section })
       .sort({ salesCount: -1, createdAt: -1 })
       .limit(limit)
-      .populate('store', 'name slug isVerified location deliveryTimeRange')
+      .populate('seller', 'name slug isVerified location deliveryTimeRange')
       .lean()
       .exec() as unknown as Promise<Product[]>;
   }
@@ -108,7 +108,7 @@ export class ProductsRepository {
       })
       .sort({ salesCount: -1 })
       .limit(limit)
-      .populate('store', 'name slug isVerified location deliveryTimeRange')
+      .populate('seller', 'name slug isVerified location deliveryTimeRange')
       .lean()
       .exec() as unknown as Promise<Product[]>;
   }
@@ -145,12 +145,43 @@ export class ProductsRepository {
     );
   }
 
-  async findByIdWithStoreOwner(id: string): Promise<Product | null> {
+  async findByIdWithSellerOwner(id: string): Promise<Product | null> {
     return this.productModel
       .findOne({ _id: id, deletedAt: null })
-      .populate('store', 'owner')
+      .populate('seller', 'owner')
       .lean()
       .exec() as unknown as Promise<Product | null>;
+  }
+
+  async findBySellerWithPagination(
+    sellerId: string,
+    query: ProductQueryDto,
+  ): Promise<{ items: Product[]; totalItems: number }> {
+    const filter: FilterQuery<Product> = { deletedAt: null, isActive: true, seller: sellerId };
+
+    if (query.q) filter.$text = { $search: query.q };
+    if (query.minPrice !== undefined || query.maxPrice !== undefined) {
+      filter['price.amount'] = {};
+      if (query.minPrice !== undefined) filter['price.amount'].$gte = query.minPrice;
+      if (query.maxPrice !== undefined) filter['price.amount'].$lte = query.maxPrice;
+    }
+
+    const sort = this.buildSort(query.sort);
+    const skip = (query.page - 1) * query.limit;
+
+    const [items, totalItems] = await Promise.all([
+      this.productModel
+        .find(filter)
+        .sort(sort)
+        .skip(skip)
+        .limit(query.limit)
+        .populate('seller', 'name slug isVerified location deliveryTimeRange')
+        .lean()
+        .exec(),
+      this.productModel.countDocuments(filter).exec(),
+    ]);
+
+    return { items: items as unknown as Product[], totalItems };
   }
 
   async findAllAdmin(
@@ -166,7 +197,7 @@ export class ProductsRepository {
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
-        .populate('store', 'name slug')
+        .populate('seller', 'name slug')
         .lean()
         .exec(),
       this.productModel.countDocuments(filter),
