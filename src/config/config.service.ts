@@ -161,6 +161,7 @@ export class ConfigService {
   get clerk(): ClerkConfig {
     return {
       webhookSecret: this.envConfig.CLERK_WEBHOOK_SECRET,
+      secretKey: this.envConfig.CLERK_SECRET_KEY,
     };
   }
 

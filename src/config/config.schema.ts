@@ -32,6 +32,7 @@ export const envSchema = z.object({
   EMAIL_FROM: z.string().default('Cadna Mart <noreply@cadnamart.com>'),
 
   CLERK_WEBHOOK_SECRET: z.string().default(''),
+  CLERK_SECRET_KEY: z.string().default(''),
 
   LOG_LEVEL: z.enum(['error', 'warn', 'info', 'debug', 'verbose']).default('debug'),
 

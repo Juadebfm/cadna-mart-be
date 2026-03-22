@@ -16,6 +16,7 @@ import {
   ForgotPasswordResetDto,
 } from './dto/forgot-password.dto';
 import { Verify2faLoginDto, Enable2faDto } from './dto/verify-2fa.dto';
+import { ClerkLoginDto } from './dto/clerk-login.dto';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { Public } from './decorators/public.decorator';
 import { CurrentUser } from './decorators/current-user.decorator';
@@ -82,6 +83,14 @@ export class AuthController {
   }
 
   // ─── LOGIN ───────────────────────────────────────────────────
+
+  @Public()
+  @Post('clerk/login')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Login or register via Clerk OAuth (Google/Facebook)' })
+  async clerkLogin(@Body() dto: ClerkLoginDto) {
+    return this.authService.clerkLogin(dto.token);
+  }
 
   @Public()
   @UseGuards(LocalAuthGuard)

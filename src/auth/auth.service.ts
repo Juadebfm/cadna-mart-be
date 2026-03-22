@@ -5,6 +5,7 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { createClerkClient } from '@clerk/backend';
 import { ConfigService } from '@config/config.service';
 import { UsersService } from '@users/users.service';
 import { OtpService } from '@otp/otp.service';
@@ -16,6 +17,7 @@ import { comparePassword, hashPassword } from '@common/utils/hash.util';
 import { ERROR_MESSAGES } from '@common/constants/error-messages.constants';
 import { validatePasswordStrength } from '@common/validators/password-strength.validator';
 import { AccountType } from '@users/enums/account-type.enum';
+import { AuthProvider } from '@users/enums/auth-provider.enum';
 
 @Injectable()
 export class AuthService {
@@ -307,6 +309,77 @@ export class AuthService {
     await this.usersService.setTwoFactor(userId, false);
 
     return { message: 'Two-factor authentication disabled' };
+  }
+
+  // ─── CLERK OAUTH LOGIN ─────────────────────────────────────
+
+  async clerkLogin(clerkToken: string): Promise<TokenResponse & { user: object }> {
+    const clerkClient = createClerkClient({
+      secretKey: this.configService.clerk.secretKey,
+    });
+
+    // Verify the Clerk session token
+    let clerkUser;
+    try {
+      const { sub: clerkUserId } = await clerkClient.verifyToken(clerkToken);
+      clerkUser = await clerkClient.users.getUser(clerkUserId);
+    } catch {
+      throw new UnauthorizedException('Invalid Clerk token');
+    }
+
+    const email = clerkUser.emailAddresses?.[0]?.emailAddress;
+    if (!email) {
+      throw new UnauthorizedException('No email associated with Clerk account');
+    }
+
+    // Just-in-time: find or create the user
+    let user = await this.usersService.findByEmail(email);
+
+    if (!user) {
+      // First time — create user on the spot (no waiting for webhook)
+      await this.usersService.create({
+        email,
+        firstName: clerkUser.firstName || 'User',
+        lastName: clerkUser.lastName || '',
+        password: 'CLERK_OAUTH_NO_PASSWORD',
+        accountType: AccountType.BUYER,
+      });
+
+      user = await this.usersService.findByEmail(email);
+      if (!user) throw new UnauthorizedException('Failed to create user');
+
+      const userId = (user as any)._id.toString();
+      await this.usersService.verifyUser(userId);
+      await (this.usersService as any).usersRepository.userModel.updateOne(
+        { _id: userId },
+        { authProvider: AuthProvider.CLERK, clerkId: clerkUser.id },
+      );
+
+      user = await this.usersService.findById(userId);
+    } else if (!user.clerkId) {
+      // Existing email user linking to Clerk for the first time
+      const userId = (user as any)._id.toString();
+      await (this.usersService as any).usersRepository.userModel.updateOne(
+        { _id: userId },
+        { authProvider: AuthProvider.CLERK, clerkId: clerkUser.id },
+      );
+      if (!user.isVerified) {
+        await this.usersService.verifyUser(userId);
+      }
+    }
+
+    const userId = (user as any)._id.toString();
+    const tokens = await this.issueTokens({
+      userId,
+      email: user.email,
+      accountType: user.accountType,
+    });
+
+    const fullUser = await this.usersService.findById(userId);
+    return {
+      ...tokens,
+      user: this.usersService.toPublicUser(fullUser),
+    };
   }
 
   // ─── TOKEN MANAGEMENT ───────────────────────────────────────

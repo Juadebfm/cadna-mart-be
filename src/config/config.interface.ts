@@ -38,6 +38,7 @@ export interface EmailConfig {
 
 export interface ClerkConfig {
   webhookSecret: string;
+  secretKey: string;
 }
 
 export interface StorageConfig {
