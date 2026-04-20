@@ -41,6 +41,17 @@ export interface ClerkConfig {
   secretKey: string;
 }
 
+export interface PaystackConfig {
+  secretKey: string;
+  webhookSecret: string;
+  callbackUrl: string;
+}
+
+export interface DealsConfig {
+  feePerProduct: number;
+  maxProducts: number;
+}
+
 export interface StorageConfig {
   cloudName: string;
   apiKey: string;

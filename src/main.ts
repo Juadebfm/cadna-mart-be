@@ -24,6 +24,7 @@ import { TimeoutInterceptor } from '@common/interceptors/timeout.interceptor';
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     bufferLogs: true,
+    rawBody: true,
   });
 
   const configService = app.get(ConfigService);

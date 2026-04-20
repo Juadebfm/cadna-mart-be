@@ -11,6 +11,8 @@ import {
   ThrottleConfig,
   EmailConfig,
   ClerkConfig,
+  PaystackConfig,
+  DealsConfig,
   StorageConfig,
 } from './config.interface';
 
@@ -162,6 +164,21 @@ export class ConfigService {
     return {
       webhookSecret: this.envConfig.CLERK_WEBHOOK_SECRET,
       secretKey: this.envConfig.CLERK_SECRET_KEY,
+    };
+  }
+
+  get paystack(): PaystackConfig {
+    return {
+      secretKey: this.envConfig.PAYSTACK_SECRET_KEY,
+      webhookSecret: this.envConfig.PAYSTACK_WEBHOOK_SECRET || this.envConfig.PAYSTACK_SECRET_KEY,
+      callbackUrl: this.envConfig.PAYSTACK_CALLBACK_URL,
+    };
+  }
+
+  get deals(): DealsConfig {
+    return {
+      feePerProduct: this.envConfig.DEALS_FEE_PER_PRODUCT,
+      maxProducts: this.envConfig.DEALS_MAX_PRODUCTS,
     };
   }
 

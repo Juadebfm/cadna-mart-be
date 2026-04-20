@@ -34,6 +34,13 @@ export const envSchema = z.object({
   CLERK_WEBHOOK_SECRET: z.string().default(''),
   CLERK_SECRET_KEY: z.string().default(''),
 
+  PAYSTACK_SECRET_KEY: z.string().default(''),
+  PAYSTACK_WEBHOOK_SECRET: z.string().default(''),
+  PAYSTACK_CALLBACK_URL: z.string().default(''),
+
+  DEALS_FEE_PER_PRODUCT: z.coerce.number().default(5000),
+  DEALS_MAX_PRODUCTS: z.coerce.number().default(10),
+
   LOG_LEVEL: z.enum(['error', 'warn', 'info', 'debug', 'verbose']).default('debug'),
 
   CLOUDINARY_CLOUD_NAME: z.string().default(''),
