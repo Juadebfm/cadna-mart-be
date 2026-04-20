@@ -215,8 +215,6 @@ export class ProductsRepository {
         return { createdAt: -1 };
       case ProductSortOption.POPULAR:
         return { salesCount: -1 };
-      case ProductSortOption.DISCOUNT:
-        return { discountPercent: -1 };
       case ProductSortOption.RELEVANCE:
       default:
         return { salesCount: -1, createdAt: -1 };

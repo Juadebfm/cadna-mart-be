@@ -19,17 +19,23 @@ export class ProductsService {
   ) {}
 
   async findAll(query: ProductQueryDto) {
+    const resolvedQuery: ProductQueryDto = { ...query };
     let categoryIds: string[] | undefined;
     let subCategoryIds: string[] | undefined;
 
     if (query.category) {
       const cat = await this.categoriesService.findBySlug(query.category);
       if (cat) {
-        categoryIds = [(cat as unknown as { _id: { toString(): string } })._id.toString()];
+        // "deals" is a promotional rail that spans all categories.
+        if (cat.slug === 'deals') {
+          resolvedQuery.section = 'best_deals';
+        } else {
+          categoryIds = [(cat as unknown as { _id: { toString(): string } })._id.toString()];
+        }
       }
     }
 
-    if (query.subCategory) {
+    if (query.subCategory && query.category !== 'deals') {
       const subCat = await this.categoriesService.findBySlug(query.subCategory);
       if (subCat) {
         subCategoryIds = [(subCat as unknown as { _id: { toString(): string } })._id.toString()];
@@ -37,22 +43,22 @@ export class ProductsService {
     }
 
     const { items, totalItems } = await this.productsRepository.findWithPagination(
-      query,
+      resolvedQuery,
       categoryIds,
       subCategoryIds,
     );
 
-    const totalPages = Math.ceil(totalItems / query.limit);
+    const totalPages = Math.ceil(totalItems / resolvedQuery.limit);
 
     return {
       items: items.map((p) => this.toCard(p)),
       pagination: {
-        page: query.page,
-        limit: query.limit,
+        page: resolvedQuery.page,
+        limit: resolvedQuery.limit,
         totalItems,
         totalPages,
-        hasNextPage: query.page < totalPages,
-        hasPrevPage: query.page > 1,
+        hasNextPage: resolvedQuery.page < totalPages,
+        hasPrevPage: resolvedQuery.page > 1,
       },
     };
   }

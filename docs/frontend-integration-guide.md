@@ -822,7 +822,7 @@ GET /products?q=phone&category=electronics&sort=price_asc&page=1&limit=10
 | `page` | number | `1` | ≥ 1 |
 | `limit` | number | `10` | 1–100 |
 
-**Sort options**: `relevance`, `price_asc`, `price_desc`, `newest`, `popular`, `discount`
+**Sort options**: `relevance`, `price_asc`, `price_desc`, `newest`, `popular`
 
 **200 Response** `data`:
 

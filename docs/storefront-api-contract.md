@@ -495,7 +495,7 @@ No body. Sends OTP to user's email.
 | `maxPrice` | number | |
 | `inStock` | boolean | |
 | `ratingGte` | number | |
-| `sort` | string | `relevance \| price_asc \| price_desc \| newest \| popular \| discount` |
+| `sort` | string | `relevance \| price_asc \| price_desc \| newest \| popular` |
 | `page` | number | default `1` |
 | `limit` | number | default `10`, max `100` |
 

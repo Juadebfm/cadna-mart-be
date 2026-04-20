@@ -17,7 +17,6 @@ export enum ProductSortOption {
   PRICE_DESC = 'price_desc',
   NEWEST = 'newest',
   POPULAR = 'popular',
-  DISCOUNT = 'discount',
 }
 
 export class ProductQueryDto {
@@ -43,7 +42,7 @@ export class ProductQueryDto {
   @IsString()
   subCategory?: string;
 
-  @ApiPropertyOptional({ description: 'Brand name' })
+  @ApiPropertyOptional({ description: 'Single brand name (one brand filter at a time)' })
   @IsOptional()
   @IsString()
   brand?: string;

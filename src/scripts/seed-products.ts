@@ -201,6 +201,12 @@ const CATEGORY_SEEDS: CategorySeed[] = [
     iconUrl: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=200&h=200&fit=crop',
     order: 6,
   },
+  {
+    name: 'Deals',
+    slug: 'deals',
+    iconUrl: 'https://images.unsplash.com/photo-1607082350899-7e105aa886ae?w=200&h=200&fit=crop',
+    order: 7,
+  },
 ];
 
 const SUB_CATEGORY_SEEDS: SubCategorySeed[] = [
@@ -999,6 +1005,30 @@ function placeholderUrl(label: string, w = 600, h = 600): string {
   return `https://placehold.co/${w}x${h}/e2e8f0/475569?text=${clean}`;
 }
 
+function numericHash(value: string): number {
+  let hash = 0;
+  for (let i = 0; i < value.length; i += 1) {
+    hash = (hash * 31 + value.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash);
+}
+
+function toImageKeywords(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ',')
+    .replace(/,+/g, ',')
+    .replace(/^,|,$/g, '');
+}
+
+function productImageUrl(seed: ProductSeed, variantHint: string, w = 800, h = 800): string {
+  const keywords = toImageKeywords(
+    `${seed.name} ${seed.brand} ${seed.categorySlug} ${seed.subCategorySlug} ${variantHint} ecommerce product`,
+  );
+  const lock = numericHash(`${seed.skuCode}-${variantHint}`) % 1000000;
+  return `https://loremflickr.com/${w}/${h}/${keywords}?lock=${lock}`;
+}
+
 function getReturnPolicy(categorySlug: string): {
   eligible: boolean;
   returnWindow: number;
@@ -1146,7 +1176,7 @@ function buildVariants(
   baseAmount: number,
   index: number,
 ): { variantAxes: VariantAxis[]; variants: ProductVariant[]; defaultVariantId: string } {
-  const img1 = placeholderUrl(seed.name, 800, 800);
+  const img1 = productImageUrl(seed, `${baseSlug}-primary`, 800, 800);
 
   if (seed.variantType === 'none') {
     const variantId = `${baseSlug}-default`;
@@ -1308,7 +1338,7 @@ function buildVariants(
             ? 1 + ((index + variantIndex) % 5)
             : 8 + ((index + variantIndex) % 20),
         isInStock: !outOfStock,
-        images: [placeholderUrl(`${seed.name} - ${c.label}`, 800, 800)],
+        images: [productImageUrl(seed, `${baseSlug}-${c.id}`, 800, 800)],
       };
     });
     return { variantAxes: [axis], variants, defaultVariantId: variants[0].id };
@@ -1357,7 +1387,7 @@ function buildVariants(
               ? 1 + ((index + variantIndex) % 5)
               : 6 + ((index + variantIndex) % 15),
           isInStock: !outOfStock,
-          images: [placeholderUrl(`${seed.name} - ${colour.label}`, 800, 800)],
+          images: [productImageUrl(seed, `${baseSlug}-${colour.id}`, 800, 800)],
         };
       }),
     );
@@ -1376,7 +1406,7 @@ function buildVariants(
         price: formatMoney(baseAmount),
         stockQty: 15,
         isInStock: true,
-        images: [placeholderUrl(seed.name, 800, 800)],
+        images: [productImageUrl(seed, `${baseSlug}-fallback`, 800, 800)],
       },
     ],
     defaultVariantId: `${baseSlug}-default`,
@@ -1730,7 +1760,7 @@ async function seedProducts(
           slug,
           sku: seed.skuCode,
           brand: seed.brand,
-          thumbnailUrl: placeholderUrl(seed.name, 400, 400),
+          thumbnailUrl: productImageUrl(seed, 'thumbnail', 400, 400),
           price: formatMoney(priceAmount),
           originalPrice: formatMoney(originalAmount),
           discountPercent,
@@ -1738,17 +1768,17 @@ async function seedProducts(
           gallery: [
             {
               id: 'img-1',
-              url: placeholderUrl(`${seed.name} 1`, 800, 800),
+              url: productImageUrl(seed, 'gallery-1', 800, 800),
               alt: `${seed.name} — front view`,
             },
             {
               id: 'img-2',
-              url: placeholderUrl(`${seed.name} 2`, 800, 800),
+              url: productImageUrl(seed, 'gallery-2', 800, 800),
               alt: `${seed.name} — angle view`,
             },
             {
               id: 'img-3',
-              url: placeholderUrl(`${seed.name} 3`, 800, 800),
+              url: productImageUrl(seed, 'gallery-3', 800, 800),
               alt: `${seed.name} — detail view`,
             },
           ],
@@ -1797,12 +1827,12 @@ async function syncCategoryCounts(
   categorySeedResult: CategorySeedResult,
 ): Promise<void> {
   const tasks = [
-    ...Array.from(categorySeedResult.parentIds.values()).map(async (id) => {
-      const count = await productModel.countDocuments({
-        deletedAt: null,
-        isActive: true,
-        category: id,
-      });
+    ...Array.from(categorySeedResult.parentIds.entries()).map(async ([slug, id]) => {
+      const baseFilter = { deletedAt: null, isActive: true };
+      const count =
+        slug === 'deals'
+          ? await productModel.countDocuments({ ...baseFilter, sections: 'best_deals' })
+          : await productModel.countDocuments({ ...baseFilter, category: id });
       await categoryModel.updateOne({ _id: id }, { $set: { productCount: count } });
     }),
     ...Array.from(categorySeedResult.subCategoryIds.values()).map(async (id) => {
