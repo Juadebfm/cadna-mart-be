@@ -2,6 +2,10 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import {
+  CorsOptions,
+  CustomOrigin,
+} from '@nestjs/common/interfaces/external/cors-options.interface';
 /* eslint-disable @typescript-eslint/no-require-imports */
 const compression = require('compression');
 const cookieParser = require('cookie-parser');
@@ -37,8 +41,46 @@ async function bootstrap(): Promise<void> {
   app.use(helmet());
   app.use(compression());
   app.use(cookieParser());
+  const configuredCorsOrigin = configService.cors.origin;
+  const devLocalhostOriginRegex = /^https?:\/\/(?:localhost|127\.0\.0\.1)(?::\d{1,5})?$/i;
+  const isConfiguredOriginAllowed = (requestOrigin: string): boolean => {
+    if (configuredCorsOrigin === true) {
+      return true;
+    }
+    if (Array.isArray(configuredCorsOrigin)) {
+      return configuredCorsOrigin.includes(requestOrigin);
+    }
+    if (typeof configuredCorsOrigin === 'string') {
+      return configuredCorsOrigin === requestOrigin;
+    }
+
+    return false;
+  };
+  const corsOrigin: CorsOptions['origin'] = configService.isDev
+    ? (requestOrigin: string, callback: Parameters<CustomOrigin>[1]) => {
+        // Browserless requests (curl/Postman/server-to-server) may omit Origin.
+        if (!requestOrigin) {
+          callback(null, true);
+          return;
+        }
+
+        if (isConfiguredOriginAllowed(requestOrigin)) {
+          callback(null, true);
+          return;
+        }
+
+        if (devLocalhostOriginRegex.test(requestOrigin)) {
+          callback(null, true);
+          return;
+        }
+
+        loggerService.warn(`Blocked CORS origin in dev: ${requestOrigin}`, 'Bootstrap');
+        callback(null, false);
+      }
+    : configuredCorsOrigin;
+
   app.enableCors({
-    origin: configService.cors.origin,
+    origin: corsOrigin,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'x-correlation-id'],
