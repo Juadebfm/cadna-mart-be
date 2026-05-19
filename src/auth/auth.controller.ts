@@ -18,6 +18,8 @@ import { Verify2faLoginDto, Enable2faDto } from './dto/verify-2fa.dto';
 import { ClerkLoginDto } from './dto/clerk-login.dto';
 import { RegisterSellerDetailsDto } from './dto/register-seller-details.dto';
 import { RegisterSellerPasswordDto } from './dto/register-seller-password.dto';
+import { OtpRequestDto, OtpVerifyDto, OtpResendDto, OtpPurpose } from './dto/otp.dto';
+import { RegisterDto } from './dto/register.dto';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { Public } from './decorators/public.decorator';
 import { CurrentUser } from './decorators/current-user.decorator';
@@ -120,6 +122,48 @@ export class AuthController {
     return this.authService.verifyEmail(dto.email, dto.code);
   }
 
+  // ─── SINGLE-CALL REGISTRATION (spec alias) ──────────────────
+
+  @Public()
+  @Post('register')
+  @ApiOperation({
+    summary: 'Single-call registration (orchestrates email + details + password steps)',
+  })
+  async register(@Body() dto: RegisterDto) {
+    return this.authService.register(dto);
+  }
+
+  // ─── GENERIC OTP (spec-aligned) ─────────────────────────────
+
+  @Public()
+  @Post('otp/request')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Send OTP via email for login/email-verification/password-reset',
+  })
+  async otpRequest(@Body() dto: OtpRequestDto) {
+    return this.authService.requestOtp(dto.email, dto.purpose ?? OtpPurpose.LOGIN);
+  }
+
+  @Public()
+  @Post('otp/verify')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary:
+      'Verify OTP code. Returns JWTs for login, message for verification, resetToken for password-reset',
+  })
+  async otpVerify(@Body() dto: OtpVerifyDto) {
+    return this.authService.verifyOtp(dto.email, dto.code, dto.purpose ?? OtpPurpose.LOGIN);
+  }
+
+  @Public()
+  @Post('otp/resend')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Resend OTP (cooldown enforced)' })
+  async otpResend(@Body() dto: OtpResendDto) {
+    return this.authService.resendOtp(dto.email, dto.purpose ?? OtpPurpose.LOGIN);
+  }
+
   // ─── LOGIN ───────────────────────────────────────────────────
 
   @Public()
@@ -134,7 +178,10 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Login with email and password' })
+  @ApiOperation({
+    summary:
+      'Login with email and password. For passwordless email-OTP login, use /auth/otp/request then /auth/otp/verify.',
+  })
   @ApiBody({ type: LoginDto })
   async login(@Req() req: Request) {
     const user = req.user as { userId: string; email: string; accountType: string };
@@ -157,6 +204,16 @@ export class AuthController {
       ...result,
       user: this.usersService.toPublicUser(fullUser),
     };
+  }
+
+  @Public()
+  @UseGuards(LocalAuthGuard)
+  @Post('login/password')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Login with email and password (spec alias of /login)' })
+  @ApiBody({ type: LoginDto })
+  async loginPassword(@Req() req: Request) {
+    return this.login(req);
   }
 
   @Public()

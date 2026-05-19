@@ -28,47 +28,18 @@ Build: ✅ clean (199 files compiled).
 
 ---
 
-## Phase B — OTP + login surface (≈1 hr, 6 rows)
+## Phase B — OTP + login surface (≈1 hr, 6 rows) ✅ DONE
 
-Expose existing email-OTP infra (Resend) at `/auth/otp/*` spec paths.
+- [x] **Supporting** — `OtpPurpose` enum (LOGIN | EMAIL_VERIFICATION | PASSWORD_RESET) added in [src/auth/dto/otp.dto.ts](src/auth/dto/otp.dto.ts).
+- [x] **Supporting** — `requestOtp`, `verifyOtp`, `resendOtp`, single-call `register` methods added to [src/auth/auth.service.ts](src/auth/auth.service.ts).
+- [x] **Row 1** — `POST /auth/otp/request` → [src/auth/auth.controller.ts:139](src/auth/auth.controller.ts#L139)
+- [x] **Row 2** — `POST /auth/otp/verify` → [src/auth/auth.controller.ts:149](src/auth/auth.controller.ts#L149) (returns JWT/message/resetToken depending on purpose)
+- [x] **Row 3** — `POST /auth/otp/resend` → [src/auth/auth.controller.ts:160](src/auth/auth.controller.ts#L160)
+- [x] **Row 4** — `POST /auth/login` Swagger note updated; remains email+password. Phone-OTP stays Partial in audit (no SMS provider). Email-OTP login available via rows 1+2.
+- [x] **Row 5** — `POST /auth/login/password` → [src/auth/auth.controller.ts:211](src/auth/auth.controller.ts#L211)
+- [x] **Row 6** — `POST /auth/register` (single-call) → [src/auth/auth.controller.ts:128](src/auth/auth.controller.ts#L128)
 
-### Supporting work first
-- [ ] Add a generic `OtpPurpose` mapping helper to [src/otp/otp.service.ts](src/otp/otp.service.ts) so it can accept a public `purpose` string (`login` / `email_verification` / `password_reset`) and map to internal `OtpType`.
-- [ ] Add `loginWithOtp(email)` and `verifyLoginOtp(email, code)` methods to [src/auth/auth.service.ts](src/auth/auth.service.ts) that:
-  - On request: issue an OTP via `OtpService` with purpose `LOGIN_2FA` (or new `LOGIN_OTP` enum entry) and email it via Resend.
-  - On verify: confirm OTP, find user, issue access + refresh JWTs (same as password login).
-
-### Routes
-- [ ] **Row 1** — `POST /auth/otp/request`
-  - Body: `{ email: string, purpose?: 'login' | 'verification' | 'password-reset' }`
-  - File: [src/auth/auth.controller.ts](src/auth/auth.controller.ts)
-  - Calls `authService.requestOtp(email, purpose)`. Rate-limited by global throttler.
-
-- [ ] **Row 2** — `POST /auth/otp/verify`
-  - Body: `{ email, code, purpose }`
-  - File: same controller
-  - For `purpose=login`: returns JWT pair. For `verification`/`password-reset`: returns a single-use token like the existing reset flow.
-
-- [ ] **Row 3** — `POST /auth/otp/resend`
-  - Body: `{ email, purpose }`
-  - File: same controller
-  - 30-second cooldown enforced via OTP `createdAt` check.
-
-- [ ] **Row 4** — `POST /auth/login`
-  - Already exists at this path. Update Swagger description to clarify both flows:
-    - email + password (current), OR
-    - email + OTP (via rows 1+2).
-  - Note in audit: phone OTP is email OTP today.
-
-- [ ] **Row 5** — `POST /auth/login/password`
-  - File: [src/auth/auth.controller.ts:135](src/auth/auth.controller.ts#L135)
-  - Add `@Post('login/password')` as an alias to the existing `login()` handler.
-
-- [ ] **Row 6** — `POST /auth/register`
-  - File: [src/auth/auth.controller.ts](src/auth/auth.controller.ts)
-  - Add a single-call wrapper that takes `{ email, firstName, lastName, password, confirmPassword, phoneNumber?, dateOfBirth?, termsAccepted }` and runs:
-    `registerEmail → registerDetails → registerPassword` in one transaction, returning the `sessionId` so the FE can call `register/verify` next.
-  - Multi-step routes stay for the existing wizard.
+Build: ✅ clean (201 files).
 
 **Phase B commit message:** `feat(auth): expose OTP request/verify/resend and unified register endpoint`
 

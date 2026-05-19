@@ -21,6 +21,12 @@ import { ERROR_MESSAGES } from '@common/constants/error-messages.constants';
 import { validatePasswordStrength } from '@common/validators/password-strength.validator';
 import { AccountType } from '@users/enums/account-type.enum';
 import { AuthProvider } from '@users/enums/auth-provider.enum';
+import { OtpPurpose } from './dto/otp.dto';
+
+type OtpVerifyResult =
+  | { purpose: OtpPurpose.LOGIN; tokens: TokenResponse; user: object }
+  | { purpose: OtpPurpose.EMAIL_VERIFICATION; message: string }
+  | { purpose: OtpPurpose.PASSWORD_RESET; resetToken: string };
 
 @Injectable()
 export class AuthService {
@@ -308,6 +314,130 @@ export class AuthService {
       email: user.email,
       accountType: user.accountType,
     });
+  }
+
+  // ─── GENERIC OTP (spec-aligned) ─────────────────────────────
+
+  async requestOtp(
+    email: string,
+    purpose: OtpPurpose = OtpPurpose.LOGIN,
+  ): Promise<{ message: string }> {
+    const normalizedEmail = email.toLowerCase();
+
+    if (purpose === OtpPurpose.LOGIN) {
+      const user = await this.usersService.findByEmail(normalizedEmail);
+      if (!user) {
+        // Do not reveal whether the user exists
+        return { message: 'If an account exists, a login code has been sent' };
+      }
+      if (!user.isActive) {
+        throw new UnauthorizedException(ERROR_MESSAGES.INVALID_CREDENTIALS);
+      }
+      if (!user.isVerified) {
+        throw new UnauthorizedException(ERROR_MESSAGES.USER_NOT_VERIFIED);
+      }
+      const code = await this.otpService.generateAndStore(
+        normalizedEmail,
+        OtpType.LOGIN_2FA,
+        (user as unknown as { _id: { toString(): string } })._id.toString(),
+      );
+      await this.emailService.sendLoginOtp(normalizedEmail, code);
+      return { message: 'Login code sent' };
+    }
+
+    if (purpose === OtpPurpose.EMAIL_VERIFICATION) {
+      const user = await this.usersService.findByEmail(normalizedEmail);
+      if (!user) {
+        throw new BadRequestException(ERROR_MESSAGES.USER_NOT_FOUND);
+      }
+      if (user.isVerified) {
+        throw new BadRequestException('Email is already verified');
+      }
+      const code = await this.otpService.generateAndStore(
+        normalizedEmail,
+        OtpType.EMAIL_VERIFICATION,
+      );
+      await this.emailService.sendVerificationCode(normalizedEmail, code);
+      return { message: 'Verification code sent' };
+    }
+
+    if (purpose === OtpPurpose.PASSWORD_RESET) {
+      return this.forgotPassword(normalizedEmail);
+    }
+
+    throw new BadRequestException('Unsupported OTP purpose');
+  }
+
+  async verifyOtp(
+    email: string,
+    code: string,
+    purpose: OtpPurpose = OtpPurpose.LOGIN,
+  ): Promise<OtpVerifyResult> {
+    const normalizedEmail = email.toLowerCase();
+
+    if (purpose === OtpPurpose.LOGIN) {
+      await this.otpService.verify(normalizedEmail, code, OtpType.LOGIN_2FA);
+      const user = await this.usersService.findByEmail(normalizedEmail);
+      if (!user) {
+        throw new UnauthorizedException(ERROR_MESSAGES.INVALID_CREDENTIALS);
+      }
+      const userId = (user as unknown as { _id: { toString(): string } })._id.toString();
+      const tokens = await this.issueTokens({
+        userId,
+        email: user.email,
+        accountType: user.accountType,
+      });
+      const fullUser = await this.usersService.findById(userId);
+      return {
+        purpose: OtpPurpose.LOGIN,
+        tokens,
+        user: this.usersService.toPublicUser(fullUser),
+      };
+    }
+
+    if (purpose === OtpPurpose.EMAIL_VERIFICATION) {
+      await this.verifyEmail(normalizedEmail, code);
+      return { purpose: OtpPurpose.EMAIL_VERIFICATION, message: 'Email verified successfully' };
+    }
+
+    if (purpose === OtpPurpose.PASSWORD_RESET) {
+      const { resetToken } = await this.forgotPasswordVerify(normalizedEmail, code);
+      return { purpose: OtpPurpose.PASSWORD_RESET, resetToken };
+    }
+
+    throw new BadRequestException('Unsupported OTP purpose');
+  }
+
+  async resendOtp(
+    email: string,
+    purpose: OtpPurpose = OtpPurpose.LOGIN,
+  ): Promise<{ message: string }> {
+    // requestOtp already enforces the OtpService cooldown, so reuse it.
+    return this.requestOtp(email, purpose);
+  }
+
+  // ─── SINGLE-CALL REGISTRATION (spec-aligned) ───────────────
+
+  async register(dto: {
+    email: string;
+    firstName: string;
+    lastName: string;
+    dateOfBirth?: string;
+    phoneNumber?: string;
+    termsAccepted: boolean;
+    password: string;
+    confirmPassword: string;
+  }): Promise<{ message: string; email: string }> {
+    const { sessionId } = await this.registerEmail(dto.email);
+    await this.registerDetails(sessionId, {
+      firstName: dto.firstName,
+      lastName: dto.lastName,
+      dateOfBirth: dto.dateOfBirth,
+      phoneNumber: dto.phoneNumber,
+      termsAccepted: dto.termsAccepted,
+    });
+    const { message } = await this.registerPassword(sessionId, dto.password, dto.confirmPassword);
+    return { message, email: dto.email };
   }
 
   // ─── FORGOT PASSWORD ────────────────────────────────────────
