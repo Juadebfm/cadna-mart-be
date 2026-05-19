@@ -14,4 +14,11 @@ export class SearchController {
   async suggest(@Query('q') q: string, @Query('limit') limit: number = 8) {
     return this.searchService.suggest(q, Math.min(+limit || 8, 20));
   }
+
+  @Public()
+  @Get('suggestions')
+  @ApiOperation({ summary: 'Search suggestions/autocomplete (spec alias of /suggest)' })
+  async suggestions(@Query('q') q: string, @Query('limit') limit: number = 8) {
+    return this.searchService.suggest(q, Math.min(+limit || 8, 20));
+  }
 }

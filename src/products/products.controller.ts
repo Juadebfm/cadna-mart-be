@@ -19,11 +19,15 @@ import { ProductsService } from './products.service';
 import { ProductQueryDto } from './dto/product-query.dto';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { PoliciesService } from '@policies/policies.service';
 
 @ApiTags('Products')
 @Controller('products')
 export class ProductsController {
-  constructor(private readonly productsService: ProductsService) {}
+  constructor(
+    private readonly productsService: ProductsService,
+    private readonly policiesService: PoliciesService,
+  ) {}
 
   @Public()
   @Get()
@@ -44,6 +48,13 @@ export class ProductsController {
   @ApiOperation({ summary: 'Get related products' })
   async findRelated(@Param('productId') productId: string, @Query('limit') limit: number = 8) {
     return this.productsService.findRelated(productId, Math.min(limit, 20));
+  }
+
+  @Public()
+  @Get(':productId/policies')
+  @ApiOperation({ summary: 'Get product return and warranty policies' })
+  async findPolicies(@Param('productId') productId: string) {
+    return this.policiesService.getProductPolicy(productId);
   }
 
   @ApiBearerAuth()

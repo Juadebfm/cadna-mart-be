@@ -6,6 +6,7 @@ import { ProductsRepository } from './products.repository';
 import { ProductsService } from './products.service';
 import { ProductsController } from './products.controller';
 import { CategoriesModule } from '@categories/categories.module';
+import { PoliciesModule } from '@policies/policies.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { CategoriesModule } from '@categories/categories.module';
       { name: SellerProfile.name, schema: SellerProfileSchema },
     ]),
     CategoriesModule,
+    PoliciesModule,
   ],
   controllers: [ProductsController],
   providers: [ProductsRepository, ProductsService],

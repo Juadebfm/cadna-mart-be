@@ -183,6 +183,14 @@ export class AuthController {
   }
 
   @Public()
+  @Post('password/reset/request')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Request password reset OTP (spec alias of /forgot-password)' })
+  async passwordResetRequest(@Body() dto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(dto.email);
+  }
+
+  @Public()
   @Post('forgot-password/verify')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Verify password reset OTP' })
@@ -195,6 +203,16 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Reset password with reset token' })
   async forgotPasswordReset(@Body() dto: ForgotPasswordResetDto) {
+    return this.authService.forgotPasswordReset(dto.resetToken, dto.password, dto.confirmPassword);
+  }
+
+  @Public()
+  @Post('password/reset/confirm')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Confirm password reset with token (spec alias of /forgot-password/reset)',
+  })
+  async passwordResetConfirm(@Body() dto: ForgotPasswordResetDto) {
     return this.authService.forgotPasswordReset(dto.resetToken, dto.password, dto.confirmPassword);
   }
 
@@ -238,6 +256,14 @@ export class AuthController {
   @Get('profile')
   @ApiOperation({ summary: 'Get current user profile' })
   async getProfile(@CurrentUser('userId') userId: string) {
+    const user = await this.usersService.findById(userId);
+    return this.usersService.toPublicUser(user);
+  }
+
+  @ApiBearerAuth()
+  @Get('me')
+  @ApiOperation({ summary: 'Get current user (spec alias of /profile)' })
+  async getMe(@CurrentUser('userId') userId: string) {
     const user = await this.usersService.findById(userId);
     return this.usersService.toPublicUser(user);
   }
