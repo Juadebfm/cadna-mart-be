@@ -37,10 +37,10 @@ export class ProductsController {
   }
 
   @Public()
-  @Get(':slug')
-  @ApiOperation({ summary: 'Get product detail by slug' })
-  async findBySlug(@Param('slug') slug: string, @Query('variantId') variantId?: string) {
-    return this.productsService.findBySlug(slug, variantId);
+  @Get(':idOrSlug')
+  @ApiOperation({ summary: 'Get product detail by Mongo id or slug' })
+  async findOne(@Param('idOrSlug') idOrSlug: string, @Query('variantId') variantId?: string) {
+    return this.productsService.findByIdOrSlug(idOrSlug, variantId);
   }
 
   @Public()
@@ -48,6 +48,20 @@ export class ProductsController {
   @ApiOperation({ summary: 'Get related products' })
   async findRelated(@Param('productId') productId: string, @Query('limit') limit: number = 8) {
     return this.productsService.findRelated(productId, Math.min(limit, 20));
+  }
+
+  @Public()
+  @Get(':productId/variants')
+  @ApiOperation({ summary: 'Get product variants and axes' })
+  async findVariants(@Param('productId') productId: string) {
+    return this.productsService.getVariants(productId);
+  }
+
+  @Public()
+  @Get(':productId/availability')
+  @ApiOperation({ summary: 'Get product/variant stock availability' })
+  async findAvailability(@Param('productId') productId: string) {
+    return this.productsService.getAvailability(productId);
   }
 
   @Public()

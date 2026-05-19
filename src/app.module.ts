@@ -28,6 +28,8 @@ import { SiteConfigModule } from '@site-config/site-config.module';
 import { DealsModule } from './deals/deals.module';
 import { UploadModule } from './upload/upload.module';
 import { AdminModule } from './admin/admin.module';
+import { CollectionsModule } from './collections/collections.module';
+import { BrandsModule } from './brands/brands.module';
 import { CorrelationIdMiddleware } from '@common/middleware/correlation-id.middleware';
 import { RequestLoggerMiddleware } from '@common/middleware/request-logger.middleware';
 import { AppController } from './app.controller';
@@ -68,6 +70,8 @@ import { AppService } from './app.service';
     DealsModule,
     UploadModule,
     AdminModule,
+    CollectionsModule,
+    BrandsModule,
   ],
   controllers: [AppController],
   providers: [

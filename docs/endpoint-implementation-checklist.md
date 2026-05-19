@@ -45,45 +45,23 @@ Build: ✅ clean (201 files).
 
 ---
 
-## Phase D — Catalog & storefront (≈1.5 hrs, 10 rows)
+## Phase D — Catalog & storefront (≈1.5 hrs, 10 rows) ✅ DONE
 
-Mostly thin endpoints that surface existing product/category data.
+- [x] **Row 24** — `GET /categories/:slug` → [src/categories/categories.controller.ts:20](src/categories/categories.controller.ts#L20)
+- [x] **Row 25** — `GET /categories/:slug/products` → [src/products/category-products.controller.ts:13](src/products/category-products.controller.ts#L13) (new controller in ProductsModule reusing ProductsService.findAll with category filter)
+- [x] **Row 26** — `GET /collections/featured` → [src/collections/collections.controller.ts:12](src/collections/collections.controller.ts#L12)
+- [x] **Row 27** — `GET /collections/flash-sales` → [src/collections/collections.controller.ts:19](src/collections/collections.controller.ts#L19) (data depends on products tagged `sections=flash_sale` — admin populates)
+- [x] **Row 28** — `GET /collections/best-deals` → [src/collections/collections.controller.ts:26](src/collections/collections.controller.ts#L26)
+- [x] **Row 30** — `GET /products/:idOrSlug` → [src/products/products.controller.ts:40](src/products/products.controller.ts#L40) (handler accepts Mongo ID or slug)
+- [x] **Row 31** — `GET /products/:productId/variants` → [src/products/products.controller.ts:54](src/products/products.controller.ts#L54)
+- [x] **Row 32** — `GET /products/:productId/availability` → [src/products/products.controller.ts:61](src/products/products.controller.ts#L61)
+- [x] **Row 35** — `GET /search` → [src/search/search.controller.ts:13](src/search/search.controller.ts#L13)
+- [x] **Row 37** — `GET /brands` → [src/brands/brands.controller.ts:12](src/brands/brands.controller.ts#L12) (BrandsService aggregates distinct brand from products)
 
-- [ ] **Row 24** — `GET /categories/:slug`
-  - File: [src/categories/categories.controller.ts:13](src/categories/categories.controller.ts#L13) — add `@Get(':slug')` route → `categoriesService.findBySlug(slug)`.
+New modules registered in [src/app.module.ts](src/app.module.ts): `CollectionsModule`, `BrandsModule`.
+Build: ✅ clean (207 files).
 
-- [ ] **Row 25** — `GET /categories/:slug/products`
-  - File: same controller — add `@Get(':slug/products')` → resolve category, then call `productsService.list({ category: slug, ...query })` with pagination.
-
-- [ ] **Row 26** — `GET /collections/featured`
-  - New file: `src/collections/collections.controller.ts` + `collections.module.ts`.
-  - Returns products with `sections` containing `featured`. Supports pagination.
-
-- [ ] **Row 27** — `GET /collections/flash-sales`
-  - Same controller. Returns products with `sections` containing `flash_sale`. Add `flash_sale` to the known section list in product DTO if missing.
-
-- [ ] **Row 28** — `GET /collections/best-deals`
-  - Same controller. `sections` contains `best_deals`. Today this is exposed via `/products?section=best_deals`; this route is a named alias.
-
-- [ ] **Row 30** — `GET /products/:id`
-  - File: [src/products/products.controller.ts:36](src/products/products.controller.ts#L36)
-  - Today routes are by slug. Change handler to try ObjectId first (24-hex match) then fall back to slug. Or add a separate `@Get('id/:id')` route — recommend the first approach for simpler FE.
-
-- [ ] **Row 31** — `GET /products/:productId/variants`
-  - File: [src/products/products.controller.ts](src/products/products.controller.ts) — new route. Returns `product.variants[]` only.
-
-- [ ] **Row 32** — `GET /products/:productId/availability`
-  - File: same controller — new route. Returns `{ productInStock, variants: [{ sku, inStock, quantity }] }`.
-
-- [ ] **Row 35** — `GET /search`
-  - File: [src/search/search.controller.ts](src/search/search.controller.ts) — add `@Get()` route.
-  - Uses existing text index `{ name: 'text', brand: 'text' }`. Supports `q`, `page`, `limit`, `category`, `minPrice`, `maxPrice`.
-
-- [ ] **Row 37** — `GET /brands`
-  - New file: `src/brands/brands.controller.ts` + `brands.module.ts` + `brands.service.ts`.
-  - `brandsService.list()` runs `productModel.aggregate([{ $group: { _id: '$brand', count: { $sum: 1 } } }, { $match: { _id: { $ne: null } } }, { $sort: { count: -1 } }])`.
-
-**Phase D commit message:** `feat(catalog): add categories/:slug, collections, brands, search, product variants/availability`
+**Phase D commit message:** `feat(catalog): add categories detail, collections, brands, search, product variants/availability`
 
 ---
 

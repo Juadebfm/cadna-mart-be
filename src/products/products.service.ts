@@ -71,6 +71,59 @@ export class ProductsService {
     return this.toDetail(product, variantId);
   }
 
+  async findByIdOrSlug(idOrSlug: string, variantId?: string) {
+    const isObjectId = /^[a-f\d]{24}$/i.test(idOrSlug);
+    const product = isObjectId
+      ? await this.productsRepository.findById(idOrSlug)
+      : await this.productsRepository.findBySlug(idOrSlug);
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+    return this.toDetail(product, variantId);
+  }
+
+  async getVariants(idOrSlug: string) {
+    const isObjectId = /^[a-f\d]{24}$/i.test(idOrSlug);
+    const product = isObjectId
+      ? await this.productsRepository.findById(idOrSlug)
+      : await this.productsRepository.findBySlug(idOrSlug);
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+    return {
+      productId: (product as unknown as { _id: { toString(): string } })._id.toString(),
+      variantAxes: product.variantAxes,
+      variants: product.variants,
+      defaultVariantId: product.defaultVariantId,
+    };
+  }
+
+  async getAvailability(idOrSlug: string) {
+    const isObjectId = /^[a-f\d]{24}$/i.test(idOrSlug);
+    const product = isObjectId
+      ? await this.productsRepository.findById(idOrSlug)
+      : await this.productsRepository.findBySlug(idOrSlug);
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+    const variantSummaries = product.variants.map((v) => ({
+      id: v.id,
+      sku: v.sku,
+      inStock: v.isInStock,
+      stockQty: v.stockQty,
+    }));
+    const anyVariantInStock = variantSummaries.some((v) => v.inStock && v.stockQty > 0);
+    const productInStock =
+      product.inventoryStatus === 'in_stock' &&
+      (variantSummaries.length === 0 || anyVariantInStock);
+    return {
+      productId: (product as unknown as { _id: { toString(): string } })._id.toString(),
+      productInStock,
+      inventoryStatus: product.inventoryStatus,
+      variants: variantSummaries,
+    };
+  }
+
   async findRelated(productId: string, limit: number) {
     const items = await this.productsRepository.findRelated(productId, limit);
     return { items: items.map((p) => this.toCard(p)) };
