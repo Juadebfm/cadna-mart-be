@@ -166,9 +166,9 @@
         ]
       }
     },
-    "/api/v1/auth/register/seller/details": {
+    "/api/v1/auth/register/seller/profile": {
       "post": {
-        "operationId": "AuthController_registerSellerDetails_v1",
+        "operationId": "AuthController_registerSellerProfile_v1",
         "parameters": [],
         "requestBody": {
           "required": true,

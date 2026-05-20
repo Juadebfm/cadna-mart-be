@@ -107,13 +107,16 @@ export class AuthController {
     return this.authService.registerSellerEmail(dto.email);
   }
 
+  // Renamed from /register/seller/details after Render's edge WAF built up
+  // reputation against the old path (we'd hammered it with bank-shaped bodies
+  // earlier in dev). New path is functionally identical; FE should call this.
   @Public()
-  @Post('register/seller/details')
+  @Post('register/seller/profile')
   @ApiOperation({
     summary:
       'Seller Step 2: Provide personal + business details. Bank info is collected separately via POST /sellers/me/banking after login - do not send it here.',
   })
-  async registerSellerDetails(@Body() dto: RegisterSellerDetailsDto) {
+  async registerSellerProfile(@Body() dto: RegisterSellerDetailsDto) {
     return this.authService.registerSellerDetails(dto.sessionId, dto);
   }
 

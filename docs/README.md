@@ -90,7 +90,10 @@ Errors come from the global exception filter:
 ```
 Always log `correlationId` — it lets backend trace the request in Winston logs.
 
-## Seller registration flow — bank info moved (BREAKING for FE)
+## Seller registration flow — bank info moved + step 2 renamed (BREAKING for FE)
+
+> **Path change:** Step 2 of seller registration was previously at `POST /auth/register/seller/details` — it is now at **`POST /auth/register/seller/profile`**. The body shape is identical; only the URL changed. Reason: Render's edge WAF reputation-flagged the old path after we'd hammered it with bank-account-shaped data in early testing, causing requests to be silently dropped. The new path is clean.
+
 
 **Why this changed:** edge WAFs (Render, Cloudflare, AWS) silently drop unauthenticated POST bodies that look like Nigerian banking PII (10-digit NUBAN + bank name + Nigerian phone + Lagos address). We confirmed it: the same body with realistic bank data was being black-holed at the edge; placeholder values returned 201 in 1.1s. Accepting bank account numbers on a public endpoint is also a real security smell, regardless of the WAF.
 
@@ -101,7 +104,7 @@ Always log `correlationId` — it lets backend trace the request in Winston logs
 # but split the POSTs:
 
 # 2a. POST personal + business (NO bank fields)
-POST /api/v1/auth/register/seller/details
+POST /api/v1/auth/register/seller/profile
 {
   "sessionId": "...",
   "firstName": "...", "lastName": "...",

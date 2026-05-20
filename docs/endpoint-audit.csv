@@ -306,7 +306,7 @@ B4,BONUS - Auth,POST,/api/v1/auth/register/password,Multi-step registration step
 B5,BONUS - Auth,POST,/api/v1/auth/register/verify,Multi-step registration step 4 (verify email OTP),Public,,Present,POST,/api/v1/auth/register/verify,src/auth/auth.controller.ts:64
 B6,BONUS - Auth,POST,/api/v1/auth/register/resend-otp,Resend registration email OTP,Public,,Present,POST,/api/v1/auth/register/resend-otp,src/auth/auth.controller.ts:72
 B7,BONUS - Auth,POST,/api/v1/auth/register/seller/email,Seller registration step 1,Public,,Present,POST,/api/v1/auth/register/seller/email,src/auth/auth.controller.ts:82
-B8,BONUS - Auth,POST,/api/v1/auth/register/seller/details,Seller registration step 2,Public,,Present,POST,/api/v1/auth/register/seller/details,src/auth/auth.controller.ts:89
+B8,BONUS - Auth,POST,/api/v1/auth/register/seller/profile,Seller registration step 2 (personal + business),Public,,Present,POST,/api/v1/auth/register/seller/profile,src/auth/auth.controller.ts:89,"Renamed from /seller/details after Render's edge WAF built reputation against the old path. Body shape unchanged."
 B9,BONUS - Auth,POST,/api/v1/auth/register/seller/password,Seller registration step 3,Public,,Present,POST,/api/v1/auth/register/seller/password,src/auth/auth.controller.ts:96
 B10,BONUS - Auth,POST,/api/v1/auth/register/seller/verify,Seller registration step 4 (verify OTP),Public,,Present,POST,/api/v1/auth/register/seller/verify,src/auth/auth.controller.ts:116
 B11,BONUS - Auth,POST,/api/v1/auth/login/verify-2fa,Verify 2FA challenge during login,Public,,Present,POST,/api/v1/auth/login/verify-2fa,src/auth/auth.controller.ts:163
