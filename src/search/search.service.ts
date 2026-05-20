@@ -36,8 +36,14 @@ export class SearchService {
     brand?: string;
     minPrice?: number;
     maxPrice?: number;
-    sort?: ProductSortOption;
+    sort?: string;
   }) {
+    const validSorts = Object.values(ProductSortOption) as string[];
+    const sort: ProductSortOption =
+      params.sort && validSorts.includes(params.sort)
+        ? (params.sort as ProductSortOption)
+        : ProductSortOption.RELEVANCE;
+
     const query: ProductQueryDto = {
       q: params.q,
       page: Math.max(Number(params.page) || 1, 1),
@@ -46,7 +52,7 @@ export class SearchService {
       brand: params.brand,
       minPrice: params.minPrice,
       maxPrice: params.maxPrice,
-      sort: params.sort ?? ProductSortOption.RELEVANCE,
+      sort,
     } as ProductQueryDto;
 
     return this.productsService.findAll(query);

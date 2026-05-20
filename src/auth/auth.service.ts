@@ -22,6 +22,8 @@ import { validatePasswordStrength } from '@common/validators/password-strength.v
 import { AccountType } from '@users/enums/account-type.enum';
 import { AuthProvider } from '@users/enums/auth-provider.enum';
 import { OtpPurpose } from './dto/otp.dto';
+import { AuthEventsService } from '@auth-events/auth-events.service';
+import { AuthEventKind } from '@auth-events/schemas/auth-event.schema';
 
 type OtpVerifyResult =
   | { purpose: OtpPurpose.LOGIN; tokens: TokenResponse; user: object }
@@ -37,6 +39,7 @@ export class AuthService {
     private readonly otpService: OtpService,
     private readonly emailService: EmailService,
     private readonly registrationSessionService: RegistrationSessionService,
+    private readonly authEventsService: AuthEventsService,
     @InjectModel(SellerProfile.name) private readonly sellerProfileModel: Model<SellerProfile>,
   ) {}
 
@@ -113,9 +116,9 @@ export class AuthService {
       throw new BadRequestException(ERROR_MESSAGES.USER_NOT_FOUND);
     }
 
-    await this.usersService.verifyUser(
-      (user as unknown as { _id: { toString(): string } })._id.toString(),
-    );
+    const userId = (user as unknown as { _id: { toString(): string } })._id.toString();
+    await this.usersService.verifyUser(userId);
+    await this.authEventsService.log(userId, AuthEventKind.REGISTER);
 
     return { message: 'Email verified successfully' };
   }
@@ -298,7 +301,9 @@ export class AuthService {
       return { requires2FA: true, email: user.email };
     }
 
-    return this.issueTokens(user);
+    const tokens = await this.issueTokens(user);
+    await this.authEventsService.log(user.userId, AuthEventKind.LOGIN);
+    return tokens;
   }
 
   async verifyLogin2fa(email: string, code: string): Promise<TokenResponse> {
@@ -387,6 +392,7 @@ export class AuthService {
         email: user.email,
         accountType: user.accountType,
       });
+      await this.authEventsService.log(userId, AuthEventKind.LOGIN_OTP);
       const fullUser = await this.usersService.findById(userId);
       return {
         purpose: OtpPurpose.LOGIN,
@@ -508,10 +514,9 @@ export class AuthService {
     });
 
     const hashedPassword = await hashPassword(password);
-    await this.usersService.updatePassword(
-      (user as unknown as { _id: { toString(): string } })._id.toString(),
-      hashedPassword,
-    );
+    const userId = (user as unknown as { _id: { toString(): string } })._id.toString();
+    await this.usersService.updatePassword(userId, hashedPassword);
+    await this.authEventsService.log(userId, AuthEventKind.PASSWORD_RESET);
 
     return { message: 'Password reset successfully' };
   }
@@ -534,6 +539,7 @@ export class AuthService {
     const user = await this.usersService.findById(userId);
     await this.otpService.verify(user.email, code, OtpType.LOGIN_2FA);
     await this.usersService.setTwoFactor(userId, true);
+    await this.authEventsService.log(userId, AuthEventKind.TWO_FACTOR_ENABLE);
 
     return { message: 'Two-factor authentication enabled' };
   }
@@ -546,6 +552,7 @@ export class AuthService {
 
     await this.otpService.verify(user.email, code, OtpType.LOGIN_2FA);
     await this.usersService.setTwoFactor(userId, false);
+    await this.authEventsService.log(userId, AuthEventKind.TWO_FACTOR_DISABLE);
 
     return { message: 'Two-factor authentication disabled' };
   }
@@ -648,6 +655,7 @@ export class AuthService {
     });
 
     const fullUser = await this.usersService.findById(userId);
+    await this.authEventsService.log(userId, AuthEventKind.CLERK_LOGIN);
     return {
       ...tokens,
       user: this.usersService.toPublicUser(fullUser),
@@ -692,12 +700,14 @@ export class AuthService {
 
     const hashedRefreshToken = await hashPassword(tokens.refreshToken);
     await this.usersService.updateRefreshToken(payload.sub, hashedRefreshToken);
+    await this.authEventsService.log(payload.sub, AuthEventKind.REFRESH);
 
     return tokens;
   }
 
   async logout(userId: string): Promise<void> {
     await this.usersService.updateRefreshToken(userId, null);
+    await this.authEventsService.log(userId, AuthEventKind.LOGOUT);
   }
 
   // ─── PRIVATE HELPERS ────────────────────────────────────────

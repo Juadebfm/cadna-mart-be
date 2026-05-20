@@ -44,4 +44,10 @@ export class UsersRepository extends BaseRepository<User> {
   async updatePassword(userId: string, hashedPassword: string): Promise<void> {
     await this.userModel.updateOne({ _id: userId }, { password: hashedPassword }).exec();
   }
+
+  async setMarketingConsent(userId: string, optIn: boolean): Promise<User | null> {
+    return this.userModel
+      .findByIdAndUpdate(userId, { marketingConsentAt: optIn ? new Date() : null }, { new: true })
+      .exec();
+  }
 }

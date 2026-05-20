@@ -65,41 +65,29 @@ Build: ✅ clean (207 files).
 
 ---
 
-## Phase C — User profile + addresses + NDPR + auth log (≈2 hrs, 11 rows)
+## Phase C — User profile + addresses + NDPR + auth log (≈2 hrs, 11 rows) ✅ DONE
 
-### Supporting work
-- [ ] Create `src/addresses/` module with schema, repository, service, controller.
-  - `Address` schema: `userId`, `label`, `recipientName`, `phoneNumber`, `street1`, `street2?`, `city`, `state`, `country`, `postalCode?`, `isDefault: boolean`, `deletedAt?`. Indexes on `userId+deletedAt` and `userId+isDefault`.
-- [ ] Add `marketingConsentAt?: Date` to `User` schema. (No new module needed.)
-- [ ] Create `src/data-requests/` module — schema `{ userId, kind: 'export'|'delete', status: 'pending'|'processed'|'rejected', requestedAt, processedAt?, processedBy? }`.
-- [ ] Create `src/auth-events/` module — schema `{ userId, kind: 'login'|'logout'|'refresh'|'2fa_enable'|'2fa_disable'|'password_reset', ip?, userAgent?, succeeded: boolean, createdAt }`. Add insertion calls inside `AuthService` login/logout/refresh paths.
+- [x] **Supporting** — `Address` schema + `AddressesModule` with service & controller ([src/addresses/](src/addresses/))
+- [x] **Supporting** — `marketingConsentAt` added to [User schema](src/users/schemas/user.schema.ts)
+- [x] **Supporting** — `DataRequest` schema + `DataRequestsModule` ([src/data-requests/](src/data-requests/))
+- [x] **Supporting** — `AuthEvent` schema + `AuthEventsModule` ([src/auth-events/](src/auth-events/)); AuthService logs login/logout/refresh/register/password_reset/2fa/clerk_login
+- [x] **Row 12** — `GET /auth/logs` → [src/auth/auth.controller.ts:341](src/auth/auth.controller.ts#L341)
+- [x] **Row 13** — `GET /users/profile` → [src/users/users.controller.ts:38](src/users/users.controller.ts#L38)
+- [x] **Row 14** — `PATCH /users/profile` → [src/users/users.controller.ts:45](src/users/users.controller.ts#L45)
+- [x] **Row 15** — `GET /users/addresses` → [src/addresses/addresses.controller.ts:25](src/addresses/addresses.controller.ts#L25)
+- [x] **Row 16** — `POST /users/addresses` → [src/addresses/addresses.controller.ts:32](src/addresses/addresses.controller.ts#L32)
+- [x] **Row 17** — `PATCH /users/addresses/:id` → [src/addresses/addresses.controller.ts:38](src/addresses/addresses.controller.ts#L38)
+- [x] **Row 18** — `DELETE /users/addresses/:id` → [src/addresses/addresses.controller.ts:48](src/addresses/addresses.controller.ts#L48)
+- [x] **Row 19** — `POST /users/addresses/:id/default` → [src/addresses/addresses.controller.ts:58](src/addresses/addresses.controller.ts#L58)
+- [x] **Row 20** — `POST /users/consent/marketing` → [src/users/users.controller.ts:55](src/users/users.controller.ts#L55)
+- [x] **Row 21** — `POST /users/data/delete-request` → [src/users/users.controller.ts:69](src/users/users.controller.ts#L69)
+- [x] **Row 22** — `GET /users/data/export` → [src/users/users.controller.ts:84](src/users/users.controller.ts#L84)
 
-### Routes
-- [ ] **Row 12** — `GET /auth/logs`
-  - File: [src/auth/auth.controller.ts](src/auth/auth.controller.ts) — new `@Get('logs')` route. Returns paginated auth events for `currentUser`.
+Also fixed a Phase D regression: `@Query('sort') ProductSortOption` in `SearchController` triggered a Swagger circular-dep at boot. Changed to `@Query('sort') string` with internal enum validation.
 
-- [ ] **Row 13** — `GET /users/profile`
-  - File: [src/users/users.controller.ts](src/users/users.controller.ts) — new route. Auth required. Returns own user via `usersService.toPublicUser`.
+Build: ✅ clean (221 files). Boot: ✅ 116 routes mapped, Nest application successfully started.
 
-- [ ] **Row 14** — `PATCH /users/profile`
-  - File: same controller. DTO: firstName/lastName/dateOfBirth/phoneNumber only. No email/password changes here.
-
-- [ ] **Row 15** — `GET /users/addresses` — list own addresses.
-- [ ] **Row 16** — `POST /users/addresses` — create. If first address, mark default.
-- [ ] **Row 17** — `PATCH /users/addresses/:id` — update.
-- [ ] **Row 18** — `DELETE /users/addresses/:id` — soft delete.
-- [ ] **Row 19** — `POST /users/addresses/:id/default` — set default (clears others).
-
-- [ ] **Row 20** — `POST /users/consent/marketing`
-  - Body: `{ optIn: boolean }`. Sets/clears `marketingConsentAt` on user.
-
-- [ ] **Row 21** — `POST /users/data/delete-request`
-  - Creates a `DataRequest{ kind: 'delete' }`. Admin processes async (Module 21 endpoint, not built today).
-
-- [ ] **Row 22** — `GET /users/data/export`
-  - Aggregates user + addresses + cart (+ orders when module exists later). Returns JSON dump.
-
-**Phase C commit message:** `feat(user): add profile, addresses, NDPR consent/data endpoints, auth event log`
+**Phase C commit message:** `feat(user): add profile, addresses, NDPR consent/data, auth event log`
 
 ---
 

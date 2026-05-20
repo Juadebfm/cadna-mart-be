@@ -10,17 +10,17 @@
 9,1. Auth & Account Mgmt,POST,/api/v1/auth/logout,Logout / invalidate session,User,,Present,POST,/api/v1/auth/logout,src/auth/auth.controller.ts:246,Invalidates refresh token and clears Passport session.
 10,1. Auth & Account Mgmt,POST,/api/v1/auth/refresh,Refresh access token,User,,Present,POST,/api/v1/auth/refresh,src/auth/auth.controller.ts:230
 11,1. Auth & Account Mgmt,GET,/api/v1/auth/me,Get current authenticated user,User,,Present,GET,/api/v1/auth/me,src/auth/auth.controller.ts:262,Spec-aligned alias of /auth/profile. Both paths live.
-12,1. Auth & Account Mgmt,GET,/api/v1/auth/logs,Auth event logs (for user),User,Audit log requirement,Missing,,,,No auth event audit log.
-13,2. User Profile,GET,/api/v1/users/profile,Get profile,User,,Missing,,,,Only generic GET /users/:id exists; no /me-style profile read. Profile is reachable via /auth/profile but spec separates them.
-14,2. User Profile,PATCH,/api/v1/users/profile,Update profile details,User,,Missing,,,,PATCH /users/:id exists but isn't self-scoped or named /profile.
-15,2. User Profile,GET,/api/v1/users/addresses,List saved addresses,User,,Missing,,,,No address model or module exists.
-16,2. User Profile,POST,/api/v1/users/addresses,Add new address,User,,Missing
-17,2. User Profile,PATCH,/api/v1/users/addresses/{id},Update address,User,,Missing
-18,2. User Profile,DELETE,/api/v1/users/addresses/{id},Delete address,User,,Missing
-19,2. User Profile,POST,/api/v1/users/addresses/{id}/default,Set default address,User,,Missing
-20,2. User Profile,POST,/api/v1/users/consent/marketing,Set marketing consent (NDPR),User,NDPR compliance,Missing,,,,NDPR consent tracking not implemented.
-21,2. User Profile,POST,/api/v1/users/data/delete-request,Right-to-be-forgotten request,User,NDPR compliance,Missing,,,,NDPR data-deletion request flow not built.
-22,2. User Profile,GET,/api/v1/users/data/export,Export user data (NDPR),User,NDPR compliance,Missing,,,,NDPR data-export not built.
+12,1. Auth & Account Mgmt,GET,/api/v1/auth/logs,Auth event logs (for user),User,Audit log requirement,Present,GET,/api/v1/auth/logs,src/auth/auth.controller.ts:341,"AuthEventsService logs login/logout/refresh/register/password_reset/2fa/clerk_login events. Endpoint returns paginated own events. IP/UA capture is a follow-up."
+13,2. User Profile,GET,/api/v1/users/profile,Get profile,User,,Present,GET,/api/v1/users/profile,src/users/users.controller.ts:38,Self-scoped profile read using CurrentUser. Returns same shape as /auth/me.
+14,2. User Profile,PATCH,/api/v1/users/profile,Update profile details,User,,Present,PATCH,/api/v1/users/profile,src/users/users.controller.ts:45,"Self-update for firstName, lastName, phoneNumber, dateOfBirth. Email/password updates go through dedicated flows."
+15,2. User Profile,GET,/api/v1/users/addresses,List saved addresses,User,,Present,GET,/api/v1/users/addresses,src/addresses/addresses.controller.ts:25,New AddressesModule. Default address sorted first.
+16,2. User Profile,POST,/api/v1/users/addresses,Add new address,User,,Present,POST,/api/v1/users/addresses,src/addresses/addresses.controller.ts:32,First address automatically becomes default.
+17,2. User Profile,PATCH,/api/v1/users/addresses/{id},Update address,User,,Present,PATCH,/api/v1/users/addresses/{id},src/addresses/addresses.controller.ts:38,Ownership check enforces user can only edit own addresses.
+18,2. User Profile,DELETE,/api/v1/users/addresses/{id},Delete address,User,,Present,DELETE,/api/v1/users/addresses/{id},src/addresses/addresses.controller.ts:48,Soft delete (sets deletedAt + clears isDefault).
+19,2. User Profile,POST,/api/v1/users/addresses/{id}/default,Set default address,User,,Present,POST,/api/v1/users/addresses/{id}/default,src/addresses/addresses.controller.ts:58,Clears default flag from siblings then sets this one.
+20,2. User Profile,POST,/api/v1/users/consent/marketing,Set marketing consent (NDPR),User,NDPR compliance,Present,POST,/api/v1/users/consent/marketing,src/users/users.controller.ts:55,Stores marketingConsentAt timestamp on user.
+21,2. User Profile,POST,/api/v1/users/data/delete-request,Right-to-be-forgotten request,User,NDPR compliance,Present,POST,/api/v1/users/data/delete-request,src/users/users.controller.ts:69,Creates DataRequest record (kind=delete) for admin to process.
+22,2. User Profile,GET,/api/v1/users/data/export,Export user data (NDPR),User,NDPR compliance,Present,GET,/api/v1/users/data/export,src/users/users.controller.ts:84,Returns JSON bundle of user + addresses; logs an export DataRequest for audit.
 23,3. Catalog & Storefront,GET,/api/v1/categories,List all categories,Public,,Present,GET,/api/v1/categories,src/categories/categories.controller.ts:13
 24,3. Catalog & Storefront,GET,/api/v1/categories/{slug},Get category details,Public,,Present,GET,/api/v1/categories/{slug},src/categories/categories.controller.ts:20,Returns name/slug/iconUrl/parent/productCount for a single category.
 25,3. Catalog & Storefront,GET,/api/v1/categories/{slug}/products,Products in category,Public,,Present,GET,/api/v1/categories/{slug}/products,src/products/category-products.controller.ts:13,Nested route added; reuses paginated products query.

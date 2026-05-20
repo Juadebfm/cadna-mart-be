@@ -13,6 +13,7 @@ import { EmailModule } from '@email/email.module';
 import { RegistrationSessionModule } from '@registration-session/registration-session.module';
 import { ConfigService } from '@config/config.service';
 import { SellerProfile, SellerProfileSchema } from '@sellers/schemas/seller-profile.schema';
+import { AuthEventsModule } from '@auth-events/auth-events.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { SellerProfile, SellerProfileSchema } from '@sellers/schemas/seller-prof
     OtpModule,
     EmailModule,
     RegistrationSessionModule,
+    AuthEventsModule,
     MongooseModule.forFeature([{ name: SellerProfile.name, schema: SellerProfileSchema }]),
     PassportModule.register({ session: true }),
     JwtModule.registerAsync({

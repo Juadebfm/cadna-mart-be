@@ -1,4 +1,14 @@
-import { Controller, Post, Get, Body, UseGuards, Req, HttpCode, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  UseGuards,
+  Req,
+  HttpCode,
+  HttpStatus,
+  Query,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { Request } from 'express';
 import { AuthService } from './auth.service';
@@ -24,6 +34,7 @@ import { LocalAuthGuard } from './guards/local-auth.guard';
 import { Public } from './decorators/public.decorator';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { UsersService } from '@users/users.service';
+import { AuthEventsService } from '@auth-events/auth-events.service';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -31,6 +42,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly usersService: UsersService,
+    private readonly authEventsService: AuthEventsService,
   ) {}
 
   // ─── MULTI-STEP REGISTRATION ─────────────────────────────────
@@ -323,6 +335,17 @@ export class AuthController {
   async getMe(@CurrentUser('userId') userId: string) {
     const user = await this.usersService.findById(userId);
     return this.usersService.toPublicUser(user);
+  }
+
+  @ApiBearerAuth()
+  @Get('logs')
+  @ApiOperation({ summary: 'List auth events for the current user (audit log)' })
+  async getLogs(
+    @CurrentUser('userId') userId: string,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 20,
+  ) {
+    return this.authEventsService.listForUser(userId, +page, +limit);
   }
 
   @ApiBearerAuth()

@@ -2,7 +2,6 @@ import { Controller, Get, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { Public } from '@auth/decorators/public.decorator';
 import { SearchService } from './search.service';
-import { ProductSortOption } from '@products/dto/product-query.dto';
 
 @ApiTags('Search')
 @Controller('search')
@@ -20,7 +19,7 @@ export class SearchController {
     @Query('brand') brand?: string,
     @Query('minPrice') minPrice?: number,
     @Query('maxPrice') maxPrice?: number,
-    @Query('sort') sort?: ProductSortOption,
+    @Query('sort') sort?: string,
   ) {
     return this.searchService.search({
       q,

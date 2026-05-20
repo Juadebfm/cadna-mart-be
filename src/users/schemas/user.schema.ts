@@ -58,6 +58,9 @@ export class User extends BaseSchema {
   @Prop({ type: Date, default: null })
   lastLoginAt!: Date | null;
 
+  @Prop({ type: Date, default: null })
+  marketingConsentAt!: Date | null;
+
   @Prop({ type: String, default: null, select: false })
   refreshToken!: string | null;
 }

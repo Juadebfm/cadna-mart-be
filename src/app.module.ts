@@ -30,6 +30,9 @@ import { UploadModule } from './upload/upload.module';
 import { AdminModule } from './admin/admin.module';
 import { CollectionsModule } from './collections/collections.module';
 import { BrandsModule } from './brands/brands.module';
+import { AddressesModule } from './addresses/addresses.module';
+import { AuthEventsModule } from './auth-events/auth-events.module';
+import { DataRequestsModule } from './data-requests/data-requests.module';
 import { CorrelationIdMiddleware } from '@common/middleware/correlation-id.middleware';
 import { RequestLoggerMiddleware } from '@common/middleware/request-logger.middleware';
 import { AppController } from './app.controller';
@@ -72,6 +75,9 @@ import { AppService } from './app.service';
     AdminModule,
     CollectionsModule,
     BrandsModule,
+    AddressesModule,
+    AuthEventsModule,
+    DataRequestsModule,
   ],
   controllers: [AppController],
   providers: [
