@@ -127,6 +127,14 @@ export class UsersService {
     return user;
   }
 
+  async setActive(userId: string, isActive: boolean): Promise<User> {
+    const user = await this.usersRepository.update(userId, { isActive } as Partial<User>);
+    if (!user) {
+      throw new NotFoundException(ERROR_MESSAGES.USER_NOT_FOUND);
+    }
+    return user;
+  }
+
   toPublicUser(user: User) {
     return {
       id: (user as unknown as { id?: string }).id ?? user._id.toString(),

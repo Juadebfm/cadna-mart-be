@@ -159,16 +159,16 @@
 158,17. Admin - Orders & Ops,POST,/api/v1/admin/refunds/{id}/approve,Approve refund,Admin,,Missing
 159,18. Admin - Sellers/Suppliers/Users,GET,/api/v1/admin/sellers,List sellers,Admin,,Present,GET,/api/v1/admin/sellers,src/admin/admin-sellers.controller.ts:25
 160,18. Admin - Sellers/Suppliers/Users,GET,/api/v1/admin/sellers/{id},Seller detail,Admin,,Missing,,,,No detail endpoint; only update/verify/approve/reject actions.
-161,18. Admin - Sellers/Suppliers/Users,POST,/api/v1/admin/sellers/{id}/approve,Approve onboarding,Admin,,Partial,PATCH,/api/v1/admin/sellers/{id}/approve,src/admin/admin-sellers.controller.ts:99,Method mismatch (PATCH vs POST).
-162,18. Admin - Sellers/Suppliers/Users,POST,/api/v1/admin/sellers/{id}/reject,Reject onboarding,Admin,,Partial,PATCH,/api/v1/admin/sellers/{id}/reject,src/admin/admin-sellers.controller.ts:121,Method mismatch (PATCH vs POST).
+161,18. Admin - Sellers/Suppliers/Users,POST,/api/v1/admin/sellers/{id}/approve,Approve onboarding,Admin,,Present,POST,/api/v1/admin/sellers/{id}/approve,src/admin/admin-sellers.controller.ts:108,POST alias added alongside the legacy PATCH at the same path. Both work.
+162,18. Admin - Sellers/Suppliers/Users,POST,/api/v1/admin/sellers/{id}/reject,Reject onboarding,Admin,,Present,POST,/api/v1/admin/sellers/{id}/reject,src/admin/admin-sellers.controller.ts:128,POST alias added alongside the legacy PATCH at the same path. Both work.
 163,18. Admin - Sellers/Suppliers/Users,POST,/api/v1/admin/sellers/{id}/suspend,Suspend seller,Admin,,Missing,,,,No suspend action.
 164,18. Admin - Sellers/Suppliers/Users,POST,/api/v1/admin/sellers/{id}/activate,Reactivate seller,Admin,,Missing
 165,18. Admin - Sellers/Suppliers/Users,GET,/api/v1/admin/suppliers,List suppliers,Admin,,Missing,,,,No supplier module.
 166,18. Admin - Sellers/Suppliers/Users,POST,/api/v1/admin/suppliers,Add supplier,Admin,,Missing
 167,18. Admin - Sellers/Suppliers/Users,PATCH,/api/v1/admin/suppliers/{id},Update supplier,Admin,,Missing
-168,18. Admin - Sellers/Suppliers/Users,GET,/api/v1/admin/users,List buyers,Admin,,Partial,GET,/api/v1/users,src/users/users.controller.ts:35,Lives at /users; not namespaced under /admin and not filtered to buyers.
-169,18. Admin - Sellers/Suppliers/Users,GET,/api/v1/admin/users/{id},User detail,Admin,,Partial,GET,/api/v1/users/{id},src/users/users.controller.ts:42,Same — not in admin namespace.
-170,18. Admin - Sellers/Suppliers/Users,POST,/api/v1/admin/users/{id}/suspend,Suspend account,Admin,,Missing,,,,No suspend action.
+168,18. Admin - Sellers/Suppliers/Users,GET,/api/v1/admin/users,List buyers,Admin,,Present,GET,/api/v1/admin/users,src/admin/admin-users.controller.ts:28,Spec-aligned admin route. Filter by accountType via ?accountType=BUYER. Legacy /users also still works.
+169,18. Admin - Sellers/Suppliers/Users,GET,/api/v1/admin/users/{id},User detail,Admin,,Present,GET,/api/v1/admin/users/{id},src/admin/admin-users.controller.ts:34,Spec-aligned. Admin-gated.
+170,18. Admin - Sellers/Suppliers/Users,POST,/api/v1/admin/users/{id}/suspend,Suspend account,Admin,,Present,POST,/api/v1/admin/users/{id}/suspend,src/admin/admin-users.controller.ts:39,"Sets isActive=false. Body {""active"": true} reactivates."
 171,19. Admin - Delivery Config,GET,/api/v1/admin/delivery/modes,List delivery modes,Admin,,Missing,,,,No delivery-config module.
 172,19. Admin - Delivery Config,PATCH,/api/v1/admin/delivery/modes/{id},Enable/disable mode,Admin,,Missing
 173,19. Admin - Delivery Config,GET,/api/v1/admin/delivery/providers,List logistics providers,Admin,,Missing

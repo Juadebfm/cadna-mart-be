@@ -1,4 +1,4 @@
-import { Controller, Get, Patch, Param, Body, Query } from '@nestjs/common';
+import { Controller, Get, Patch, Post, Param, Body, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -102,6 +102,31 @@ export class AdminSellersController {
     @Param('id', ParseObjectIdPipe) sellerId: string,
     @CurrentUser('userId') adminUserId: string,
   ) {
+    return this.approveSeller(sellerId, adminUserId);
+  }
+
+  @Post(':id/approve')
+  @ApiOperation({ summary: 'Approve a seller (spec-aligned POST alias of PATCH /:id/approve)' })
+  async approvePost(
+    @Param('id', ParseObjectIdPipe) sellerId: string,
+    @CurrentUser('userId') adminUserId: string,
+  ) {
+    return this.approveSeller(sellerId, adminUserId);
+  }
+
+  @Patch(':id/reject')
+  @ApiOperation({ summary: 'Reject / revoke seller approval' })
+  async reject(@Param('id', ParseObjectIdPipe) sellerId: string) {
+    return this.rejectSeller(sellerId);
+  }
+
+  @Post(':id/reject')
+  @ApiOperation({ summary: 'Reject seller (spec-aligned POST alias of PATCH /:id/reject)' })
+  async rejectPost(@Param('id', ParseObjectIdPipe) sellerId: string) {
+    return this.rejectSeller(sellerId);
+  }
+
+  private async approveSeller(sellerId: string, adminUserId: string) {
     const profile = await this.sellerProfileModel
       .findOneAndUpdate(
         { user: sellerId },
@@ -118,9 +143,7 @@ export class AdminSellersController {
     return { message: 'Seller approved', isApproved: true };
   }
 
-  @Patch(':id/reject')
-  @ApiOperation({ summary: 'Reject / revoke seller approval' })
-  async reject(@Param('id', ParseObjectIdPipe) sellerId: string) {
+  private async rejectSeller(sellerId: string) {
     const profile = await this.sellerProfileModel
       .findOneAndUpdate(
         { user: sellerId },

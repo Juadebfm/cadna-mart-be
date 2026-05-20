@@ -58,6 +58,9 @@ POST /auth/otp/verify    { "email": "...", "code": "123456", "purpose": "login" 
 ```
 > **Note on phone vs email:** the PM spec says "phone OTP". We currently deliver OTP codes via **email (Resend)** because no SMS provider is wired. The endpoint paths still match the spec; only the delivery channel differs. Switching to SMS is a follow-up.
 
+### Email sender
+All transactional emails (verification OTP, login OTP, password-reset OTP) are sent from `noreply@cmafrica.shop` via Resend. The sending domain is DKIM/SPF-verified, so emails to any recipient should land in the primary inbox after the recipient's mail client builds sender reputation (the first 1–2 sends may briefly hit spam — mark as "Not spam" once and future sends route normally). Every email also renders the Cadna Mart logo at the top.
+
 ## Response envelope
 
 Every successful response is wrapped by the global interceptor:
