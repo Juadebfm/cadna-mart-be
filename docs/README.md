@@ -87,6 +87,61 @@ Errors come from the global exception filter:
 ```
 Always log `correlationId` — it lets backend trace the request in Winston logs.
 
+## Seller registration flow — bank info moved (BREAKING for FE)
+
+**Why this changed:** edge WAFs (Render, Cloudflare, AWS) silently drop unauthenticated POST bodies that look like Nigerian banking PII (10-digit NUBAN + bank name + Nigerian phone + Lagos address). We confirmed it: the same body with realistic bank data was being black-holed at the edge; placeholder values returned 201 in 1.1s. Accepting bank account numbers on a public endpoint is also a real security smell, regardless of the WAF.
+
+**What you (FE) need to change:** the user-facing wizard screens stay exactly the same — collect business + bank info on the same screen as before. But you must now send the wire payload in **two requests** instead of one:
+
+```
+# Step 2 of the wizard (UI unchanged): collect personal + business + bank
+# but split the POSTs:
+
+# 2a. POST personal + business (NO bank fields)
+POST /api/v1/auth/register/seller/details
+{
+  "sessionId": "...",
+  "firstName": "...", "lastName": "...",
+  "businessName": "...", "businessAddress": "...", "businessType": "sole_proprietor",
+  "businessRegistrationNumber": "RC-...",   # optional
+  "phoneNumber": "...", "dateOfBirth": "...",
+  "termsAccepted": true
+}
+
+# 2b. Step 3 (also unchanged from user POV): set password
+POST /api/v1/auth/register/seller/password
+{
+  "sessionId": "...", "password": "...", "confirmPassword": "...",
+  "businessName": "...", "businessAddress": "...", "businessType": "...",
+  "businessRegistrationNumber": "..."        # NO bank fields anymore
+}
+
+# 2c. Step 4 (unchanged): verify email OTP
+POST /api/v1/auth/register/seller/verify
+{ "email": "...", "code": "123456" }
+
+# 2d. Log the new seller in (or have them log in)
+POST /api/v1/auth/login
+{ "email": "...", "password": "..." }
+  ↳ store accessToken
+
+# 2e. NOW submit the bank info you've been holding in FE state since step 2
+POST /api/v1/sellers/my/banking            Authorization: Bearer <accessToken>
+{
+  "bankName": "Access Bank",
+  "bankAccountNumber": "0123456789",
+  "bankAccountName": "John Doe Enterprises"
+}
+```
+
+`POST /sellers/my/banking` validates that `bankAccountNumber` is exactly 10 digits (Nigerian NUBAN format). The endpoint also auto-stamps `bankDetailsCompletedAt` on the seller profile so admin onboarding can gate approval on it.
+
+You can read the current banking state any time with `GET /sellers/my/banking`. Returns `nulls` if not yet submitted.
+
+**Important: do NOT prompt the user twice.** Hold the bank fields in FE state from the wizard screen and replay them as the post-login step. From the user's perspective the flow is unchanged.
+
+---
+
 ## Guest cart flow (important — non-obvious)
 
 The cart supports both authenticated users and guest checkout. The flow:

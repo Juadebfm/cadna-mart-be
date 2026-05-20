@@ -40,18 +40,7 @@ export class RegisterSellerPasswordDto {
   @IsEnum(BusinessType)
   businessType!: BusinessType;
 
-  @ApiProperty({ example: 'Access Bank' })
-  @IsNotEmpty()
-  @IsString()
-  bankName!: string;
-
-  @ApiProperty({ example: '0123456789' })
-  @IsNotEmpty()
-  @IsString()
-  bankAccountNumber!: string;
-
-  @ApiProperty({ example: 'John Doe Enterprises' })
-  @IsNotEmpty()
-  @IsString()
-  bankAccountName!: string;
+  // Bank details intentionally NOT accepted here. The seller submits them
+  // via POST /sellers/me/banking after login. See seller-profile schema +
+  // /sellers controller. Keeps unauth endpoints free of bank PII.
 }

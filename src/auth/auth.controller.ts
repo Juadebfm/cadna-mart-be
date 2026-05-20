@@ -109,14 +109,20 @@ export class AuthController {
 
   @Public()
   @Post('register/seller/details')
-  @ApiOperation({ summary: 'Seller Step 2: Provide personal + business details' })
+  @ApiOperation({
+    summary:
+      'Seller Step 2: Provide personal + business details. Bank info is collected separately via POST /sellers/me/banking after login - do not send it here.',
+  })
   async registerSellerDetails(@Body() dto: RegisterSellerDetailsDto) {
     return this.authService.registerSellerDetails(dto.sessionId, dto);
   }
 
   @Public()
   @Post('register/seller/password')
-  @ApiOperation({ summary: 'Seller Step 3: Set password and create account' })
+  @ApiOperation({
+    summary:
+      'Seller Step 3: Set password and create account. Bank info is collected separately via POST /sellers/me/banking after login.',
+  })
   async registerSellerPassword(@Body() dto: RegisterSellerPasswordDto) {
     return this.authService.registerSellerPassword(
       dto.sessionId,
@@ -127,9 +133,6 @@ export class AuthController {
         businessRegistrationNumber: dto.businessRegistrationNumber,
         businessAddress: dto.businessAddress,
         businessType: dto.businessType,
-        bankName: dto.bankName,
-        bankAccountNumber: dto.bankAccountNumber,
-        bankAccountName: dto.bankAccountName,
       },
     );
   }

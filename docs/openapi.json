@@ -185,7 +185,7 @@
             "description": ""
           }
         },
-        "summary": "Seller Step 2: Provide personal + business details",
+        "summary": "Seller Step 2: Provide personal + business details. Bank info is collected separately via POST /sellers/me/banking after login - do not send it here.",
         "tags": [
           "Auth"
         ]
@@ -210,7 +210,7 @@
             "description": ""
           }
         },
-        "summary": "Seller Step 3: Set password and create account",
+        "summary": "Seller Step 3: Set password and create account. Bank info is collected separately via POST /sellers/me/banking after login.",
         "tags": [
           "Auth"
         ]
@@ -3087,6 +3087,54 @@
         ]
       }
     },
+    "/api/v1/sellers/my/banking": {
+      "get": {
+        "operationId": "SellersController_getMyBanking_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get your seller bank/payout details. Returns nulls if not yet submitted.",
+        "tags": [
+          "Sellers"
+        ]
+      },
+      "post": {
+        "operationId": "SellersController_setMyBanking_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BankingDetailsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Submit/update your seller bank/payout details. Required once after seller registration; collected by the FE on the same wizard screen but POSTed here after login (kept off the public registration endpoints).",
+        "tags": [
+          "Sellers"
+        ]
+      }
+    },
     "/api/v1/products/{productId}/reviews": {
       "get": {
         "operationId": "ReviewsController_findByProduct_v1",
@@ -4817,18 +4865,6 @@
             ],
             "example": "sole_proprietor"
           },
-          "bankName": {
-            "type": "string",
-            "example": "Access Bank"
-          },
-          "bankAccountNumber": {
-            "type": "string",
-            "example": "0123456789"
-          },
-          "bankAccountName": {
-            "type": "string",
-            "example": "John Doe Enterprises"
-          },
           "termsAccepted": {
             "type": "boolean",
             "example": true
@@ -4841,9 +4877,6 @@
           "businessName",
           "businessAddress",
           "businessType",
-          "bankName",
-          "bankAccountNumber",
-          "bankAccountName",
           "termsAccepted"
         ]
       },
@@ -4883,18 +4916,6 @@
               "partnership"
             ],
             "example": "sole_proprietor"
-          },
-          "bankName": {
-            "type": "string",
-            "example": "Access Bank"
-          },
-          "bankAccountNumber": {
-            "type": "string",
-            "example": "0123456789"
-          },
-          "bankAccountName": {
-            "type": "string",
-            "example": "John Doe Enterprises"
           }
         },
         "required": [
@@ -4903,10 +4924,7 @@
           "confirmPassword",
           "businessName",
           "businessAddress",
-          "businessType",
-          "bankName",
-          "bankAccountNumber",
-          "bankAccountName"
+          "businessType"
         ]
       },
       "RegisterDto": {
@@ -5822,6 +5840,29 @@
             "description": "Estimated delivery time range, e.g. \"25-40 min\""
           }
         }
+      },
+      "BankingDetailsDto": {
+        "type": "object",
+        "properties": {
+          "bankName": {
+            "type": "string",
+            "example": "Access Bank"
+          },
+          "bankAccountNumber": {
+            "type": "string",
+            "example": "0123456789",
+            "description": "Nigerian NUBAN: 10 digits"
+          },
+          "bankAccountName": {
+            "type": "string",
+            "example": "John Doe Enterprises"
+          }
+        },
+        "required": [
+          "bankName",
+          "bankAccountNumber",
+          "bankAccountName"
+        ]
       },
       "CreateReviewDto": {
         "type": "object",

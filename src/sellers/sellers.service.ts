@@ -9,14 +9,17 @@ import { Model } from 'mongoose';
 import { SellersRepository } from './sellers.repository';
 import { CreateSellerDto } from './dto/create-seller.dto';
 import { UpdateSellerDto } from './dto/update-seller.dto';
+import { BankingDetailsDto } from './dto/banking-details.dto';
 import { AccountType } from '@users/enums/account-type.enum';
 import { Product } from '@products/schemas/product.schema';
+import { SellerProfile } from './schemas/seller-profile.schema';
 
 @Injectable()
 export class SellersService {
   constructor(
     private readonly sellersRepository: SellersRepository,
     @InjectModel(Product.name) private readonly productModel: Model<Product>,
+    @InjectModel(SellerProfile.name) private readonly sellerProfileModel: Model<SellerProfile>,
   ) {}
 
   async createSeller(dto: CreateSellerDto, ownerId: string): Promise<object> {
@@ -142,6 +145,47 @@ export class SellersService {
       productCount: productStats?.productCount ?? 0,
       totalSales: productStats?.totalSales ?? 0,
       sellerUrl: `/sellers/${seller.slug}`,
+    };
+  }
+
+  async getMyBankingDetails(userId: string): Promise<object> {
+    const profile = await this.sellerProfileModel
+      .findOne({ user: userId, deletedAt: null })
+      .lean()
+      .exec();
+    if (!profile) {
+      throw new NotFoundException('Seller profile not found');
+    }
+    return {
+      bankName: profile.bankName,
+      bankAccountNumber: profile.bankAccountNumber,
+      bankAccountName: profile.bankAccountName,
+      completedAt: profile.bankDetailsCompletedAt,
+    };
+  }
+
+  async setMyBankingDetails(userId: string, dto: BankingDetailsDto): Promise<object> {
+    const updated = await this.sellerProfileModel
+      .findOneAndUpdate(
+        { user: userId, deletedAt: null },
+        {
+          bankName: dto.bankName,
+          bankAccountNumber: dto.bankAccountNumber,
+          bankAccountName: dto.bankAccountName,
+          bankDetailsCompletedAt: new Date(),
+        },
+        { new: true },
+      )
+      .lean()
+      .exec();
+    if (!updated) {
+      throw new NotFoundException('Seller profile not found');
+    }
+    return {
+      bankName: updated.bankName,
+      bankAccountNumber: updated.bankAccountNumber,
+      bankAccountName: updated.bankAccountName,
+      completedAt: updated.bankDetailsCompletedAt,
     };
   }
 

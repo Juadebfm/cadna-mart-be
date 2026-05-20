@@ -161,9 +161,6 @@ export class AuthService {
       businessRegistrationNumber?: string;
       businessAddress: string;
       businessType: string;
-      bankName: string;
-      bankAccountNumber: string;
-      bankAccountName: string;
       termsAccepted: boolean;
     },
   ): Promise<{ sessionId: string }> {
@@ -175,16 +172,15 @@ export class AuthService {
       termsAccepted: details.termsAccepted,
     });
 
-    // Store business details in session metadata (we'll read them back at password step)
+    // Store business details in session metadata (we'll read them back at password step).
+    // Bank details are intentionally NOT collected here - the FE collects them in the
+    // same screen but submits via POST /sellers/me/banking after login. See dto.
     const session = await this.registrationSessionService.getSession(sessionId);
     (session as any).businessDetails = {
       businessName: details.businessName,
       businessRegistrationNumber: details.businessRegistrationNumber ?? null,
       businessAddress: details.businessAddress,
       businessType: details.businessType,
-      bankName: details.bankName,
-      bankAccountNumber: details.bankAccountNumber,
-      bankAccountName: details.bankAccountName,
     };
 
     return { sessionId };
@@ -199,9 +195,6 @@ export class AuthService {
       businessRegistrationNumber?: string;
       businessAddress: string;
       businessType: string;
-      bankName: string;
-      bankAccountNumber: string;
-      bankAccountName: string;
     },
   ): Promise<{ message: string }> {
     if (password !== confirmPassword) {
@@ -230,16 +223,19 @@ export class AuthService {
 
     const userId = (user as any)._id.toString();
 
-    // Create SellerProfile
+    // Create SellerProfile. Bank fields stay null until the seller submits them
+    // via POST /sellers/me/banking after login (avoids accepting bank PII on
+    // unauthenticated endpoints).
     await this.sellerProfileModel.create({
       user: userId,
       businessName: businessDetails.businessName,
       businessRegistrationNumber: businessDetails.businessRegistrationNumber ?? null,
       businessAddress: businessDetails.businessAddress,
       businessType: businessDetails.businessType,
-      bankName: businessDetails.bankName,
-      bankAccountNumber: businessDetails.bankAccountNumber,
-      bankAccountName: businessDetails.bankAccountName,
+      bankName: null,
+      bankAccountNumber: null,
+      bankAccountName: null,
+      bankDetailsCompletedAt: null,
       isApproved: false,
     });
 

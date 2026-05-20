@@ -28,14 +28,17 @@ export class SellerProfile extends BaseSchema {
   @Prop({ type: String, enum: BusinessType, required: true })
   businessType!: BusinessType;
 
-  @Prop({ required: true, trim: true })
-  bankName!: string;
+  @Prop({ type: String, default: null, trim: true })
+  bankName!: string | null;
 
-  @Prop({ required: true, trim: true })
-  bankAccountNumber!: string;
+  @Prop({ type: String, default: null, trim: true })
+  bankAccountNumber!: string | null;
 
-  @Prop({ required: true, trim: true })
-  bankAccountName!: string;
+  @Prop({ type: String, default: null, trim: true })
+  bankAccountName!: string | null;
+
+  @Prop({ type: Date, default: null })
+  bankDetailsCompletedAt!: Date | null;
 
   @Prop({ default: false })
   isApproved!: boolean;

@@ -50,21 +50,11 @@ export class RegisterSellerDetailsDto {
   @IsEnum(BusinessType)
   businessType!: BusinessType;
 
-  // Bank details
-  @ApiProperty({ example: 'Access Bank' })
-  @IsNotEmpty()
-  @IsString()
-  bankName!: string;
-
-  @ApiProperty({ example: '0123456789' })
-  @IsNotEmpty()
-  @IsString()
-  bankAccountNumber!: string;
-
-  @ApiProperty({ example: 'John Doe Enterprises' })
-  @IsNotEmpty()
-  @IsString()
-  bankAccountName!: string;
+  // Bank details intentionally collected via POST /sellers/me/banking after
+  // login. Public unauthenticated endpoints must not accept bank PII (some
+  // edge WAFs silently drop such bodies, plus it leaks sensitive data on
+  // an unauth surface). The FE collects them in the same wizard screen
+  // and replays them once the user holds a JWT.
 
   @ApiProperty({ example: true })
   @IsNotEmpty()

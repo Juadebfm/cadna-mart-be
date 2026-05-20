@@ -18,6 +18,7 @@ import { AccountType } from '@users/enums/account-type.enum';
 import { SellersService } from './sellers.service';
 import { CreateSellerDto } from './dto/create-seller.dto';
 import { UpdateSellerDto } from './dto/update-seller.dto';
+import { BankingDetailsDto } from './dto/banking-details.dto';
 import { ProductsService } from '@products/products.service';
 import { ProductQueryDto } from '@products/dto/product-query.dto';
 
@@ -89,5 +90,26 @@ export class SellersController {
     @CurrentUser() user: { userId: string; accountType: string },
   ) {
     return this.sellersService.updateMySeller(dto, user);
+  }
+
+  @ApiBearerAuth()
+  @AccountTypes(AccountType.SELLER)
+  @Get('my/banking')
+  @ApiOperation({
+    summary: 'Get your seller bank/payout details. Returns nulls if not yet submitted.',
+  })
+  async getMyBanking(@CurrentUser('userId') userId: string) {
+    return this.sellersService.getMyBankingDetails(userId);
+  }
+
+  @ApiBearerAuth()
+  @AccountTypes(AccountType.SELLER)
+  @Post('my/banking')
+  @ApiOperation({
+    summary:
+      'Submit/update your seller bank/payout details. Required once after seller registration; collected by the FE on the same wizard screen but POSTed here after login (kept off the public registration endpoints).',
+  })
+  async setMyBanking(@CurrentUser('userId') userId: string, @Body() dto: BankingDetailsDto) {
+    return this.sellersService.setMyBankingDetails(userId, dto);
   }
 }
