@@ -3245,7 +3245,7 @@
                       "example": {
                         "cartId": "8d2e1f4c-3b9a-4b2c-9e7a-b1c2d3e4f5a6",
                         "ownerType": "guest",
-                        "guestToken": "7b2a9c1e8d5f3a6c4b9e2f1d0c8a7b6c5d4e3f2a1b0c9d8e7f6a"
+                        "guestToken": "EXAMPLE_GUEST_TOKEN_save_this_value_from_response"
                       }
                     }
                   ]
