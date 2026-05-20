@@ -91,35 +91,22 @@ Build: ✅ clean (221 files). Boot: ✅ 116 routes mapped, Nest application succ
 
 ---
 
-## Phase E — Cart rework with cartId + guest support (≈2 hrs, 9 rows)
+## Phase E — Cart rework with cartId + guest support (≈2 hrs, 9 rows) ✅ DONE
 
-### Supporting work
-- [ ] Extend `Cart` schema: add `publicCartId: string` (UUID, unique, indexed), `ownerType: 'user'|'guest'`, `guestToken?: string` (hashed), `expiresAt?: Date` (guest carts TTL 30 days), TTL index.
-- [ ] Add `CartGuard` (or extend existing) that resolves `:cartId` to a cart and verifies the requester (auth user owns it, OR `x-guest-token` header matches the hashed guestToken).
-- [ ] Backwards-compat: keep `/cart`, `/cart/items` aliases that route to the auth user's primary cart.
+- [x] **Supporting** — `Cart` schema extended in [src/cart/schemas/cart.schema.ts](src/cart/schemas/cart.schema.ts): added `publicCartId` (UUID, unique), `ownerType: USER|GUEST`, `guestTokenHash` (select:false), `expiresAt` (TTL index). `user` is now nullable (sparse unique).
+- [x] **Supporting** — `CartService` resolves access inline via JWT (Bearer header) for user carts and `x-guest-token` header for guest carts. CartModule now imports JwtModule.
+- [x] **Backwards-compat** — legacy `/cart`, `/cart/items`, `/cart/items/:itemId` routes preserved (auth-only) so existing FE keeps working.
+- [x] **Row 38** — `POST /cart` → [src/cart/cart.controller.ts:30](src/cart/cart.controller.ts#L30)
+- [x] **Row 39** — `GET /cart/:cartId` → [src/cart/cart.controller.ts:39](src/cart/cart.controller.ts#L39)
+- [x] **Row 40** — `POST /cart/:cartId/items` → [src/cart/cart.controller.ts:47](src/cart/cart.controller.ts#L47)
+- [x] **Row 41** — `PATCH /cart/:cartId/items/:itemId` → [src/cart/cart.controller.ts:61](src/cart/cart.controller.ts#L61)
+- [x] **Row 42** — `DELETE /cart/:cartId/items/:itemId` → [src/cart/cart.controller.ts:73](src/cart/cart.controller.ts#L73)
+- [x] **Row 43** — `DELETE /cart/:cartId` → [src/cart/cart.controller.ts:84](src/cart/cart.controller.ts#L84)
+- [x] **Row 44** — `POST /cart/:cartId/merge` → [src/cart/cart.controller.ts:91](src/cart/cart.controller.ts#L91) (auth required, body `{ guestToken }`)
+- [x] **Row 45** — `GET /cart/:cartId/totals` → [src/cart/cart.controller.ts:103](src/cart/cart.controller.ts#L103) (returns `pricingLocked: false` placeholder)
+- [x] **Row 46** — `POST /cart/:cartId/validate` → [src/cart/cart.controller.ts:110](src/cart/cart.controller.ts#L110)
 
-### Routes
-- [ ] **Row 38** — `POST /cart`
-  - Public. If auth → return/find user's primary cart. If guest → create cart with new `publicCartId` + plaintext `guestToken` (returned once in response).
-
-- [ ] **Row 39** — `GET /cart/:cartId` — uses CartGuard.
-
-- [ ] **Row 40** — `POST /cart/:cartId/items` — uses CartGuard. Body unchanged from current `addItem`.
-
-- [ ] **Row 41** — `PATCH /cart/:cartId/items/:itemId`
-
-- [ ] **Row 42** — `DELETE /cart/:cartId/items/:itemId`
-
-- [ ] **Row 43** — `DELETE /cart/:cartId` — clear all items (does not delete the cart row).
-
-- [ ] **Row 44** — `POST /cart/:cartId/merge`
-  - Auth required. Body: `{ guestToken }`. Moves all items from the guest cart into the user's primary cart, then deletes the guest cart. Validates token before merging.
-
-- [ ] **Row 45** — `GET /cart/:cartId/totals`
-  - Returns `{ subtotal, taxAmount, deliveryEstimate, total, currency, pricingLocked: false }`. Use config defaults for tax (7.5% VAT) and delivery (flat) until pricing-rule engine lands.
-
-- [ ] **Row 46** — `POST /cart/:cartId/validate`
-  - Iterates items, checks `Product.isActive` and per-variant stock. Returns `{ valid: boolean, issues: [{ itemId, reason }] }`.
+Build: ✅ clean (222 files). Boot: ✅ Nest application started, 13 cart routes mapped (9 new + 4 legacy).
 
 **Phase E commit message:** `feat(cart): add cartId-scoped routes with guest support, totals, validate, merge`
 
