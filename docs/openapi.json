@@ -257,7 +257,17 @@
         },
         "responses": {
           "201": {
-            "description": ""
+            "description": "Account created. Email a verification OTP is sent automatically. Caller should then hit /auth/otp/verify or /auth/register/verify.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": "Account created. Please verify your email.",
+                    "email": "jane@example.com"
+                  }
+                }
+              }
+            }
           }
         },
         "summary": "Single-call registration (orchestrates email + details + password steps)",
@@ -282,7 +292,16 @@
         },
         "responses": {
           "200": {
-            "description": ""
+            "description": "Channel is always email (Resend) regardless of \"phone\" wording in the PM spec. 60-second cooldown enforced by OtpService.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": "Login code sent"
+                  }
+                }
+              }
+            }
           }
         },
         "summary": "Send OTP via email for login/email-verification/password-reset",
@@ -307,7 +326,45 @@
         },
         "responses": {
           "200": {
-            "description": ""
+            "description": "Response shape depends on the `purpose` field on the request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "description": "purpose=login → returns JWT pair + user",
+                      "example": {
+                        "purpose": "login",
+                        "tokens": {
+                          "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                          "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                          "expiresIn": "15m"
+                        },
+                        "user": {
+                          "id": "6710abc123def456789012ab",
+                          "email": "jane@example.com",
+                          "accountType": "BUYER"
+                        }
+                      }
+                    },
+                    {
+                      "description": "purpose=email_verification → success message",
+                      "example": {
+                        "purpose": "email_verification",
+                        "message": "Email verified successfully"
+                      }
+                    },
+                    {
+                      "description": "purpose=password_reset → short-lived resetToken",
+                      "example": {
+                        "purpose": "password_reset",
+                        "resetToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                      }
+                    }
+                  ]
+                }
+              }
+            }
           }
         },
         "summary": "Verify OTP code. Returns JWTs for login, message for verification, resetToken for password-reset",
@@ -332,7 +389,16 @@
         },
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": "Login code sent"
+                  }
+                }
+              }
+            }
           }
         },
         "summary": "Resend OTP (cooldown enforced)",
@@ -382,7 +448,40 @@
         },
         "responses": {
           "200": {
-            "description": ""
+            "description": "Returns JWT pair + user, or a requires2FA flag if 2FA is enabled.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "example": {
+                        "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                        "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                        "expiresIn": "15m",
+                        "user": {
+                          "id": "6710abc123def456789012ab",
+                          "firstName": "Jane",
+                          "lastName": "Doe",
+                          "email": "jane@example.com",
+                          "accountType": "BUYER",
+                          "isVerified": true,
+                          "isTwoFactorEnabled": false
+                        }
+                      }
+                    },
+                    {
+                      "example": {
+                        "requires2FA": true,
+                        "email": "jane@example.com"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid credentials or unverified email."
           }
         },
         "summary": "Login with email and password. For passwordless email-OTP login, use /auth/otp/request then /auth/otp/verify.",
@@ -662,7 +761,18 @@
         },
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                    "expiresIn": "15m"
+                  }
+                }
+              }
+            }
           }
         },
         "summary": "Refresh access token",
@@ -677,7 +787,29 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "id": "6710abc123def456789012ab",
+                    "firstName": "Jane",
+                    "lastName": "Doe",
+                    "email": "jane@example.com",
+                    "accountType": "BUYER",
+                    "phoneNumber": "+2348012345678",
+                    "dateOfBirth": "1990-01-15T00:00:00.000Z",
+                    "isEmailVerified": true,
+                    "isVerified": true,
+                    "isTwoFactorEnabled": false,
+                    "marketingConsent": false,
+                    "marketingConsentAt": null,
+                    "createdAt": "2026-05-19T10:23:00.000Z",
+                    "fullName": "Jane Doe"
+                  }
+                }
+              }
+            }
           }
         },
         "security": [
@@ -697,7 +829,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "Identical payload to GET /auth/profile."
           }
         },
         "security": [
@@ -2202,7 +2334,59 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "items": [
+                      {
+                        "id": "6710def123abc456789012ab",
+                        "slug": "hisense-43-inch-smart-tv",
+                        "name": "Hisense 43\" Smart TV",
+                        "brand": "Hisense",
+                        "thumbnailUrl": "https://res.cloudinary.com/.../hisense-43.jpg",
+                        "price": {
+                          "amount": 220000,
+                          "currency": "NGN",
+                          "formatted": "₦220,000"
+                        },
+                        "originalPrice": {
+                          "amount": 260000,
+                          "currency": "NGN",
+                          "formatted": "₦260,000"
+                        },
+                        "savings": {
+                          "amount": 40000,
+                          "currency": "NGN",
+                          "formatted": "₦40,000"
+                        },
+                        "discountPercent": 15,
+                        "rating": 4.6,
+                        "reviewCount": 184,
+                        "inventoryStatus": "in_stock",
+                        "badge": "Best Deal",
+                        "seller": {
+                          "id": "6710abc...",
+                          "name": "AlphaTech Store",
+                          "isVerified": true,
+                          "location": "Lagos",
+                          "deliveryTimeRange": "1-3 days"
+                        }
+                      }
+                    ],
+                    "pagination": {
+                      "page": 1,
+                      "limit": 10,
+                      "totalItems": 142,
+                      "totalPages": 15,
+                      "hasNextPage": true,
+                      "hasPrevPage": false
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "summary": "List products with search, filter, and pagination",
@@ -2262,7 +2446,7 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "Returns the full product detail including variant axes, gallery, breadcrumbs, specs, tabs and seller profile."
           }
         },
         "summary": "Get product detail by Mongo id or slug",
@@ -3044,7 +3228,30 @@
         "parameters": [],
         "responses": {
           "201": {
-            "description": ""
+            "description": "For auth users: returns the existing or new primary cart id. For guests: also returns a one-time `guestToken` that MUST be saved client-side and sent as `x-guest-token` on every subsequent request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "description": "Authenticated user",
+                      "example": {
+                        "cartId": "8d2e1f4c-3b9a-4b2c-9e7a-b1c2d3e4f5a6",
+                        "ownerType": "user"
+                      }
+                    },
+                    {
+                      "description": "Guest user (store guestToken; it will not be shown again)",
+                      "example": {
+                        "cartId": "8d2e1f4c-3b9a-4b2c-9e7a-b1c2d3e4f5a6",
+                        "ownerType": "guest",
+                        "guestToken": "7b2a9c1e8d5f3a6c4b9e2f1d0c8a7b6c5d4e3f2a1b0c9d8e7f6a"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
           }
         },
         "summary": "Create or return current cart (auth users get their primary cart; guests get a new one)",
@@ -3095,7 +3302,62 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "id": "8d2e1f4c-3b9a-4b2c-9e7a-b1c2d3e4f5a6",
+                    "cartId": "8d2e1f4c-3b9a-4b2c-9e7a-b1c2d3e4f5a6",
+                    "ownerType": "guest",
+                    "currency": "NGN",
+                    "items": [
+                      {
+                        "itemId": "6710abc123def456789012ab",
+                        "productId": "6710def123abc456789012ab",
+                        "variantId": "v-blue-m",
+                        "name": "Hisense 43\" Smart TV",
+                        "thumbnailUrl": "https://res.cloudinary.com/.../hisense-43.jpg",
+                        "price": {
+                          "amount": 220000,
+                          "currency": "NGN",
+                          "formatted": "₦220,000"
+                        },
+                        "quantity": 1,
+                        "stockQty": 12,
+                        "lineTotal": {
+                          "amount": 220000,
+                          "currency": "NGN",
+                          "formatted": "₦220,000"
+                        }
+                      }
+                    ],
+                    "totals": {
+                      "subtotal": {
+                        "amount": 220000,
+                        "currency": "NGN",
+                        "formatted": "₦220,000"
+                      },
+                      "shipping": {
+                        "amount": 0,
+                        "currency": "NGN",
+                        "formatted": "₦0"
+                      },
+                      "discount": {
+                        "amount": 0,
+                        "currency": "NGN",
+                        "formatted": "₦0"
+                      },
+                      "grandTotal": {
+                        "amount": 220000,
+                        "currency": "NGN",
+                        "formatted": "₦220,000"
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "summary": "Retrieve cart by public cartId",
@@ -3326,7 +3588,40 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "`pricingLocked` is false because the pricing-rule engine (Module 16) is not yet implemented. Tax uses a 7.5% VAT placeholder and delivery is a flat estimate.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "cartId": "8d2e1f4c-3b9a-4b2c-9e7a-b1c2d3e4f5a6",
+                    "currency": "NGN",
+                    "subtotal": {
+                      "amount": 220000,
+                      "currency": "NGN",
+                      "formatted": "₦220,000"
+                    },
+                    "taxAmount": {
+                      "amount": 16500,
+                      "currency": "NGN",
+                      "formatted": "₦16,500"
+                    },
+                    "taxRate": 0.075,
+                    "deliveryEstimate": {
+                      "amount": 1500,
+                      "currency": "NGN",
+                      "formatted": "₦1,500"
+                    },
+                    "grandTotal": {
+                      "amount": 238000,
+                      "currency": "NGN",
+                      "formatted": "₦238,000"
+                    },
+                    "pricingLocked": false,
+                    "note": "Tax and delivery use placeholder defaults until the pricing-rule engine ships."
+                  }
+                }
+              }
+            }
           }
         },
         "summary": "Get totals breakdown for a cart (pricing not yet locked)",
@@ -3358,7 +3653,23 @@
         ],
         "responses": {
           "201": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "cartId": "8d2e1f4c-3b9a-4b2c-9e7a-b1c2d3e4f5a6",
+                    "valid": false,
+                    "issues": [
+                      {
+                        "itemId": "6710abc123def456789012ab",
+                        "reason": "variant_out_of_stock"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
           }
         },
         "summary": "Validate cart items (stock + active checks)",

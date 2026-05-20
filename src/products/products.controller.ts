@@ -10,7 +10,7 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
 import { Public } from '@auth/decorators/public.decorator';
 import { AccountTypes } from '@auth/decorators/account-types.decorator';
 import { CurrentUser } from '@auth/decorators/current-user.decorator';
@@ -32,6 +32,44 @@ export class ProductsController {
   @Public()
   @Get()
   @ApiOperation({ summary: 'List products with search, filter, and pagination' })
+  @ApiOkResponse({
+    schema: {
+      example: {
+        items: [
+          {
+            id: '6710def123abc456789012ab',
+            slug: 'hisense-43-inch-smart-tv',
+            name: 'Hisense 43" Smart TV',
+            brand: 'Hisense',
+            thumbnailUrl: 'https://res.cloudinary.com/.../hisense-43.jpg',
+            price: { amount: 220000, currency: 'NGN', formatted: '₦220,000' },
+            originalPrice: { amount: 260000, currency: 'NGN', formatted: '₦260,000' },
+            savings: { amount: 40000, currency: 'NGN', formatted: '₦40,000' },
+            discountPercent: 15,
+            rating: 4.6,
+            reviewCount: 184,
+            inventoryStatus: 'in_stock',
+            badge: 'Best Deal',
+            seller: {
+              id: '6710abc...',
+              name: 'AlphaTech Store',
+              isVerified: true,
+              location: 'Lagos',
+              deliveryTimeRange: '1-3 days',
+            },
+          },
+        ],
+        pagination: {
+          page: 1,
+          limit: 10,
+          totalItems: 142,
+          totalPages: 15,
+          hasNextPage: true,
+          hasPrevPage: false,
+        },
+      },
+    },
+  })
   async findAll(@Query() query: ProductQueryDto) {
     return this.productsService.findAll(query);
   }
@@ -39,6 +77,10 @@ export class ProductsController {
   @Public()
   @Get(':idOrSlug')
   @ApiOperation({ summary: 'Get product detail by Mongo id or slug' })
+  @ApiOkResponse({
+    description:
+      'Returns the full product detail including variant axes, gallery, breadcrumbs, specs, tabs and seller profile.',
+  })
   async findOne(@Param('idOrSlug') idOrSlug: string, @Query('variantId') variantId?: string) {
     return this.productsService.findByIdOrSlug(idOrSlug, variantId);
   }

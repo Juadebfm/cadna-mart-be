@@ -9,7 +9,15 @@ import {
   HttpStatus,
   Query,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiBody,
+  ApiOkResponse,
+  ApiCreatedResponse,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import { Request } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
@@ -141,6 +149,16 @@ export class AuthController {
   @ApiOperation({
     summary: 'Single-call registration (orchestrates email + details + password steps)',
   })
+  @ApiCreatedResponse({
+    description:
+      'Account created. Email a verification OTP is sent automatically. Caller should then hit /auth/otp/verify or /auth/register/verify.',
+    schema: {
+      example: {
+        message: 'Account created. Please verify your email.',
+        email: 'jane@example.com',
+      },
+    },
+  })
   async register(@Body() dto: RegisterDto) {
     return this.authService.register(dto);
   }
@@ -153,6 +171,11 @@ export class AuthController {
   @ApiOperation({
     summary: 'Send OTP via email for login/email-verification/password-reset',
   })
+  @ApiOkResponse({
+    description:
+      'Channel is always email (Resend) regardless of "phone" wording in the PM spec. 60-second cooldown enforced by OtpService.',
+    schema: { example: { message: 'Login code sent' } },
+  })
   async otpRequest(@Body() dto: OtpRequestDto) {
     return this.authService.requestOtp(dto.email, dto.purpose ?? OtpPurpose.LOGIN);
   }
@@ -164,6 +187,40 @@ export class AuthController {
     summary:
       'Verify OTP code. Returns JWTs for login, message for verification, resetToken for password-reset',
   })
+  @ApiOkResponse({
+    description: 'Response shape depends on the `purpose` field on the request.',
+    schema: {
+      oneOf: [
+        {
+          description: 'purpose=login → returns JWT pair + user',
+          example: {
+            purpose: 'login',
+            tokens: {
+              accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+              refreshToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+              expiresIn: '15m',
+            },
+            user: {
+              id: '6710abc123def456789012ab',
+              email: 'jane@example.com',
+              accountType: 'BUYER',
+            },
+          },
+        },
+        {
+          description: 'purpose=email_verification → success message',
+          example: { purpose: 'email_verification', message: 'Email verified successfully' },
+        },
+        {
+          description: 'purpose=password_reset → short-lived resetToken',
+          example: {
+            purpose: 'password_reset',
+            resetToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+          },
+        },
+      ],
+    },
+  })
   async otpVerify(@Body() dto: OtpVerifyDto) {
     return this.authService.verifyOtp(dto.email, dto.code, dto.purpose ?? OtpPurpose.LOGIN);
   }
@@ -172,6 +229,7 @@ export class AuthController {
   @Post('otp/resend')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Resend OTP (cooldown enforced)' })
+  @ApiOkResponse({ schema: { example: { message: 'Login code sent' } } })
   async otpResend(@Body() dto: OtpResendDto) {
     return this.authService.resendOtp(dto.email, dto.purpose ?? OtpPurpose.LOGIN);
   }
@@ -195,6 +253,31 @@ export class AuthController {
       'Login with email and password. For passwordless email-OTP login, use /auth/otp/request then /auth/otp/verify.',
   })
   @ApiBody({ type: LoginDto })
+  @ApiOkResponse({
+    description: 'Returns JWT pair + user, or a requires2FA flag if 2FA is enabled.',
+    schema: {
+      oneOf: [
+        {
+          example: {
+            accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+            refreshToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+            expiresIn: '15m',
+            user: {
+              id: '6710abc123def456789012ab',
+              firstName: 'Jane',
+              lastName: 'Doe',
+              email: 'jane@example.com',
+              accountType: 'BUYER',
+              isVerified: true,
+              isTwoFactorEnabled: false,
+            },
+          },
+        },
+        { example: { requires2FA: true, email: 'jane@example.com' } },
+      ],
+    },
+  })
+  @ApiUnauthorizedResponse({ description: 'Invalid credentials or unverified email.' })
   async login(@Req() req: Request) {
     const user = req.user as { userId: string; email: string; accountType: string };
 
@@ -317,6 +400,15 @@ export class AuthController {
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Refresh access token' })
+  @ApiOkResponse({
+    schema: {
+      example: {
+        accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+        refreshToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+        expiresIn: '15m',
+      },
+    },
+  })
   async refresh(@Body() refreshTokenDto: RefreshTokenDto) {
     return this.authService.refreshTokens(refreshTokenDto.refreshToken);
   }
@@ -324,6 +416,26 @@ export class AuthController {
   @ApiBearerAuth()
   @Get('profile')
   @ApiOperation({ summary: 'Get current user profile' })
+  @ApiOkResponse({
+    schema: {
+      example: {
+        id: '6710abc123def456789012ab',
+        firstName: 'Jane',
+        lastName: 'Doe',
+        email: 'jane@example.com',
+        accountType: 'BUYER',
+        phoneNumber: '+2348012345678',
+        dateOfBirth: '1990-01-15T00:00:00.000Z',
+        isEmailVerified: true,
+        isVerified: true,
+        isTwoFactorEnabled: false,
+        marketingConsent: false,
+        marketingConsentAt: null,
+        createdAt: '2026-05-19T10:23:00.000Z',
+        fullName: 'Jane Doe',
+      },
+    },
+  })
   async getProfile(@CurrentUser('userId') userId: string) {
     const user = await this.usersService.findById(userId);
     return this.usersService.toPublicUser(user);
@@ -332,6 +444,7 @@ export class AuthController {
   @ApiBearerAuth()
   @Get('me')
   @ApiOperation({ summary: 'Get current user (spec alias of /profile)' })
+  @ApiOkResponse({ description: 'Identical payload to GET /auth/profile.' })
   async getMe(@CurrentUser('userId') userId: string) {
     const user = await this.usersService.findById(userId);
     return this.usersService.toPublicUser(user);
