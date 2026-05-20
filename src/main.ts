@@ -131,7 +131,10 @@ async function bootstrap(): Promise<void> {
   );
 
   // Swagger
-  if (!configService.isProd) {
+  // Off by default in prod for safety, but allow ENABLE_SWAGGER=true to expose
+  // it on the prod deployment (needed while FE is still integrating).
+  const swaggerEnabled = !configService.isProd || process.env.ENABLE_SWAGGER === 'true';
+  if (swaggerEnabled) {
     const swaggerConfig = new DocumentBuilder()
       .setTitle('Cadna Mart API')
       .setDescription(
