@@ -170,7 +170,7 @@ async function bootstrap(): Promise<void> {
         ].join('\n'),
       )
       .setVersion('1.0')
-      .setContact('Cadna Mart Engineering', '', 'engineering@cadnamart.local')
+      .setContact('Cadna Mart Engineering', '', 'cadnamart@gmail.com')
       .addServer('https://cadna-mart-be-nsz2.onrender.com', 'Production (Render)')
       .addServer(`http://localhost:${configService.app.port}`, 'Local dev')
       .addBearerAuth(
