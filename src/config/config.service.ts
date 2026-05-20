@@ -186,6 +186,7 @@ export class ConfigService {
     return {
       resendApiKey: this.envConfig.RESEND_API_KEY,
       fromAddress: this.envConfig.EMAIL_FROM,
+      logoUrl: this.envConfig.EMAIL_LOGO_URL,
     };
   }
 

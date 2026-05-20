@@ -30,6 +30,10 @@ export const envSchema = z.object({
 
   RESEND_API_KEY: z.string().min(1).default('re_placeholder'),
   EMAIL_FROM: z.string().default('Cadna Mart <noreply@cadnamart.com>'),
+  EMAIL_LOGO_URL: z
+    .string()
+    .url()
+    .default('https://res.cloudinary.com/dwrhjddpn/image/upload/v1779286047/cadna_logo_you5ek.png'),
 
   CLERK_WEBHOOK_SECRET: z.string().default(''),
   CLERK_SECRET_KEY: z.string().default(''),

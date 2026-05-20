@@ -7,6 +7,7 @@ import { LoggerService } from '@logger/logger.service';
 export class EmailService {
   private readonly resend: Resend;
   private readonly fromAddress: string;
+  private readonly logoUrl: string;
 
   constructor(
     private readonly configService: ConfigService,
@@ -14,6 +15,16 @@ export class EmailService {
   ) {
     this.resend = new Resend(this.configService.email.resendApiKey);
     this.fromAddress = this.configService.email.fromAddress;
+    this.logoUrl = this.configService.email.logoUrl;
+  }
+
+  // Hosted-image header rendered in every transactional email. Inline styles +
+  // explicit width attribute so Outlook/legacy clients respect sizing.
+  private logoHeader(): string {
+    if (!this.logoUrl) return '';
+    return `<div style="text-align: center; padding: 16px 0 24px;">
+        <img src="${this.logoUrl}" alt="Cadna Mart" width="160" style="max-width: 160px; height: auto; display: inline-block; border: 0;" />
+      </div>`;
   }
 
   async sendVerificationCode(email: string, code: string): Promise<void> {
@@ -21,6 +32,7 @@ export class EmailService {
       email,
       'Verify your Cadna Mart account',
       `<div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
+        ${this.logoHeader()}
         <h2 style="color: #6C63FF;">Verify your email</h2>
         <p>Your verification code is:</p>
         <div style="background: #f4f4f8; padding: 20px; text-align: center; border-radius: 8px; margin: 20px 0;">
@@ -37,6 +49,7 @@ export class EmailService {
       email,
       'Your Cadna Mart login code',
       `<div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
+        ${this.logoHeader()}
         <h2 style="color: #6C63FF;">Login verification</h2>
         <p>Your login verification code is:</p>
         <div style="background: #f4f4f8; padding: 20px; text-align: center; border-radius: 8px; margin: 20px 0;">
@@ -53,6 +66,7 @@ export class EmailService {
       email,
       'Reset your Cadna Mart password',
       `<div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
+        ${this.logoHeader()}
         <h2 style="color: #6C63FF;">Password reset</h2>
         <p>Your password reset code is:</p>
         <div style="background: #f4f4f8; padding: 20px; text-align: center; border-radius: 8px; margin: 20px 0;">

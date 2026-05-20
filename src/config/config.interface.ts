@@ -34,6 +34,7 @@ export interface ThrottleConfig {
 export interface EmailConfig {
   resendApiKey: string;
   fromAddress: string;
+  logoUrl: string;
 }
 
 export interface ClerkConfig {
