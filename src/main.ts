@@ -2,6 +2,8 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { writeFileSync, mkdirSync } from 'fs';
+import { join } from 'path';
 import {
   CorsOptions,
   CustomOrigin,
@@ -132,17 +134,109 @@ async function bootstrap(): Promise<void> {
   if (!configService.isProd) {
     const swaggerConfig = new DocumentBuilder()
       .setTitle('Cadna Mart API')
-      .setDescription('Enterprise e-commerce backend API')
+      .setDescription(
+        [
+          'Backend API for the Cadna Mart marketplace.',
+          '',
+          '### Response envelope',
+          'Every successful response is wrapped by the global response interceptor:',
+          '```json',
+          '{',
+          '  "success": true,',
+          '  "statusCode": 200,',
+          '  "data": { ... },',
+          '  "message": "...",',
+          '  "meta": { "correlationId": "...", "timestamp": "..." }',
+          '}',
+          '```',
+          'When documenting individual endpoints below, the schema describes the `data` payload only.',
+          '',
+          '### Authentication',
+          '- **Bearer JWT** (`Authorization: Bearer <accessToken>`) for authenticated user routes.',
+          '- **Guest token** (`x-guest-token: <token>`) for guest-cart endpoints. Returned once from `POST /cart`.',
+          '',
+          '### Error shape',
+          'Errors flow through the global `AllExceptionsFilter`:',
+          '```json',
+          '{',
+          '  "success": false,',
+          '  "statusCode": 400,',
+          '  "message": "Validation failed",',
+          '  "errorCode": "BAD_REQUEST",',
+          '  "path": "/api/v1/...",',
+          '  "correlationId": "..."',
+          '}',
+          '```',
+        ].join('\n'),
+      )
       .setVersion('1.0')
-      .addBearerAuth()
+      .setContact('Cadna Mart Engineering', '', 'engineering@cadnamart.local')
+      .addServer('https://cadna-mart-be-nsz2.onrender.com', 'Production (Render)')
+      .addServer(`http://localhost:${configService.app.port}`, 'Local dev')
+      .addBearerAuth(
+        {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          description: 'Access token returned from /auth/login or /auth/otp/verify',
+        },
+        'bearer',
+      )
+      .addApiKey(
+        {
+          type: 'apiKey',
+          name: 'x-guest-token',
+          in: 'header',
+          description: 'Guest cart access token (returned once from POST /cart for guests)',
+        },
+        'guestToken',
+      )
+      .addTag('Auth', 'Login, registration, OTP, password reset, 2FA, audit log')
+      .addTag('Users', 'Self profile, addresses, NDPR consent/export/delete')
+      .addTag('User Addresses', 'CRUD over the current user shipping/billing addresses')
+      .addTag('Categories', 'Catalog taxonomy and category-scoped product listings')
+      .addTag('Products', 'Product catalog: detail, variants, availability, policies, related')
+      .addTag('Collections', 'Featured / Flash Sales / Best Deals product rails')
+      .addTag('Search', 'Full search + autocomplete')
+      .addTag('Brands', 'Distinct brand list with product counts')
+      .addTag('Cart', 'Cart (auth + guest) — items, totals, validate, merge')
+      .addTag('Wishlist', 'Authenticated user wishlist')
+      .addTag('Reviews', 'Product reviews')
+      .addTag('Sellers', 'Public seller profile + seller self-management')
+      .addTag('Newsletter', 'Newsletter subscription')
+      .addTag('Policies', 'Per-product return / warranty policies')
+      .addTag('Shipping', 'Shipping estimates (placeholder)')
+      .addTag('Site Config', 'Public app config (feature flags, fees)')
+      .addTag('Deals', 'Seller-paid deal campaigns (promo precursor)')
+      .addTag('Webhooks', 'Inbound signed webhooks (Clerk, Paystack)')
+      .addTag('Health', 'Liveness + DB connectivity')
+      .addTag('Admin', 'Admin-only catalogue / seller / deals operations')
       .build();
 
     const document = SwaggerModule.createDocument(app, swaggerConfig);
     SwaggerModule.setup(`${configService.app.apiPrefix}/docs`, app, document, {
       swaggerOptions: {
         persistAuthorization: true,
+        tagsSorter: 'alpha',
+        operationsSorter: 'alpha',
+        docExpansion: 'none',
       },
+      customSiteTitle: 'Cadna Mart API Docs',
+      jsonDocumentUrl: `${configService.app.apiPrefix}/openapi.json`,
     });
+
+    // When SWAGGER_EXPORT=true is set, dump the OpenAPI spec to docs/openapi.json
+    // and exit. Lets FE/PMs import a fresh spec into Postman/Bruno without booting
+    // the full HTTP server long-term.
+    if (process.env.SWAGGER_EXPORT === 'true') {
+      const outDir = join(process.cwd(), 'docs');
+      mkdirSync(outDir, { recursive: true });
+      const outPath = join(outDir, 'openapi.json');
+      writeFileSync(outPath, JSON.stringify(document, null, 2));
+      loggerService.log(`OpenAPI spec written to ${outPath}`, 'Bootstrap');
+      await app.close();
+      process.exit(0);
+    }
   }
 
   const port = configService.app.port;

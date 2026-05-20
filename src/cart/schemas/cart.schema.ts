@@ -32,7 +32,7 @@ export class Cart extends BaseSchema {
   @Prop({ type: String, enum: CartOwnerType, required: true, default: CartOwnerType.USER })
   ownerType!: CartOwnerType;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null, sparse: true })
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null })
   user!: mongoose.Types.ObjectId | null;
 
   @Prop({ type: String, default: null, select: false })

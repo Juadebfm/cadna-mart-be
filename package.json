@@ -19,6 +19,7 @@
     "test:cov": "jest --coverage",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "seed:products": "NODE_OPTIONS=--max-old-space-size=512 ts-node --transpile-only -r tsconfig-paths/register src/scripts/seed-products.ts",
+    "swagger:export": "npm run build && NODE_ENV=dev SWAGGER_EXPORT=true node dist/main.js",
     "docker:dev": "docker compose -f docker/docker-compose.yml up --build",
     "docker:dev:down": "docker compose -f docker/docker-compose.yml down -v",
     "prepare": "husky"
