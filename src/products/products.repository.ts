@@ -80,7 +80,11 @@ export class ProductsRepository {
 
   async findById(id: string): Promise<Product | null> {
     return this.productModel
-      .findOne({ _id: id, deletedAt: null })
+      .findOne({ _id: id, deletedAt: null, isActive: true })
+      .populate(
+        'seller',
+        'name slug logoUrl isVerified responseRatePercent averageRating joinedYear reviewCount followerCount location deliveryTimeRange',
+      )
       .lean()
       .exec() as unknown as Promise<Product | null>;
   }
