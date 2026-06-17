@@ -17,12 +17,7 @@ import { ConfigService } from '@config/config.service';
             console.log('MongoDB connected');
           });
           connection.on('error', (error: unknown) => {
-            const message =
-              error instanceof Error
-                ? error.message
-                : typeof error === 'string'
-                  ? error
-                  : 'Unknown error';
+            const message = error instanceof Error ? error.message : String(error);
             console.error('MongoDB connection error:', message);
           });
           connection.on('disconnected', () => {
