@@ -10,10 +10,13 @@ services:
       - '9229:9229'
     volumes:
       - ../src:/app/src
+    env_file:
+      - ../.env.dev
     environment:
-      - NODE_ENV=dev
+      - MONGO_URI=mongodb://cadna_admin:cadna_secret@mongodb:27017/cadna_mart_dev?authSource=admin
     depends_on:
       - mongodb
+    restart: unless-stopped
     networks:
       - cadna-network
 

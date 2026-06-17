@@ -1,9 +1,9 @@
-import { Role } from '@users/enums/role.enum';
+import { AccountType } from '@users/enums/account-type.enum';
 
 export interface JwtPayload {
   sub: string;
   email: string;
-  role: Role;
+  accountType: AccountType;
 }
 
 export interface TokenResponse {

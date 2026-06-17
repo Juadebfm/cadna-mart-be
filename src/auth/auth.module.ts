@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { AuthService } from './auth.service';
@@ -7,11 +8,21 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
 import { SessionSerializer } from './serializers/session.serializer';
 import { UsersModule } from '@users/users.module';
+import { OtpModule } from '@otp/otp.module';
+import { EmailModule } from '@email/email.module';
+import { RegistrationSessionModule } from '@registration-session/registration-session.module';
 import { ConfigService } from '@config/config.service';
+import { SellerProfile, SellerProfileSchema } from '@sellers/schemas/seller-profile.schema';
+import { AuthEventsModule } from '@auth-events/auth-events.module';
 
 @Module({
   imports: [
     UsersModule,
+    OtpModule,
+    EmailModule,
+    RegistrationSessionModule,
+    AuthEventsModule,
+    MongooseModule.forFeature([{ name: SellerProfile.name, schema: SellerProfileSchema }]),
     PassportModule.register({ session: true }),
     JwtModule.registerAsync({
       useFactory: (configService: ConfigService) => ({

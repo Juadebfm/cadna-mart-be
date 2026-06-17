@@ -1,0 +1,334 @@
+#,Module,Spec Method,Spec Endpoint,Purpose,Spec Auth,Spec Notes,Status,Current Method,Current Endpoint,Source File,Implementation / Gap Notes
+1,1. Auth & Account Mgmt,POST,/api/v1/auth/otp/request,Send OTP to phone for verification/login,Public,Rate-limited; abuse prevention required,Present,POST,/api/v1/auth/otp/request,src/auth/auth.controller.ts:139,"Generic OTP request supporting purposes: login, email_verification, password_reset. OTP delivered via email (Resend) since no SMS provider is wired; spec calls this ""phone"" but channel is email."
+2,1. Auth & Account Mgmt,POST,/api/v1/auth/otp/verify,Verify OTP code,Public,,Present,POST,/api/v1/auth/otp/verify,src/auth/auth.controller.ts:149,"Returns JWT tokens + user for purpose=login, success message for email_verification, reset token for password_reset."
+3,1. Auth & Account Mgmt,POST,/api/v1/auth/otp/resend,Resend OTP (rate-limited),Public,Cooldown required,Present,POST,/api/v1/auth/otp/resend,src/auth/auth.controller.ts:160,60-second cooldown enforced by OtpService. Works for all purposes.
+4,1. Auth & Account Mgmt,POST,/api/v1/auth/login,Login via phone OTP,Public,,Partial,POST,/api/v1/auth/login,src/auth/auth.controller.ts:179,"Email + password login at this path. For passwordless email-OTP login, FE calls /auth/otp/request then /auth/otp/verify with purpose=login. Endpoint Present; phone (SMS) not implemented."
+5,1. Auth & Account Mgmt,POST,/api/v1/auth/login/password,Optional password login,Public,Only if password auth enabled,Present,POST,/api/v1/auth/login/password,src/auth/auth.controller.ts:211,Spec-aligned alias of /auth/login (email+password flow).
+6,1. Auth & Account Mgmt,POST,/api/v1/auth/register,Progressive signup after guest checkout,Public,,Present,POST,/api/v1/auth/register,src/auth/auth.controller.ts:128,"Single-call wrapper that orchestrates register/email + register/details + register/password. Multi-step routes still live for the existing wizard FE."
+7,1. Auth & Account Mgmt,POST,/api/v1/auth/password/reset/request,Trigger password reset via OTP,Public,,Present,POST,/api/v1/auth/password/reset/request,src/auth/auth.controller.ts:186,Spec-aligned alias of /auth/forgot-password. Both paths live and behave identically.
+8,1. Auth & Account Mgmt,POST,/api/v1/auth/password/reset/confirm,Confirm new password,Public,,Present,POST,/api/v1/auth/password/reset/confirm,src/auth/auth.controller.ts:210,Spec-aligned alias of /auth/forgot-password/reset. Middle OTP step at /auth/forgot-password/verify.
+9,1. Auth & Account Mgmt,POST,/api/v1/auth/logout,Logout / invalidate session,User,,Present,POST,/api/v1/auth/logout,src/auth/auth.controller.ts:246,Invalidates refresh token and clears Passport session.
+10,1. Auth & Account Mgmt,POST,/api/v1/auth/refresh,Refresh access token,User,,Present,POST,/api/v1/auth/refresh,src/auth/auth.controller.ts:230
+11,1. Auth & Account Mgmt,GET,/api/v1/auth/me,Get current authenticated user,User,,Present,GET,/api/v1/auth/me,src/auth/auth.controller.ts:262,Spec-aligned alias of /auth/profile. Both paths live.
+12,1. Auth & Account Mgmt,GET,/api/v1/auth/logs,Auth event logs (for user),User,Audit log requirement,Present,GET,/api/v1/auth/logs,src/auth/auth.controller.ts:341,"AuthEventsService logs login/logout/refresh/register/password_reset/2fa/clerk_login events. Endpoint returns paginated own events. IP/UA capture is a follow-up."
+13,2. User Profile,GET,/api/v1/users/profile,Get profile,User,,Present,GET,/api/v1/users/profile,src/users/users.controller.ts:38,Self-scoped profile read using CurrentUser. Returns same shape as /auth/me.
+14,2. User Profile,PATCH,/api/v1/users/profile,Update profile details,User,,Present,PATCH,/api/v1/users/profile,src/users/users.controller.ts:45,"Self-update for firstName, lastName, phoneNumber, dateOfBirth. Email/password updates go through dedicated flows."
+15,2. User Profile,GET,/api/v1/users/addresses,List saved addresses,User,,Present,GET,/api/v1/users/addresses,src/addresses/addresses.controller.ts:25,New AddressesModule. Default address sorted first.
+16,2. User Profile,POST,/api/v1/users/addresses,Add new address,User,,Present,POST,/api/v1/users/addresses,src/addresses/addresses.controller.ts:32,First address automatically becomes default.
+17,2. User Profile,PATCH,/api/v1/users/addresses/{id},Update address,User,,Present,PATCH,/api/v1/users/addresses/{id},src/addresses/addresses.controller.ts:38,Ownership check enforces user can only edit own addresses.
+18,2. User Profile,DELETE,/api/v1/users/addresses/{id},Delete address,User,,Present,DELETE,/api/v1/users/addresses/{id},src/addresses/addresses.controller.ts:48,Soft delete (sets deletedAt + clears isDefault).
+19,2. User Profile,POST,/api/v1/users/addresses/{id}/default,Set default address,User,,Present,POST,/api/v1/users/addresses/{id}/default,src/addresses/addresses.controller.ts:58,Clears default flag from siblings then sets this one.
+20,2. User Profile,POST,/api/v1/users/consent/marketing,Set marketing consent (NDPR),User,NDPR compliance,Present,POST,/api/v1/users/consent/marketing,src/users/users.controller.ts:55,Stores marketingConsentAt timestamp on user.
+21,2. User Profile,POST,/api/v1/users/data/delete-request,Right-to-be-forgotten request,User,NDPR compliance,Present,POST,/api/v1/users/data/delete-request,src/users/users.controller.ts:69,Creates DataRequest record (kind=delete) for admin to process.
+22,2. User Profile,GET,/api/v1/users/data/export,Export user data (NDPR),User,NDPR compliance,Present,GET,/api/v1/users/data/export,src/users/users.controller.ts:84,Returns JSON bundle of user + addresses; logs an export DataRequest for audit.
+23,3. Catalog & Storefront,GET,/api/v1/categories,List all categories,Public,,Present,GET,/api/v1/categories,src/categories/categories.controller.ts:13
+24,3. Catalog & Storefront,GET,/api/v1/categories/{slug},Get category details,Public,,Present,GET,/api/v1/categories/{slug},src/categories/categories.controller.ts:20,Returns name/slug/iconUrl/parent/productCount for a single category.
+25,3. Catalog & Storefront,GET,/api/v1/categories/{slug}/products,Products in category,Public,,Present,GET,/api/v1/categories/{slug}/products,src/products/category-products.controller.ts:13,Nested route added; reuses paginated products query.
+26,3. Catalog & Storefront,GET,/api/v1/collections/featured,Featured collections,Public,,Present,GET,/api/v1/collections/featured,src/collections/collections.controller.ts:12,Backed by products tagged sections=featured.
+27,3. Catalog & Storefront,GET,/api/v1/collections/flash-sales,Active Flash Sales products,Public,Powered by promo slots,Present,GET,/api/v1/collections/flash-sales,src/collections/collections.controller.ts:19,"Endpoint live; backed by products tagged sections=flash_sale. Populating that tag is admin/promo-slot work."
+28,3. Catalog & Storefront,GET,/api/v1/collections/best-deals,Active Best Deals products,Public,Powered by promo slots,Present,GET,/api/v1/collections/best-deals,src/collections/collections.controller.ts:26,Backed by products tagged sections=best_deals.
+29,3. Catalog & Storefront,GET,/api/v1/products,List/search products with filters,Public,,Present,GET,/api/v1/products,src/products/products.controller.ts:29,Supports category/subcategory/section/search/price/stock filters + pagination.
+30,3. Catalog & Storefront,GET,/api/v1/products/{id},Product detail page,Public,,Present,GET,/api/v1/products/{idOrSlug},src/products/products.controller.ts:40,Handler accepts Mongo ObjectId or slug. Backwards-compatible with prior slug-only calls.
+31,3. Catalog & Storefront,GET,/api/v1/products/{id}/variants,Product variants,Public,,Present,GET,/api/v1/products/{productId}/variants,src/products/products.controller.ts:54,Returns variantAxes + variants[] + defaultVariantId.
+32,3. Catalog & Storefront,GET,/api/v1/products/{id}/availability,Stock check,Public,,Present,GET,/api/v1/products/{productId}/availability,src/products/products.controller.ts:61,Returns productInStock + per-variant stock summary.
+33,3. Catalog & Storefront,GET,/api/v1/products/{id}/policies,Item return/delivery policy badges,Public,Per-item policy display,Present,GET,/api/v1/products/{productId}/policies,src/products/products.controller.ts:54,Spec-aligned route added. Legacy /policies/products/{productId} also still works.
+34,3. Catalog & Storefront,GET,/api/v1/products/{id}/related,Related items,Public,,Present,GET,/api/v1/products/{productId}/related,src/products/products.controller.ts:43
+35,3. Catalog & Storefront,GET,/api/v1/search,Global search,Public,,Present,GET,/api/v1/search,src/search/search.controller.ts:13,"Full search with q, page, limit, category, brand, minPrice, maxPrice, sort. Reuses ProductsService.findAll text index."
+36,3. Catalog & Storefront,GET,/api/v1/search/suggestions,Search autocomplete,Public,,Present,GET,/api/v1/search/suggestions,src/search/search.controller.ts:19,Spec-aligned alias of /search/suggest. Both paths live.
+37,3. Catalog & Storefront,GET,/api/v1/brands,List brands,Public,,Present,GET,/api/v1/brands,src/brands/brands.controller.ts:12,"Aggregates distinct brand from products with productCount, sorted by count desc."
+38,4. Cart,POST,/api/v1/cart,Create cart (guest or user),Public,,Present,POST,/api/v1/cart,src/cart/cart.controller.ts:30,"Auth users get their primary cart (find-or-create). Guests get a new cart + guestToken in response; future calls must include x-guest-token header."
+39,4. Cart,GET,/api/v1/cart/{cartId},Retrieve cart,Public/User,,Present,GET,/api/v1/cart/{cartId},src/cart/cart.controller.ts:39,Access enforced by JWT (user cart) or x-guest-token header (guest cart).
+40,4. Cart,POST,/api/v1/cart/{cartId}/items,Add item to cart,Public/User,,Present,POST,/api/v1/cart/{cartId}/items,src/cart/cart.controller.ts:47
+41,4. Cart,PATCH,/api/v1/cart/{cartId}/items/{itemId},Update quantity/variant,Public/User,,Present,PATCH,/api/v1/cart/{cartId}/items/{itemId},src/cart/cart.controller.ts:61,Updates quantity. Variant changes go through delete + re-add for now.
+42,4. Cart,DELETE,/api/v1/cart/{cartId}/items/{itemId},Remove item,Public/User,,Present,DELETE,/api/v1/cart/{cartId}/items/{itemId},src/cart/cart.controller.ts:73
+43,4. Cart,DELETE,/api/v1/cart/{cartId},Clear cart,Public/User,,Present,DELETE,/api/v1/cart/{cartId},src/cart/cart.controller.ts:84,Empties items; keeps the cart record.
+44,4. Cart,POST,/api/v1/cart/{cartId}/merge,Merge guest cart with user cart on login,User,,Present,POST,/api/v1/cart/{cartId}/merge,src/cart/cart.controller.ts:91,Auth required. Body needs {guestToken}. Moves items into user primary cart then deletes the guest cart.
+45,4. Cart,GET,/api/v1/cart/{cartId}/totals,"Get totals breakdown (markup, fees, delivery)",Public/User,Depends on pricing rule lock,Present,GET,/api/v1/cart/{cartId}/totals,src/cart/cart.controller.ts:103,"Returns subtotal + 7.5% VAT placeholder + flat delivery placeholder + pricingLocked:false until pricing-rule engine (Module 16) ships."
+46,4. Cart,POST,/api/v1/cart/{cartId}/validate,Validate cart pre-checkout (stock/policy),Public/User,,Present,POST,/api/v1/cart/{cartId}/validate,src/cart/cart.controller.ts:110,Checks each item: product active + variant stock + product inventoryStatus. Returns issues array.
+47,5. Checkout,POST,/api/v1/checkout/session,Initialize checkout session,Public/User,,Missing,,,,Entire checkout module missing.
+48,5. Checkout,POST,/api/v1/checkout/{sessionId}/address,Capture delivery address,Public/User,,Missing
+49,5. Checkout,POST,/api/v1/checkout/{sessionId}/address/validate,Validate address & geocode,Public/User,,Missing
+50,5. Checkout,GET,/api/v1/checkout/{sessionId}/delivery-options,Retrieve delivery options (pickup/API/seller),Public/User,,Missing
+51,5. Checkout,POST,/api/v1/checkout/{sessionId}/delivery,Select delivery mode,Public/User,,Missing
+52,5. Checkout,POST,/api/v1/checkout/{sessionId}/pickup-details,Submit pickup person/vehicle/time,Public/User,,Missing
+53,5. Checkout,GET,/api/v1/checkout/{sessionId}/summary,Final fee/total summary,Public/User,Pricing math must be locked,Missing
+54,5. Checkout,POST,/api/v1/checkout/{sessionId}/confirm,Confirm and place order,Public/User,,Missing
+55,6. Payments - Paystack,POST,/api/v1/payments/paystack/initialize,Initialize Paystack transaction,Public/User,,Missing,,,,Only Deals/campaign-scoped Paystack init exists (POST /deals/campaigns/my/{id}/initialize-payment).
+56,6. Payments - Paystack,GET,/api/v1/payments/paystack/verify/{reference},Verify payment,Public/User,,Missing,,,,Verification happens implicitly via webhook only; no client verify endpoint.
+57,6. Payments - Paystack,POST,/api/v1/payments/paystack/charge/authorize,Charge saved authorization,User,,Missing
+58,6. Payments - Paystack,POST,/api/v1/payments/paystack/transfer/initialize,Bank transfer flow,Public/User,,Missing
+59,6. Payments - Paystack,GET,/api/v1/payments/paystack/transfer/status/{ref},Bank transfer status,Public/User,,Missing
+60,6. Payments - Paystack,POST,/api/v1/payments/paystack/refund,Issue refund via Paystack,Admin,,Missing
+61,6. Payments - Paystack,POST,/api/v1/webhooks/paystack,Paystack webhook receiver,Signed,Signature validation required,Present,POST,/api/v1/webhooks/paystack,src/webhooks/paystack-webhook.controller.ts:20,HMAC-SHA512 signature verified. Currently only handles deal-campaign payments; needs extension to general orders.
+62,7. Payments - Stripe,POST,/api/v1/payments/stripe/payment-intent,Create PaymentIntent,Public/User,International - pending V1 decision,Missing,,,,No Stripe SDK integrated.
+63,7. Payments - Stripe,POST,/api/v1/payments/stripe/payment-intent/{id}/confirm,Confirm PaymentIntent,Public/User,,Missing
+64,7. Payments - Stripe,POST,/api/v1/payments/stripe/setup-intent,SetupIntent for saving cards,User,,Missing
+65,7. Payments - Stripe,POST,/api/v1/payments/stripe/refund,Issue refund via Stripe,Admin,,Missing
+66,7. Payments - Stripe,GET,/api/v1/payments/stripe/payment-methods,List saved methods,User,,Missing
+67,7. Payments - Stripe,DELETE,/api/v1/payments/stripe/payment-methods/{id},Detach method,User,,Missing
+68,7. Payments - Stripe,POST,/api/v1/webhooks/stripe,Stripe webhook receiver,Signed,,Missing
+69,8. Payments - Wallet,GET,/api/v1/wallet,Wallet balance and tier,User,Conditional V1,Missing,,,,No wallet module.
+70,8. Payments - Wallet,GET,/api/v1/wallet/transactions,Transaction history,User,,Missing
+71,8. Payments - Wallet,POST,/api/v1/wallet/topup/initialize,Top up wallet,User,,Missing
+72,8. Payments - Wallet,POST,/api/v1/wallet/debit,Debit wallet (checkout),User/Internal,,Missing
+73,8. Payments - Wallet,POST,/api/v1/wallet/credit,Credit wallet (refund/reward),Admin/Internal,,Missing
+74,8. Payments - Wallet,POST,/api/v1/wallet/transfer,Internal wallet transfer,User,,Missing
+75,8. Payments - Wallet,GET,/api/v1/wallet/holds,View active holds,User,,Missing
+76,9. Pay on Delivery (PoD),GET,/api/v1/payments/pod/eligibility,Check PoD eligibility (risk rules),User,,Missing,,,,No PoD module.
+77,9. Pay on Delivery (PoD),POST,/api/v1/payments/pod/confirm,Confirm PoD order,User,,Missing
+78,9. Pay on Delivery (PoD),POST,/api/v1/payments/pod/collect,Mark cash collected on delivery,Driver/Admin,,Missing
+79,10. Orders,POST,/api/v1/orders,Create order (from checkout),Public/User,,Missing,,,,"No order schema, service, or controller exists."
+80,10. Orders,GET,/api/v1/orders,List orders for authenticated user,User,,Missing
+81,10. Orders,GET,/api/v1/orders/{id},Order detail,User,,Missing
+82,10. Orders,GET,/api/v1/orders/{id}/timeline,Status timeline,User,,Missing
+83,10. Orders,GET,/api/v1/orders/{id}/tracking,Live tracking events,User,,Missing
+84,10. Orders,POST,/api/v1/orders/{id}/cancel,Cancel order (if eligible),User,,Missing
+85,10. Orders,GET,/api/v1/orders/{id}/invoice,Download invoice,User,,Missing
+86,10. Orders,GET,/api/v1/orders/{id}/pod,Proof of delivery artifacts,User,,Missing
+87,10. Orders,POST,/api/v1/orders/guest/lookup,Guest order lookup (orderId + phone),Public,,Missing
+88,11. Returns & Refunds,POST,/api/v1/returns,Create return request,User,,Missing,,,,Returns/refunds module not built.
+89,11. Returns & Refunds,GET,/api/v1/returns,List user returns,User,,Missing
+90,11. Returns & Refunds,GET,/api/v1/returns/{id},Return detail,User,,Missing
+91,11. Returns & Refunds,PATCH,/api/v1/returns/{id}/cancel,Cancel return request,User,,Missing
+92,11. Returns & Refunds,POST,/api/v1/returns/{id}/evidence,Upload photos/evidence,User,,Missing
+93,11. Returns & Refunds,GET,/api/v1/returns/eligibility/{orderItemId},Check return eligibility,User,Supplier-specific policy,Missing
+94,11. Returns & Refunds,POST,/api/v1/refunds/{returnId}/process,Process refund,Admin,,Missing
+95,11. Returns & Refunds,GET,/api/v1/refunds/{id},Refund status,User/Admin,,Missing
+96,12. Logistics,POST,/api/v1/logistics/quote,Get delivery fee quote (Uber/Bolt),Public/User,Provider TBD,Partial,GET,/api/v1/shipping/estimate,src/shipping/shipping.controller.ts:12,A basic estimate endpoint exists but is not provider-backed (no Uber/Bolt integration).
+97,12. Logistics,POST,/api/v1/logistics/coverage/check,Check courier coverage for address,Public/User,,Missing
+98,12. Logistics,POST,/api/v1/logistics/booking,Book courier after payment,Internal,,Missing
+99,12. Logistics,GET,/api/v1/logistics/booking/{id},Booking status,User/Admin,,Missing
+100,12. Logistics,POST,/api/v1/logistics/booking/{id}/cancel,Cancel booking,Admin,,Missing
+101,12. Logistics,POST,/api/v1/logistics/booking/{id}/retry,Retry with fallback provider,Internal,,Missing
+102,12. Logistics,GET,/api/v1/logistics/tracking/{bookingId},Get tracking events,User,,Missing
+103,12. Logistics,POST,/api/v1/logistics/pod,Upload POD (photo/signature/GPS),Driver,,Missing
+104,12. Logistics,POST,/api/v1/webhooks/logistics/uber,Uber webhook,Signed,,Missing
+105,12. Logistics,POST,/api/v1/webhooks/logistics/bolt,Bolt webhook,Signed,,Missing
+106,12. Logistics,POST,/api/v1/logistics/pickup/ready,Supplier marks Ready for Pickup,Seller/Supplier,,Missing
+107,12. Logistics,POST,/api/v1/logistics/pickup/verify,Verify pickup via QR/order ID,Supplier,,Missing
+108,12. Logistics,POST,/api/v1/logistics/pickup/complete,Mark pickup completed,Supplier,,Missing
+109,12. Logistics,POST,/api/v1/logistics/pickup/fail,Mark pickup failed/escalate,Supplier,,Missing
+110,13. Seller Module,POST,/api/v1/sellers/onboard,Seller onboarding submission,Public,,Partial,POST,/api/v1/sellers,src/sellers/sellers.controller.ts:69,A simple seller-create exists; full onboarding wizard (with KYC/agreement gates) not built. Seller registration is also handled in /auth/register/seller/*.
+111,13. Seller Module,GET,/api/v1/sellers/me,Seller profile,Seller,,Partial,GET,/api/v1/sellers/my,src/sellers/sellers.controller.ts:77,Path rename only.
+112,13. Seller Module,PATCH,/api/v1/sellers/me,Update seller details,Seller,,Partial,PATCH,/api/v1/sellers/my,src/sellers/sellers.controller.ts:85,Path rename only.
+113,13. Seller Module,POST,/api/v1/sellers/me/agreement,Accept stocking & dispatch agreement,Seller,Mandatory before activation,Missing,,,,No agreement-acceptance endpoint or gating logic.
+114,13. Seller Module,POST,/api/v1/sellers/me/kyc,Submit KYC documents,Seller,KYC-light per PRD,Missing,,,,No KYC submission/storage.
+115,13. Seller Module,GET,/api/v1/sellers/me/products,List own listings,Seller,,Partial,GET,/api/v1/sellers/{sellerSlug}/products,src/sellers/sellers.controller.ts:40,Public endpoint by slug; no /me-scoped own-listings endpoint. Sellers can use GET /products with ownership filter today.
+116,13. Seller Module,POST,/api/v1/sellers/me/products,Submit new listing,Seller,,Partial,POST,/api/v1/products,src/products/products.controller.ts:51,Generic product create gated to seller/admin; no /sellers/me scope.
+117,13. Seller Module,PATCH,/api/v1/sellers/me/products/{id},Update listing,Seller,,Partial,PATCH,/api/v1/products/{id},src/products/products.controller.ts:62
+118,13. Seller Module,DELETE,/api/v1/sellers/me/products/{id},Withdraw listing,Seller,,Partial,DELETE,/api/v1/products/{id},src/products/products.controller.ts:74
+119,13. Seller Module,POST,/api/v1/sellers/me/products/{id}/images,Upload product images,Seller,,Partial,POST,/api/v1/upload,src/upload/upload.controller.ts:25,Generic upload; not product-scoped. Image association handled by client supplying URLs in product DTO.
+120,13. Seller Module,GET,/api/v1/sellers/me/orders,View assigned orders,Seller,,Missing,,,,Orders module doesn't exist.
+121,13. Seller Module,POST,/api/v1/sellers/me/orders/{id}/acknowledge,Acknowledge order,Seller,,Missing
+122,13. Seller Module,POST,/api/v1/sellers/me/orders/{id}/dispatch,Confirm dispatch,Seller,,Missing
+123,13. Seller Module,GET,/api/v1/sellers/me/returns,View return cases,Seller,,Missing
+124,13. Seller Module,POST,/api/v1/sellers/me/returns/{id}/decision,Approve/reject return,Seller,,Missing
+125,13. Seller Module,GET,/api/v1/sellers/me/payouts,Payout history,Seller,,Missing
+126,13. Seller Module,GET,/api/v1/sellers/me/fees,Fee/maintenance summary,Seller,3% maintenance fee,Missing
+127,14. Supplier Module,GET,/api/v1/suppliers/me/products,Supplier-owned items,Supplier,"MBZ, CSI etc.",Missing,,,,Entire supplier module missing.
+128,14. Supplier Module,PATCH,/api/v1/suppliers/me/products/{id}/stock,Update stock,Supplier,Manual initially,Missing
+129,14. Supplier Module,GET,/api/v1/suppliers/me/orders,Assigned orders,Supplier,,Missing
+130,14. Supplier Module,POST,/api/v1/suppliers/me/orders/{id}/ready,Mark ready for dispatch/pickup,Supplier,,Missing
+131,14. Supplier Module,POST,/api/v1/suppliers/me/orders/{id}/dispatch,Mark dispatched,Supplier,,Missing
+132,14. Supplier Module,GET,/api/v1/suppliers/me/policies,Supplier-specific policy rules,Supplier,,Missing
+133,15. Admin - Catalog,GET,/api/v1/admin/products,List all products (1P + 3P),Admin,,Present,GET,/api/v1/admin/products,src/admin/admin-products.controller.ts:31,Includes inactive listings; supports pagination.
+134,15. Admin - Catalog,POST,/api/v1/admin/products,Create 1P product,Admin,,Missing,,,,No admin-scoped create; admins can still use POST /products since gating allows admin.
+135,15. Admin - Catalog,PATCH,/api/v1/admin/products/{id},Update product,Admin,,Present,PATCH,/api/v1/admin/products/{id},src/admin/admin-products.controller.ts:50
+136,15. Admin - Catalog,DELETE,/api/v1/admin/products/{id},Remove product,Admin,,Present,DELETE,/api/v1/admin/products/{id},src/admin/admin-products.controller.ts:69,Force delete.
+137,15. Admin - Catalog,POST,/api/v1/admin/products/{id}/approve,Approve 3P listing,Admin,,Partial,PATCH,/api/v1/admin/products/{id}/status,src/admin/admin-products.controller.ts:60,Single isActive toggle; no separate approve/reject semantics or moderation state.
+138,15. Admin - Catalog,POST,/api/v1/admin/products/{id}/reject,Reject 3P listing,Admin,,Partial,PATCH,/api/v1/admin/products/{id}/status,src/admin/admin-products.controller.ts:60,Same toggle; no rejection reason or audit trail.
+139,15. Admin - Catalog,POST,/api/v1/admin/products/{id}/feature,Feature product,Admin,,Missing,,,,No featured-flag endpoint; section tags must be set via product update.
+140,15. Admin - Catalog,GET,/api/v1/admin/categories,Manage categories,Admin,,Present,GET,/api/v1/admin/categories,src/admin/admin-categories.controller.ts:31
+141,15. Admin - Catalog,POST,/api/v1/admin/categories,Create category,Admin,,Present,POST,/api/v1/admin/categories,src/admin/admin-categories.controller.ts:37
+142,15. Admin - Catalog,PATCH,/api/v1/admin/categories/{id},Update category,Admin,,Present,PATCH,/api/v1/admin/categories/{id},src/admin/admin-categories.controller.ts:52
+143,15. Admin - Catalog,DELETE,/api/v1/admin/categories/{id},Delete category,Admin,,Present,DELETE,/api/v1/admin/categories/{id},src/admin/admin-categories.controller.ts:65
+144,16. Admin - Pricing & Fees,GET,/api/v1/admin/pricing/rules,View pricing rules,Admin,,Missing,,,,No pricing-rules engine.
+145,16. Admin - Pricing & Fees,POST,/api/v1/admin/pricing/rules,Create pricing rule (15% markup etc.),Admin,Pricing lock required,Missing
+146,16. Admin - Pricing & Fees,PATCH,/api/v1/admin/pricing/rules/{id},Update rule,Admin,,Missing
+147,16. Admin - Pricing & Fees,GET,/api/v1/admin/pricing/fees,View fee configuration,Admin,,Missing
+148,16. Admin - Pricing & Fees,PATCH,/api/v1/admin/pricing/fees,Update buyer/merchant fees,Admin,,Missing
+149,16. Admin - Pricing & Fees,POST,/api/v1/admin/pricing/simulate,Simulate totals math for a basket,Admin,Pricing examples QA tool,Missing
+150,17. Admin - Orders & Ops,GET,/api/v1/admin/orders,List all orders with filters,Admin,,Missing,,,,Orders module not built.
+151,17. Admin - Orders & Ops,GET,/api/v1/admin/orders/{id},Order detail,Admin,,Missing
+152,17. Admin - Orders & Ops,PATCH,/api/v1/admin/orders/{id}/status,Manual status transition,Admin,Audit trail required,Missing
+153,17. Admin - Orders & Ops,POST,/api/v1/admin/orders/{id}/intervene,Manual intervention,Admin,,Missing
+154,17. Admin - Orders & Ops,POST,/api/v1/admin/orders/{id}/reassign,Reassign supplier/seller,Admin,,Missing
+155,17. Admin - Orders & Ops,GET,/api/v1/admin/returns,List all returns,Admin,,Missing
+156,17. Admin - Orders & Ops,POST,/api/v1/admin/returns/{id}/decision,Override return decision,Admin,,Missing
+157,17. Admin - Orders & Ops,GET,/api/v1/admin/refunds,List refunds,Admin,,Missing
+158,17. Admin - Orders & Ops,POST,/api/v1/admin/refunds/{id}/approve,Approve refund,Admin,,Missing
+159,18. Admin - Sellers/Suppliers/Users,GET,/api/v1/admin/sellers,List sellers,Admin,,Present,GET,/api/v1/admin/sellers,src/admin/admin-sellers.controller.ts:25
+160,18. Admin - Sellers/Suppliers/Users,GET,/api/v1/admin/sellers/{id},Seller detail,Admin,,Missing,,,,No detail endpoint; only update/verify/approve/reject actions.
+161,18. Admin - Sellers/Suppliers/Users,POST,/api/v1/admin/sellers/{id}/approve,Approve onboarding,Admin,,Present,POST,/api/v1/admin/sellers/{id}/approve,src/admin/admin-sellers.controller.ts:108,POST alias added alongside the legacy PATCH at the same path. Both work.
+162,18. Admin - Sellers/Suppliers/Users,POST,/api/v1/admin/sellers/{id}/reject,Reject onboarding,Admin,,Present,POST,/api/v1/admin/sellers/{id}/reject,src/admin/admin-sellers.controller.ts:128,POST alias added alongside the legacy PATCH at the same path. Both work.
+163,18. Admin - Sellers/Suppliers/Users,POST,/api/v1/admin/sellers/{id}/suspend,Suspend seller,Admin,,Missing,,,,No suspend action.
+164,18. Admin - Sellers/Suppliers/Users,POST,/api/v1/admin/sellers/{id}/activate,Reactivate seller,Admin,,Missing
+165,18. Admin - Sellers/Suppliers/Users,GET,/api/v1/admin/suppliers,List suppliers,Admin,,Missing,,,,No supplier module.
+166,18. Admin - Sellers/Suppliers/Users,POST,/api/v1/admin/suppliers,Add supplier,Admin,,Missing
+167,18. Admin - Sellers/Suppliers/Users,PATCH,/api/v1/admin/suppliers/{id},Update supplier,Admin,,Missing
+168,18. Admin - Sellers/Suppliers/Users,GET,/api/v1/admin/users,List buyers,Admin,,Present,GET,/api/v1/admin/users,src/admin/admin-users.controller.ts:28,Spec-aligned admin route. Filter by accountType via ?accountType=BUYER. Legacy /users also still works.
+169,18. Admin - Sellers/Suppliers/Users,GET,/api/v1/admin/users/{id},User detail,Admin,,Present,GET,/api/v1/admin/users/{id},src/admin/admin-users.controller.ts:34,Spec-aligned. Admin-gated.
+170,18. Admin - Sellers/Suppliers/Users,POST,/api/v1/admin/users/{id}/suspend,Suspend account,Admin,,Present,POST,/api/v1/admin/users/{id}/suspend,src/admin/admin-users.controller.ts:39,"Sets isActive=false. Body {""active"": true} reactivates."
+171,19. Admin - Delivery Config,GET,/api/v1/admin/delivery/modes,List delivery modes,Admin,,Missing,,,,No delivery-config module.
+172,19. Admin - Delivery Config,PATCH,/api/v1/admin/delivery/modes/{id},Enable/disable mode,Admin,,Missing
+173,19. Admin - Delivery Config,GET,/api/v1/admin/delivery/providers,List logistics providers,Admin,,Missing
+174,19. Admin - Delivery Config,PATCH,/api/v1/admin/delivery/providers/order,Set fallback order,Admin,,Missing
+175,19. Admin - Delivery Config,GET,/api/v1/admin/delivery/coverage,Coverage rules,Admin,,Missing
+176,19. Admin - Delivery Config,PATCH,/api/v1/admin/delivery/coverage,Update coverage,Admin,,Missing
+177,20. Admin - Reporting,GET,/api/v1/admin/reports/sales,Sales report,Admin,,Missing,,,,No reporting module.
+178,20. Admin - Reporting,GET,/api/v1/admin/reports/gmv,GMV report,Admin,,Missing
+179,20. Admin - Reporting,GET,/api/v1/admin/reports/orders,Order metrics,Admin,,Missing
+180,20. Admin - Reporting,GET,/api/v1/admin/reports/refunds,Refund metrics,Admin,,Missing
+181,20. Admin - Reporting,GET,/api/v1/admin/reports/sellers,Seller performance,Admin,,Missing
+182,20. Admin - Reporting,GET,/api/v1/admin/reports/products,Product performance,Admin,,Missing
+183,20. Admin - Reporting,GET,/api/v1/admin/reports/delivery,Logistics performance,Admin,,Missing
+184,20. Admin - Reporting,GET,/api/v1/admin/reports/export,Export reports (CSV/XLSX),Admin,,Missing
+185,"21. Compliance, Audit & RBAC",GET,/api/v1/admin/audit-logs,List audit logs,Admin,,Missing,,,,No audit log infra.
+186,"21. Compliance, Audit & RBAC",GET,/api/v1/admin/audit-logs/{id},Audit log detail,Admin,,Missing
+187,"21. Compliance, Audit & RBAC",GET,/api/v1/admin/compliance/data-requests,NDPR deletion/export requests,Admin,,Missing
+188,"21. Compliance, Audit & RBAC",POST,/api/v1/admin/compliance/data-requests/{id}/process,Process NDPR request,Admin,,Missing
+189,"21. Compliance, Audit & RBAC",GET,/api/v1/admin/compliance/retention,Retention policy view,Admin,5-year retention,Missing
+190,"21. Compliance, Audit & RBAC",GET,/api/v1/admin/roles,List roles,Admin,,Missing,,,,Auth uses a single accountType enum (BUYER/SELLER/ADMIN); no roles/permissions model.
+191,"21. Compliance, Audit & RBAC",POST,/api/v1/admin/roles,Create role,Admin,,Missing
+192,"21. Compliance, Audit & RBAC",PATCH,/api/v1/admin/roles/{id},Update role/permissions,Admin,,Missing
+193,"21. Compliance, Audit & RBAC",POST,/api/v1/admin/users/{id}/roles,Assign role,Admin,,Missing
+194,"21. Compliance, Audit & RBAC",GET,/api/v1/admin/tax/vat-records,VAT records (FIRS),Admin,,Missing
+195,"21. Compliance, Audit & RBAC",GET,/api/v1/admin/legal/pages,Manage legal pages,Admin,,Missing
+196,"21. Compliance, Audit & RBAC",PATCH,/api/v1/admin/legal/pages/{slug},Update legal page,Admin,,Missing
+197,22. Customer Support,POST,/api/v1/support/tickets,Create support ticket,User/Public,,Missing,,,,No support module.
+198,22. Customer Support,GET,/api/v1/support/tickets,List user tickets,User,,Missing
+199,22. Customer Support,GET,/api/v1/support/tickets/{id},Ticket detail,User,,Missing
+200,22. Customer Support,POST,/api/v1/support/tickets/{id}/messages,Add message to ticket,User,,Missing
+201,22. Customer Support,POST,/api/v1/support/whatsapp/inbound,WhatsApp inbound webhook,Signed,,Missing
+202,22. Customer Support,GET,/api/v1/admin/support/tickets,All tickets (agent view),Agent,,Missing
+203,22. Customer Support,POST,/api/v1/admin/support/tickets/{id}/assign,Assign to agent,Agent,,Missing
+204,22. Customer Support,POST,/api/v1/admin/support/tickets/{id}/escalate,Escalate ticket,Agent,,Missing
+205,22. Customer Support,POST,/api/v1/admin/support/tickets/{id}/close,Close ticket,Agent,,Missing
+206,23. Notifications,GET,/api/v1/notifications,List user notifications,User,,Missing,,,,No in-app notification module.
+207,23. Notifications,PATCH,/api/v1/notifications/{id}/read,Mark read,User,,Missing
+208,23. Notifications,POST,/api/v1/notifications/preferences,Update channel preferences,User,,Missing
+209,23. Notifications,POST,/api/v1/admin/notifications/broadcast,Send broadcast,Admin,,Missing
+210,23. Notifications,POST,/api/v1/webhooks/sms/delivery,SMS delivery webhook,Signed,,Missing
+211,23. Notifications,POST,/api/v1/webhooks/whatsapp/delivery,WhatsApp delivery webhook,Signed,,Missing
+212,24. Ratings & Reviews,GET,/api/v1/products/{id}/reviews,List reviews,Public,Conditional Should-Have,Present,GET,/api/v1/products/{productId}/reviews,src/reviews/reviews.controller.ts:17
+213,24. Ratings & Reviews,POST,/api/v1/products/{id}/reviews,Submit review (post-purchase),User,,Present,POST,/api/v1/products/{productId}/reviews,src/reviews/reviews.controller.ts:30,Post-purchase gating not enforced.
+214,24. Ratings & Reviews,PATCH,/api/v1/reviews/{id},Edit own review,User,,Missing
+215,24. Ratings & Reviews,DELETE,/api/v1/reviews/{id},Delete own review,User,,Missing
+216,24. Ratings & Reviews,POST,/api/v1/admin/reviews/{id}/moderate,Moderate review,Admin,,Missing
+217,25. Procurement/Credit Partner,POST,/api/v1/partners/onboard,Partner onboarding,Public,Conditional V1,Missing,,,,Entire partner/credit module missing.
+218,25. Procurement/Credit Partner,POST,/api/v1/partners/me/kyc,Submit KYC,Partner,,Missing
+219,25. Procurement/Credit Partner,POST,/api/v1/partners/me/agreement,Accept terms & risk disclosure,Partner,,Missing
+220,25. Procurement/Credit Partner,GET,/api/v1/partners/me/dashboard,Dashboard overview,Partner,Performance target <=3s,Missing
+221,25. Procurement/Credit Partner,GET,/api/v1/partners/me/eligible-items,List fundable items,Partner,,Missing
+222,25. Procurement/Credit Partner,GET,/api/v1/partners/me/eligible-items/{id},Item performance detail,Partner,,Missing
+223,25. Procurement/Credit Partner,POST,/api/v1/partners/me/commitments,Commit capital,Partner,Funding cap enforced,Missing
+224,25. Procurement/Credit Partner,GET,/api/v1/partners/me/commitments,List own commitments,Partner,,Missing
+225,25. Procurement/Credit Partner,GET,/api/v1/partners/me/commitments/{id},Commitment detail,Partner,,Missing
+226,25. Procurement/Credit Partner,GET,/api/v1/partners/me/commitments/{id}/status,Track status,Partner,,Missing
+227,25. Procurement/Credit Partner,GET,/api/v1/partners/me/settlements,Settlement history,Partner,,Missing
+228,25. Procurement/Credit Partner,POST,/api/v1/partners/me/disputes,Raise dispute,Partner,,Missing
+229,25. Procurement/Credit Partner,GET,/api/v1/admin/partners,List partners,Admin,,Missing
+230,25. Procurement/Credit Partner,POST,/api/v1/admin/partners/{id}/approve,Approve partner,Admin,,Missing
+231,25. Procurement/Credit Partner,GET,/api/v1/admin/partners/eligibility-rules,Eligibility rule config,Admin,,Missing
+232,25. Procurement/Credit Partner,PATCH,/api/v1/admin/partners/eligibility-rules,Update eligibility rules,Admin,,Missing
+233,25. Procurement/Credit Partner,GET,/api/v1/admin/partners/commitments,All commitments,Admin,,Missing
+234,25. Procurement/Credit Partner,POST,/api/v1/admin/partners/commitments/{id}/approve,Approve commitment,Admin,,Missing
+235,25. Procurement/Credit Partner,POST,/api/v1/admin/partners/disputes/{id}/resolve,Resolve dispute,Admin,,Missing
+236,25. Procurement/Credit Partner,GET,/api/v1/admin/partners/funding-caps,View funding caps,Admin,,Missing
+237,25. Procurement/Credit Partner,PATCH,/api/v1/admin/partners/funding-caps,Update caps,Admin,,Missing
+238,26. Rewards,GET,/api/v1/admin/rewards/program,"Get current rewards program config (name, branding)",Admin,Includes program display name,Missing,,,,Entire rewards module missing.
+239,26. Rewards,POST,/api/v1/admin/rewards/program,Create rewards program name & branding,Admin,"e.g. ""Odogwu Rewards""; admin-defined",Missing
+240,26. Rewards,PATCH,/api/v1/admin/rewards/program,Update rewards program name & branding,Admin,"Rename, change tagline/logo",Missing
+241,26. Rewards,GET,/api/v1/rewards/program,Public-facing rewards program info,Public,Used by storefront to show name,Missing
+242,26. Rewards,GET,/api/v1/rewards/me,Rewards profile & tier,User,,Missing
+243,26. Rewards,GET,/api/v1/rewards/me/cashback,Cashback balance,User,,Missing
+244,26. Rewards,GET,/api/v1/rewards/me/transactions,Rewards transactions,User,,Missing
+245,26. Rewards,POST,/api/v1/rewards/cashback/redeem,Redeem cashback,User,,Missing
+246,26. Rewards,GET,/api/v1/rewards/tiers,Tier definitions,Public,,Missing
+247,26. Rewards,GET,/api/v1/rewards/campaigns,Active festive campaigns,Public,,Missing
+248,26. Rewards,POST,/api/v1/rewards/affiliates/enroll,Affiliate enrollment,User,,Missing
+249,26. Rewards,GET,/api/v1/rewards/affiliates/me,Affiliate profile,Affiliate,,Missing
+250,26. Rewards,GET,/api/v1/rewards/affiliates/me/earnings,Affiliate earnings,Affiliate,,Missing
+251,26. Rewards,POST,/api/v1/rewards/affiliates/me/payout,Request payout,Affiliate,,Missing
+252,26. Rewards,GET,/api/v1/rewards/affiliates/me/referrals,Referral tracking,Affiliate,,Missing
+253,26. Rewards,GET,/api/v1/rewards/sellers/me/rewards,Seller reward summary,Seller,,Missing
+254,26. Rewards,GET,/api/v1/rewards/financiers/me/rewards,Financier tier rewards,Partner,,Missing
+255,26. Rewards,GET,/api/v1/admin/rewards/config,Rewards config (margin guardrails etc.),Admin,,Missing
+256,26. Rewards,PATCH,/api/v1/admin/rewards/config,Update config,Admin,,Missing
+257,26. Rewards,GET,/api/v1/admin/rewards/tiers,List tiers,Admin,,Missing
+258,26. Rewards,POST,/api/v1/admin/rewards/tiers,Create tier (name & thresholds),Admin,Admin names tiers e.g. Bronze/Silver,Missing
+259,26. Rewards,PATCH,/api/v1/admin/rewards/tiers/{id},Update tier name/thresholds,Admin,,Missing
+260,26. Rewards,DELETE,/api/v1/admin/rewards/tiers/{id},Delete tier,Admin,,Missing
+261,26. Rewards,GET,/api/v1/admin/rewards/campaigns,List campaigns,Admin,,Missing
+262,26. Rewards,POST,/api/v1/admin/rewards/campaigns,Create campaign (named),Admin,Festive campaigns,Missing
+263,26. Rewards,PATCH,/api/v1/admin/rewards/campaigns/{id},Update campaign,Admin,,Missing
+264,26. Rewards,DELETE,/api/v1/admin/rewards/campaigns/{id},Delete campaign,Admin,,Missing
+265,26. Rewards,GET,/api/v1/admin/rewards/fraud-alerts,Fraud detection alerts,Admin,,Missing
+266,26. Rewards,POST,/api/v1/admin/rewards/fraud-alerts/{id}/resolve,Resolve alert,Admin,,Missing
+267,27. Promotional Slots,GET,/api/v1/promo-slots/available,List slots available for sellers to buy,Seller,Filterable by type (flash/best-deal) & date,Partial,GET,/api/v1/deals/campaigns/my,src/deals/deals.controller.ts:39,Deals module is a precursor — no slot inventory / availability concept; sellers create campaigns directly.
+268,27. Promotional Slots,GET,/api/v1/promo-slots/types,List slot types & duration tiers (24hr/3-day/7-day),Seller/Public,Pricing tiers visible,Missing,,,,No slot-type or duration-tier model.
+269,27. Promotional Slots,GET,/api/v1/promo-slots/{slotId},"Get slot detail (capacity, price, schedule)",Seller,,Missing
+270,27. Promotional Slots,POST,/api/v1/promo-slots/{slotId}/reserve,Reserve slot for product (FCFS hold),Seller,Short hold pre-payment,Missing,,,,No FCFS slot-hold concept.
+271,27. Promotional Slots,POST,/api/v1/promo-slots/bookings,Create slot booking (seller commits product),Seller,Triggers payment flow,Partial,POST,/api/v1/deals/campaigns,src/deals/deals.controller.ts:30,Creates a deal-campaign instead of a slot-booking; no slot reference.
+272,27. Promotional Slots,GET,/api/v1/promo-slots/bookings,List own bookings,Seller,,Partial,GET,/api/v1/deals/campaigns/my,src/deals/deals.controller.ts:39
+273,27. Promotional Slots,GET,/api/v1/promo-slots/bookings/{id},Booking detail & status,Seller,pending/active/expired/cancelled,Partial,GET,/api/v1/deals/campaigns/my/{id},src/deals/deals.controller.ts:48,Campaign status has different lifecycle (DRAFT/PENDING_PAYMENT/SCHEDULED/LIVE/EXPIRED/CANCELLED).
+274,27. Promotional Slots,POST,/api/v1/promo-slots/bookings/{id}/pay,Pay for booking via Paystack/wallet,Seller,Activates slot on success,Partial,POST,/api/v1/deals/campaigns/my/{id}/initialize-payment,src/deals/deals.controller.ts:77,Paystack-only; no wallet payment option.
+275,27. Promotional Slots,POST,/api/v1/promo-slots/bookings/{id}/cancel,Cancel booking (pre-active only),Seller,Refund per policy,Partial,DELETE,/api/v1/deals/campaigns/my/{id},src/deals/deals.controller.ts:67,Implemented as a DELETE; no refund policy logic.
+276,27. Promotional Slots,GET,/api/v1/promo-slots/bookings/{id}/performance,Impressions/clicks/orders for own booking,Seller,Basic seller analytics,Missing,,,,No analytics endpoint.
+277,27. Promotional Slots,GET,/api/v1/admin/promo-slots/types,List slot type configs,Admin,,Missing
+278,27. Promotional Slots,POST,/api/v1/admin/promo-slots/types,Create slot type (Flash Sale / Best Deal),Admin,"Define name, placement, max items",Missing
+279,27. Promotional Slots,PATCH,/api/v1/admin/promo-slots/types/{id},Update slot type,Admin,,Missing
+280,27. Promotional Slots,DELETE,/api/v1/admin/promo-slots/types/{id},Remove slot type,Admin,,Missing
+281,27. Promotional Slots,GET,/api/v1/admin/promo-slots/duration-tiers,List duration tiers (24hr/3-day/7-day) & prices,Admin,,Missing
+282,27. Promotional Slots,POST,/api/v1/admin/promo-slots/duration-tiers,Create duration tier with price,Admin,Fixed pricing per duration,Missing
+283,27. Promotional Slots,PATCH,/api/v1/admin/promo-slots/duration-tiers/{id},Update duration tier or price,Admin,,Missing
+284,27. Promotional Slots,DELETE,/api/v1/admin/promo-slots/duration-tiers/{id},Delete duration tier,Admin,,Missing
+285,27. Promotional Slots,GET,/api/v1/admin/promo-slots/capacity,View slot capacity caps per period,Admin,e.g. 10 flash spots/day,Missing
+286,27. Promotional Slots,PATCH,/api/v1/admin/promo-slots/capacity,Update slot capacity caps,Admin,,Missing
+287,27. Promotional Slots,POST,/api/v1/admin/promo-slots/generate,Generate slot inventory for date range,Admin,Creates daily slots,Missing
+288,27. Promotional Slots,GET,/api/v1/admin/promo-slots/bookings,List all bookings (operations view),Admin,,Partial,GET,/api/v1/admin/deals/campaigns,src/deals/admin-deals.controller.ts:28,Admin can list all deal campaigns.
+289,27. Promotional Slots,POST,/api/v1/admin/promo-slots/bookings/{id}/suspend,Suspend an active booking (policy violation),Admin,,Missing,,,,No suspend action; admin can patch/delete a campaign.
+290,27. Promotional Slots,POST,/api/v1/admin/promo-slots/bookings/{id}/refund,Issue refund on cancelled/suspended booking,Admin,,Missing
+291,27. Promotional Slots,GET,/api/v1/admin/promo-slots/reports/revenue,Promo slot revenue report,Admin,,Missing
+292,27. Promotional Slots,GET,/api/v1/admin/promo-slots/reports/utilization,Slot utilization & fill rate,Admin,,Missing
+293,28. File / Media Uploads,POST,/api/v1/media/upload,"Upload file (images, docs)",User/Seller,,Partial,POST,/api/v1/upload,src/upload/upload.controller.ts:25,Path rename to /media/upload. Uses Cloudinary.
+294,28. File / Media Uploads,POST,/api/v1/media/upload/presigned,Get presigned URL,User/Seller,,Missing,,,,No presigned-URL flow (current upload is direct).
+295,28. File / Media Uploads,DELETE,/api/v1/media/{id},Delete media,Owner/Admin,,Missing,,,,No media-delete endpoint.
+296,29. System / Utility,GET,/api/v1/health,Health check,Public,,Present,GET,/api/v1/health,src/health/health.controller.ts:16,Also extra GET /health/db for DB connectivity.
+297,29. System / Utility,GET,/api/v1/version,Build version,Public,,Missing,,,,No build-version endpoint.
+298,29. System / Utility,GET,/api/v1/config/public,"Public app config (feature flags, fees)",Public,,Partial,GET,/api/v1/site-config,src/site-config/site-config.controller.ts:12,Path rename only.
+299,29. System / Utility,GET,/api/v1/legal/{slug},"Fetch legal page (Terms, Privacy etc.)",Public,,Missing,,,,No legal-pages module.
+300,29. System / Utility,GET,/api/v1/geo/cities,Supported cities (Lagos only V1),Public,,Missing,,,,No geo/cities endpoint.
+B1,BONUS - Auth,POST,/api/v1/auth/clerk/login,Login/register via Clerk OAuth (Google/Facebook),Public,,Present,POST,/api/v1/auth/clerk/login,src/auth/auth.controller.ts:126,Not in PM spec; add to spec or remove.
+B2,BONUS - Auth,POST,/api/v1/auth/register/email,Multi-step registration step 1 (email),Public,,Present,POST,/api/v1/auth/register/email,src/auth/auth.controller.ts:37,Part of multi-step register flow.
+B3,BONUS - Auth,POST,/api/v1/auth/register/details,Multi-step registration step 2 (details),Public,,Present,POST,/api/v1/auth/register/details,src/auth/auth.controller.ts:44
+B4,BONUS - Auth,POST,/api/v1/auth/register/password,Multi-step registration step 3 (password),Public,,Present,POST,/api/v1/auth/register/password,src/auth/auth.controller.ts:57
+B5,BONUS - Auth,POST,/api/v1/auth/register/verify,Multi-step registration step 4 (verify email OTP),Public,,Present,POST,/api/v1/auth/register/verify,src/auth/auth.controller.ts:64
+B6,BONUS - Auth,POST,/api/v1/auth/register/resend-otp,Resend registration email OTP,Public,,Present,POST,/api/v1/auth/register/resend-otp,src/auth/auth.controller.ts:72
+B7,BONUS - Auth,POST,/api/v1/auth/register/seller/email,Seller registration step 1,Public,,Present,POST,/api/v1/auth/register/seller/email,src/auth/auth.controller.ts:82
+B8,BONUS - Auth,POST,/api/v1/auth/register/seller/profile,Seller registration step 2 (personal + business),Public,,Present,POST,/api/v1/auth/register/seller/profile,src/auth/auth.controller.ts:89,"Renamed from /seller/details after Render's edge WAF built reputation against the old path. Body shape unchanged."
+B9,BONUS - Auth,POST,/api/v1/auth/register/seller/password,Seller registration step 3,Public,,Present,POST,/api/v1/auth/register/seller/password,src/auth/auth.controller.ts:96
+B10,BONUS - Auth,POST,/api/v1/auth/register/seller/verify,Seller registration step 4 (verify OTP),Public,,Present,POST,/api/v1/auth/register/seller/verify,src/auth/auth.controller.ts:116
+B11,BONUS - Auth,POST,/api/v1/auth/login/verify-2fa,Verify 2FA challenge during login,Public,,Present,POST,/api/v1/auth/login/verify-2fa,src/auth/auth.controller.ts:163
+B12,BONUS - Auth,POST,/api/v1/auth/2fa/enable,Initiate 2FA enable (sends OTP),User,,Present,POST,/api/v1/auth/2fa/enable,src/auth/auth.controller.ts:204
+B13,BONUS - Auth,POST,/api/v1/auth/2fa/confirm,Confirm 2FA enable with OTP,User,,Present,POST,/api/v1/auth/2fa/confirm,src/auth/auth.controller.ts:212
+B14,BONUS - Auth,POST,/api/v1/auth/2fa/disable,Disable 2FA with OTP verification,User,,Present,POST,/api/v1/auth/2fa/disable,src/auth/auth.controller.ts:220
+B15,BONUS - Auth,POST,/api/v1/auth/forgot-password/verify,Verify reset OTP (middle step before reset),Public,,Present,POST,/api/v1/auth/forgot-password/verify,src/auth/auth.controller.ts:186
+B16,BONUS - Users,POST,/api/v1/users,Create user (admin-style),User,Admin-gated helper route,Present,POST,/api/v1/users,src/users/users.controller.ts:95,Admin-gated.
+B17,BONUS - Users,DELETE,/api/v1/users/{id},Delete user,User,Admin-gated helper route,Present,DELETE,/api/v1/users/{id},src/users/users.controller.ts:121,Admin-gated.
+B18,BONUS - Storefront,GET,/api/v1/home,Homepage aggregate (categories + featured rails),Public,,Present,GET,/api/v1/home,src/home/home.controller.ts:12,Returns curated sections including best_deals.
+B19,BONUS - Sellers,GET,/api/v1/sellers/{sellerId}/summary,Public seller summary card,Public,,Present,GET,/api/v1/sellers/{sellerId}/summary,src/sellers/sellers.controller.ts:33
+B20,BONUS - Sellers,POST,/api/v1/sellers/{sellerId}/follow,Follow a seller,User,,Present,POST,/api/v1/sellers/{sellerId}/follow,src/sellers/sellers.controller.ts:51
+B21,BONUS - Sellers,DELETE,/api/v1/sellers/{sellerId}/follow,Unfollow a seller,User,,Present,DELETE,/api/v1/sellers/{sellerId}/follow,src/sellers/sellers.controller.ts:60
+B22,BONUS - Reviews,POST,/api/v1/products/{productId}/reviews/{reviewId}/helpful,Mark a review helpful,User,,Present,POST,/api/v1/products/{productId}/reviews/{reviewId}/helpful,src/reviews/reviews.controller.ts:42
+B23,BONUS - Admin Sellers,PATCH,/api/v1/admin/sellers/{id},Generic admin update of seller,Admin,,Present,PATCH,/api/v1/admin/sellers/{id},src/admin/admin-sellers.controller.ts:80
+B24,BONUS - Admin Sellers,PATCH,/api/v1/admin/sellers/{id}/verify,Admin sets seller verified flag,Admin,,Present,PATCH,/api/v1/admin/sellers/{id}/verify,src/admin/admin-sellers.controller.ts:90
+B24a,BONUS - Sellers,GET,/api/v1/sellers/my/banking,Read own seller bank/payout details,Seller,,Present,GET,/api/v1/sellers/my/banking,src/sellers/sellers.controller.ts:99,"Returns null fields until first submission. Created to keep bank PII off the public registration endpoints (some edge WAFs silently drop such bodies)."
+B24b,BONUS - Sellers,POST,/api/v1/sellers/my/banking,Submit/update own seller bank/payout details,Seller,,Present,POST,/api/v1/sellers/my/banking,src/sellers/sellers.controller.ts:110,"NUBAN 10-digit validation. Auto-stamps bankDetailsCompletedAt on SellerProfile so admin approval can gate on it."
+B25,BONUS - Newsletter,POST,/api/v1/newsletter/subscriptions,Newsletter signup,Public,,Present,POST,/api/v1/newsletter/subscriptions,src/newsletter/newsletter.controller.ts:13
+B26,BONUS - Wishlist,GET,/api/v1/wishlist,Get current user wishlist,User,,Present,GET,/api/v1/wishlist,src/wishlist/wishlist.controller.ts:13,Not in PM spec but expected.
+B27,BONUS - Wishlist,POST,/api/v1/wishlist/{productId},Add product to wishlist,User,,Present,POST,/api/v1/wishlist/{productId},src/wishlist/wishlist.controller.ts:18
+B28,BONUS - Wishlist,DELETE,/api/v1/wishlist/{productId},Remove product from wishlist,User,,Present,DELETE,/api/v1/wishlist/{productId},src/wishlist/wishlist.controller.ts:27
+B29,BONUS - System,GET,/api/v1/health/db,DB connectivity health check,Public,,Present,GET,/api/v1/health/db,src/health/health.controller.ts:24
+B30,BONUS - Webhooks,POST,/api/v1/webhooks/clerk,Clerk user-sync webhook,Signed,,Present,POST,/api/v1/webhooks/clerk,src/webhooks/clerk-webhook.controller.ts:30,Verified via Svix signature.
+B31,BONUS - System,GET,/api/v1/,Root app ping,Public,,Present,GET,/api/v1/,src/app.controller.ts:12

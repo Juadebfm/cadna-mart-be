@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 export const envSchema = z.object({
   NODE_ENV: z.enum(['dev', 'staging', 'prod']).default('dev'),
+  PORT: z.coerce.number().optional(),
   APP_PORT: z.coerce.number().default(3000),
   APP_NAME: z.string().default('cadna-mart-backend'),
   API_PREFIX: z.string().default('api'),
@@ -27,7 +28,28 @@ export const envSchema = z.object({
   THROTTLE_TTL: z.coerce.number().default(60000),
   THROTTLE_LIMIT: z.coerce.number().default(100),
 
+  RESEND_API_KEY: z.string().min(1).default('re_placeholder'),
+  EMAIL_FROM: z.string().default('Cadna Mart <noreply@cadnamart.com>'),
+  EMAIL_LOGO_URL: z
+    .string()
+    .url()
+    .default('https://res.cloudinary.com/dwrhjddpn/image/upload/v1779286047/cadna_logo_you5ek.png'),
+
+  CLERK_WEBHOOK_SECRET: z.string().default(''),
+  CLERK_SECRET_KEY: z.string().default(''),
+
+  PAYSTACK_SECRET_KEY: z.string().default(''),
+  PAYSTACK_WEBHOOK_SECRET: z.string().default(''),
+  PAYSTACK_CALLBACK_URL: z.string().default(''),
+
+  DEALS_FEE_PER_PRODUCT: z.coerce.number().default(5000),
+  DEALS_MAX_PRODUCTS: z.coerce.number().default(10),
+
   LOG_LEVEL: z.enum(['error', 'warn', 'info', 'debug', 'verbose']).default('debug'),
+
+  CLOUDINARY_CLOUD_NAME: z.string().default(''),
+  CLOUDINARY_API_KEY: z.string().default(''),
+  CLOUDINARY_API_SECRET: z.string().default(''),
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;

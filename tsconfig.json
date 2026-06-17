@@ -26,7 +26,30 @@
       "@common/*": ["src/common/*"],
       "@logger/*": ["src/logger/*"],
       "@health/*": ["src/health/*"],
-      "@shared/*": ["src/shared/*"]
+      "@shared/*": ["src/shared/*"],
+      "@otp/*": ["src/otp/*"],
+      "@email/*": ["src/email/*"],
+      "@registration-session/*": ["src/registration-session/*"],
+      "@categories/*": ["src/categories/*"],
+      "@products/*": ["src/products/*"],
+      "@sellers/*": ["src/sellers/*"],
+      "@reviews/*": ["src/reviews/*"],
+      "@banners/*": ["src/banners/*"],
+      "@home/*": ["src/home/*"],
+      "@cart/*": ["src/cart/*"],
+      "@wishlist/*": ["src/wishlist/*"],
+      "@shipping/*": ["src/shipping/*"],
+      "@policies/*": ["src/policies/*"],
+      "@newsletter/*": ["src/newsletter/*"],
+      "@search/*": ["src/search/*"],
+      "@site-config/*": ["src/site-config/*"],
+      "@upload/*": ["src/upload/*"],
+      "@admin/*": ["src/admin/*"],
+      "@addresses/*": ["src/addresses/*"],
+      "@auth-events/*": ["src/auth-events/*"],
+      "@data-requests/*": ["src/data-requests/*"],
+      "@brands/*": ["src/brands/*"],
+      "@collections/*": ["src/collections/*"]
     }
   }
 }

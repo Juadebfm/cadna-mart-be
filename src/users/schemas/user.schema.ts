@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { BaseSchema } from '@shared/base/base.schema';
-import { Role } from '../enums/role.enum';
+import { AccountType } from '../enums/account-type.enum';
+import { AuthProvider } from '../enums/auth-provider.enum';
 
 @Schema({
   timestamps: true,
@@ -8,6 +9,7 @@ import { Role } from '../enums/role.enum';
     virtuals: true,
     transform: (_doc: unknown, ret: Record<string, unknown>) => {
       delete ret.password;
+      delete ret.refreshToken;
       delete ret.__v;
       return ret;
     },
@@ -23,19 +25,43 @@ export class User extends BaseSchema {
   @Prop({ required: true, unique: true, lowercase: true, trim: true })
   email!: string;
 
-  @Prop({ required: true, select: false })
-  password!: string;
+  @Prop({ type: String, select: false, default: null })
+  password!: string | null;
 
-  @Prop({ type: String, enum: Role, default: Role.USER })
-  role!: Role;
+  @Prop({ type: String, enum: AccountType, required: true })
+  accountType!: AccountType;
+
+  @Prop({ type: String, enum: AuthProvider, default: AuthProvider.LOCAL })
+  authProvider!: AuthProvider;
+
+  @Prop({ type: String, default: null })
+  clerkId!: string | null;
+
+  @Prop({ type: String, default: null })
+  phoneNumber!: string | null;
+
+  @Prop({ type: Date, default: null })
+  dateOfBirth!: Date | null;
+
+  @Prop({ default: false })
+  isVerified!: boolean;
 
   @Prop({ default: true })
   isActive!: boolean;
 
-  @Prop({ default: null })
+  @Prop({ default: false })
+  isTwoFactorEnabled!: boolean;
+
+  @Prop({ type: Date, default: null })
+  termsAcceptedAt!: Date | null;
+
+  @Prop({ type: Date, default: null })
   lastLoginAt!: Date | null;
 
-  @Prop({ default: null })
+  @Prop({ type: Date, default: null })
+  marketingConsentAt!: Date | null;
+
+  @Prop({ type: String, default: null, select: false })
   refreshToken!: string | null;
 }
 
@@ -45,6 +71,7 @@ UserSchema.virtual('fullName').get(function (this: User) {
   return `${this.firstName} ${this.lastName}`;
 });
 
-UserSchema.index({ email: 1 });
-UserSchema.index({ role: 1 });
+UserSchema.index({ accountType: 1 });
 UserSchema.index({ createdAt: -1 });
+UserSchema.index({ clerkId: 1 }, { sparse: true });
+UserSchema.index({ email: 1, deletedAt: 1 });

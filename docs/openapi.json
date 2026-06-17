@@ -1,0 +1,6198 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/v1": {
+      "get": {
+        "operationId": "AppController_getRoot_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "API root - welcome message",
+        "tags": [
+          "App"
+        ]
+      }
+    },
+    "/api/v1/auth/register/email": {
+      "post": {
+        "operationId": "AuthController_registerEmail_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterEmailDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "Step 1: Start registration with email",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/register/details": {
+      "post": {
+        "operationId": "AuthController_registerDetails_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterDetailsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "Step 2: Provide personal details",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/register/password": {
+      "post": {
+        "operationId": "AuthController_registerPassword_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterPasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "Step 3: Set password and create account",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/register/verify": {
+      "post": {
+        "operationId": "AuthController_verifyEmail_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyEmailDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Step 4: Verify email with OTP code",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/register/resend-otp": {
+      "post": {
+        "operationId": "AuthController_resendOtp_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResendOtpDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Resend email verification OTP",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/register/seller/email": {
+      "post": {
+        "operationId": "AuthController_registerSellerEmail_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterEmailDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "Seller Step 1: Start registration with email",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/register/seller/profile": {
+      "post": {
+        "operationId": "AuthController_registerSellerProfile_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterSellerDetailsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "Seller Step 2: Provide personal + business details. Bank info is collected separately via POST /sellers/me/banking after login - do not send it here.",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/register/seller/password": {
+      "post": {
+        "operationId": "AuthController_registerSellerPassword_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterSellerPasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "Seller Step 3: Set password and create account. Bank info is collected separately via POST /sellers/me/banking after login.",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/register/seller/verify": {
+      "post": {
+        "operationId": "AuthController_verifySellerEmail_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyEmailDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Seller Step 4: Verify email with OTP code",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/register": {
+      "post": {
+        "operationId": "AuthController_register_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Account created. Email a verification OTP is sent automatically. Caller should then hit /auth/otp/verify or /auth/register/verify.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": "Account created. Please verify your email.",
+                    "email": "jane@example.com"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Single-call registration (orchestrates email + details + password steps)",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/otp/request": {
+      "post": {
+        "operationId": "AuthController_otpRequest_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OtpRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Channel is always email (Resend) regardless of \"phone\" wording in the PM spec. 60-second cooldown enforced by OtpService.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": "Login code sent"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Send OTP via email for login/email-verification/password-reset",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/otp/verify": {
+      "post": {
+        "operationId": "AuthController_otpVerify_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OtpVerifyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Response shape depends on the `purpose` field on the request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "description": "purpose=login → returns JWT pair + user",
+                      "example": {
+                        "purpose": "login",
+                        "tokens": {
+                          "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                          "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                          "expiresIn": "15m"
+                        },
+                        "user": {
+                          "id": "6710abc123def456789012ab",
+                          "email": "jane@example.com",
+                          "accountType": "BUYER"
+                        }
+                      }
+                    },
+                    {
+                      "description": "purpose=email_verification → success message",
+                      "example": {
+                        "purpose": "email_verification",
+                        "message": "Email verified successfully"
+                      }
+                    },
+                    {
+                      "description": "purpose=password_reset → short-lived resetToken",
+                      "example": {
+                        "purpose": "password_reset",
+                        "resetToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "summary": "Verify OTP code. Returns JWTs for login, message for verification, resetToken for password-reset",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/otp/resend": {
+      "post": {
+        "operationId": "AuthController_otpResend_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OtpResendDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": "Login code sent"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Resend OTP (cooldown enforced)",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/clerk/login": {
+      "post": {
+        "operationId": "AuthController_clerkLogin_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClerkLoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Login or register via Clerk OAuth (Google/Facebook)",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "operationId": "AuthController_login_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Returns JWT pair + user, or a requires2FA flag if 2FA is enabled.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "example": {
+                        "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                        "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                        "expiresIn": "15m",
+                        "user": {
+                          "id": "6710abc123def456789012ab",
+                          "firstName": "Jane",
+                          "lastName": "Doe",
+                          "email": "jane@example.com",
+                          "accountType": "BUYER",
+                          "isVerified": true,
+                          "isTwoFactorEnabled": false
+                        }
+                      }
+                    },
+                    {
+                      "example": {
+                        "requires2FA": true,
+                        "email": "jane@example.com"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid credentials or unverified email."
+          }
+        },
+        "summary": "Login with email and password. For passwordless email-OTP login, use /auth/otp/request then /auth/otp/verify.",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/login/password": {
+      "post": {
+        "operationId": "AuthController_loginPassword_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Login with email and password (spec alias of /login)",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/login/verify-2fa": {
+      "post": {
+        "operationId": "AuthController_verifyLogin2fa_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Verify2faLoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Verify 2FA code during login",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/forgot-password": {
+      "post": {
+        "operationId": "AuthController_forgotPassword_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForgotPasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Request password reset OTP",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/password/reset/request": {
+      "post": {
+        "operationId": "AuthController_passwordResetRequest_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForgotPasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Request password reset OTP (spec alias of /forgot-password)",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/forgot-password/verify": {
+      "post": {
+        "operationId": "AuthController_forgotPasswordVerify_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForgotPasswordVerifyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Verify password reset OTP",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/forgot-password/reset": {
+      "post": {
+        "operationId": "AuthController_forgotPasswordReset_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForgotPasswordResetDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Reset password with reset token",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/password/reset/confirm": {
+      "post": {
+        "operationId": "AuthController_passwordResetConfirm_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForgotPasswordResetDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Confirm password reset with token (spec alias of /forgot-password/reset)",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/2fa/enable": {
+      "post": {
+        "operationId": "AuthController_enable2fa_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Initiate 2FA enable (sends OTP)",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/2fa/confirm": {
+      "post": {
+        "operationId": "AuthController_confirm2fa_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Enable2faDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Confirm 2FA enable with OTP",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/2fa/disable": {
+      "post": {
+        "operationId": "AuthController_disable2fa_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Enable2faDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Disable 2FA with OTP verification",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/refresh": {
+      "post": {
+        "operationId": "AuthController_refresh_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshTokenDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                    "expiresIn": "15m"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Refresh access token",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/profile": {
+      "get": {
+        "operationId": "AuthController_getProfile_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "id": "6710abc123def456789012ab",
+                    "firstName": "Jane",
+                    "lastName": "Doe",
+                    "email": "jane@example.com",
+                    "accountType": "BUYER",
+                    "phoneNumber": "+2348012345678",
+                    "dateOfBirth": "1990-01-15T00:00:00.000Z",
+                    "isEmailVerified": true,
+                    "isVerified": true,
+                    "isTwoFactorEnabled": false,
+                    "marketingConsent": false,
+                    "marketingConsentAt": null,
+                    "createdAt": "2026-05-19T10:23:00.000Z",
+                    "fullName": "Jane Doe"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get current user profile",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "operationId": "AuthController_getMe_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Identical payload to GET /auth/profile."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get current user (spec alias of /profile)",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/logs": {
+      "get": {
+        "operationId": "AuthController_getLogs_v1",
+        "parameters": [
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List auth events for the current user (audit log)",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "operationId": "AuthController_logout_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Logout and invalidate tokens",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/users/profile": {
+      "get": {
+        "operationId": "UsersController_getProfile_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get the current user profile",
+        "tags": [
+          "Users"
+        ]
+      },
+      "patch": {
+        "operationId": "UsersController_updateProfile_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProfileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update the current user profile",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/api/v1/users/consent/marketing": {
+      "post": {
+        "operationId": "UsersController_setMarketingConsent_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarketingConsentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Set marketing consent (NDPR)",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/api/v1/users/data/delete-request": {
+      "post": {
+        "operationId": "UsersController_requestDeletion_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DataDeleteRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Submit right-to-be-forgotten request (NDPR)",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/api/v1/users/data/export": {
+      "get": {
+        "operationId": "UsersController_exportData_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Export the current user data (NDPR)",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/api/v1/users": {
+      "post": {
+        "operationId": "UsersController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a new user (Admin only)",
+        "tags": [
+          "Users"
+        ]
+      },
+      "get": {
+        "operationId": "UsersController_findAll_v1",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "createdAt",
+              "type": "string"
+            }
+          },
+          {
+            "name": "order",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "desc",
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Search by name or email",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "accountType",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "buyer",
+                "seller",
+                "investor",
+                "admin"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get all users with pagination (Admin only)",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/api/v1/users/{id}": {
+      "get": {
+        "operationId": "UsersController_findOne_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get user by ID",
+        "tags": [
+          "Users"
+        ]
+      },
+      "patch": {
+        "operationId": "UsersController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update user",
+        "tags": [
+          "Users"
+        ]
+      },
+      "delete": {
+        "operationId": "UsersController_remove_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Soft delete user (Admin only)",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/api/v1/users/addresses": {
+      "get": {
+        "operationId": "AddressesController_list_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List current user addresses",
+        "tags": [
+          "User Addresses"
+        ]
+      },
+      "post": {
+        "operationId": "AddressesController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAddressDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Add a new address",
+        "tags": [
+          "User Addresses"
+        ]
+      }
+    },
+    "/api/v1/users/addresses/{id}": {
+      "patch": {
+        "operationId": "AddressesController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAddressDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update an address",
+        "tags": [
+          "User Addresses"
+        ]
+      },
+      "delete": {
+        "operationId": "AddressesController_remove_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete an address (soft delete)",
+        "tags": [
+          "User Addresses"
+        ]
+      }
+    },
+    "/api/v1/users/addresses/{id}/default": {
+      "post": {
+        "operationId": "AddressesController_setDefault_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Set an address as default",
+        "tags": [
+          "User Addresses"
+        ]
+      }
+    },
+    "/api/v1/health": {
+      "get": {
+        "operationId": "HealthController_check_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The Health Check is successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "info": {
+                      "type": "object",
+                      "example": {
+                        "database": {
+                          "status": "up"
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": [
+                          "status"
+                        ],
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": true
+                      },
+                      "nullable": true
+                    },
+                    "error": {
+                      "type": "object",
+                      "example": {},
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": [
+                          "status"
+                        ],
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": true
+                      },
+                      "nullable": true
+                    },
+                    "details": {
+                      "type": "object",
+                      "example": {
+                        "database": {
+                          "status": "up"
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": [
+                          "status"
+                        ],
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The Health Check is not successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "error"
+                    },
+                    "info": {
+                      "type": "object",
+                      "example": {
+                        "database": {
+                          "status": "up"
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": [
+                          "status"
+                        ],
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": true
+                      },
+                      "nullable": true
+                    },
+                    "error": {
+                      "type": "object",
+                      "example": {
+                        "redis": {
+                          "status": "down",
+                          "message": "Could not connect"
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": [
+                          "status"
+                        ],
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": true
+                      },
+                      "nullable": true
+                    },
+                    "details": {
+                      "type": "object",
+                      "example": {
+                        "database": {
+                          "status": "up"
+                        },
+                        "redis": {
+                          "status": "down",
+                          "message": "Could not connect"
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": [
+                          "status"
+                        ],
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "General health check",
+        "tags": [
+          "Health"
+        ]
+      }
+    },
+    "/api/v1/health/db": {
+      "get": {
+        "operationId": "HealthController_checkDb_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The Health Check is successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "info": {
+                      "type": "object",
+                      "example": {
+                        "database": {
+                          "status": "up"
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": [
+                          "status"
+                        ],
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": true
+                      },
+                      "nullable": true
+                    },
+                    "error": {
+                      "type": "object",
+                      "example": {},
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": [
+                          "status"
+                        ],
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": true
+                      },
+                      "nullable": true
+                    },
+                    "details": {
+                      "type": "object",
+                      "example": {
+                        "database": {
+                          "status": "up"
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": [
+                          "status"
+                        ],
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The Health Check is not successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "error"
+                    },
+                    "info": {
+                      "type": "object",
+                      "example": {
+                        "database": {
+                          "status": "up"
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": [
+                          "status"
+                        ],
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": true
+                      },
+                      "nullable": true
+                    },
+                    "error": {
+                      "type": "object",
+                      "example": {
+                        "redis": {
+                          "status": "down",
+                          "message": "Could not connect"
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": [
+                          "status"
+                        ],
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": true
+                      },
+                      "nullable": true
+                    },
+                    "details": {
+                      "type": "object",
+                      "example": {
+                        "database": {
+                          "status": "up"
+                        },
+                        "redis": {
+                          "status": "down",
+                          "message": "Could not connect"
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": [
+                          "status"
+                        ],
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Database health check",
+        "tags": [
+          "Health"
+        ]
+      }
+    },
+    "/api/v1/deals/campaigns": {
+      "post": {
+        "operationId": "DealsController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDealCampaignDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a deal campaign",
+        "tags": [
+          "Deals"
+        ]
+      }
+    },
+    "/api/v1/deals/campaigns/my": {
+      "get": {
+        "operationId": "DealsController_listMy_v1",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "pending_payment",
+                "scheduled",
+                "live",
+                "expired",
+                "cancelled"
+              ]
+            }
+          },
+          {
+            "name": "paymentStatus",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "unpaid",
+                "pending",
+                "paid",
+                "failed",
+                "refunded"
+              ]
+            }
+          },
+          {
+            "name": "sellerId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by seller ID (admin only)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List my deal campaigns",
+        "tags": [
+          "Deals"
+        ]
+      }
+    },
+    "/api/v1/deals/campaigns/my/{id}": {
+      "get": {
+        "operationId": "DealsController_getMy_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get one of my deal campaigns",
+        "tags": [
+          "Deals"
+        ]
+      },
+      "patch": {
+        "operationId": "DealsController_updateMy_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDealCampaignDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update one of my deal campaigns",
+        "tags": [
+          "Deals"
+        ]
+      },
+      "delete": {
+        "operationId": "DealsController_deleteMy_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete one of my deal campaigns",
+        "tags": [
+          "Deals"
+        ]
+      }
+    },
+    "/api/v1/deals/campaigns/my/{id}/initialize-payment": {
+      "post": {
+        "operationId": "DealsController_initializePayment_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Initialize Paystack payment for my deal campaign",
+        "tags": [
+          "Deals"
+        ]
+      }
+    },
+    "/api/v1/admin/deals/campaigns": {
+      "get": {
+        "operationId": "AdminDealsController_list_v1",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "pending_payment",
+                "scheduled",
+                "live",
+                "expired",
+                "cancelled"
+              ]
+            }
+          },
+          {
+            "name": "paymentStatus",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "unpaid",
+                "pending",
+                "paid",
+                "failed",
+                "refunded"
+              ]
+            }
+          },
+          {
+            "name": "sellerId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by seller ID (admin only)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List all deal campaigns",
+        "tags": [
+          "Admin — Deals"
+        ]
+      }
+    },
+    "/api/v1/admin/deals/campaigns/{id}": {
+      "get": {
+        "operationId": "AdminDealsController_get_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get one deal campaign",
+        "tags": [
+          "Admin — Deals"
+        ]
+      },
+      "patch": {
+        "operationId": "AdminDealsController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminUpdateDealCampaignDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update a deal campaign",
+        "tags": [
+          "Admin — Deals"
+        ]
+      },
+      "delete": {
+        "operationId": "AdminDealsController_remove_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete a deal campaign",
+        "tags": [
+          "Admin — Deals"
+        ]
+      }
+    },
+    "/api/v1/admin/deals/campaigns/{id}/approve": {
+      "patch": {
+        "operationId": "AdminDealsController_approve_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Approve a deal campaign",
+        "tags": [
+          "Admin — Deals"
+        ]
+      }
+    },
+    "/api/v1/categories": {
+      "get": {
+        "operationId": "CategoriesController_findAll_v1",
+        "parameters": [
+          {
+            "name": "tree",
+            "required": false,
+            "in": "query",
+            "description": "Return categories as a tree",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "includeCounts",
+            "required": false,
+            "in": "query",
+            "description": "Include product counts",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Get categories (flat or tree)",
+        "tags": [
+          "Categories"
+        ]
+      }
+    },
+    "/api/v1/categories/{slug}": {
+      "get": {
+        "operationId": "CategoriesController_findBySlug_v1",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Get a single category by slug",
+        "tags": [
+          "Categories"
+        ]
+      }
+    },
+    "/api/v1/products": {
+      "get": {
+        "operationId": "ProductsController_findAll_v1",
+        "parameters": [
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Search query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "section",
+            "required": false,
+            "in": "query",
+            "description": "Section filter (best_deals, recommended, top_sellers, new_arrivals)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "category",
+            "required": false,
+            "in": "query",
+            "description": "Category slug",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "subCategory",
+            "required": false,
+            "in": "query",
+            "description": "Sub-category slug",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "brand",
+            "required": false,
+            "in": "query",
+            "description": "Single brand name (one brand filter at a time)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "minPrice",
+            "required": false,
+            "in": "query",
+            "description": "Minimum price",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "maxPrice",
+            "required": false,
+            "in": "query",
+            "description": "Maximum price",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "inStock",
+            "required": false,
+            "in": "query",
+            "description": "In stock only",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "ratingGte",
+            "required": false,
+            "in": "query",
+            "description": "Minimum rating",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "relevance",
+              "type": "string",
+              "enum": [
+                "relevance",
+                "price_asc",
+                "price_desc",
+                "newest",
+                "popular"
+              ]
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maximum": 100,
+              "default": 10,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "items": [
+                      {
+                        "id": "6710def123abc456789012ab",
+                        "slug": "hisense-43-inch-smart-tv",
+                        "name": "Hisense 43\" Smart TV",
+                        "brand": "Hisense",
+                        "thumbnailUrl": "https://res.cloudinary.com/.../hisense-43.jpg",
+                        "price": {
+                          "amount": 220000,
+                          "currency": "NGN",
+                          "formatted": "₦220,000"
+                        },
+                        "originalPrice": {
+                          "amount": 260000,
+                          "currency": "NGN",
+                          "formatted": "₦260,000"
+                        },
+                        "savings": {
+                          "amount": 40000,
+                          "currency": "NGN",
+                          "formatted": "₦40,000"
+                        },
+                        "discountPercent": 15,
+                        "rating": 4.6,
+                        "reviewCount": 184,
+                        "inventoryStatus": "in_stock",
+                        "badge": "Best Deal",
+                        "seller": {
+                          "id": "6710abc...",
+                          "name": "AlphaTech Store",
+                          "isVerified": true,
+                          "location": "Lagos",
+                          "deliveryTimeRange": "1-3 days"
+                        }
+                      }
+                    ],
+                    "pagination": {
+                      "page": 1,
+                      "limit": 10,
+                      "totalItems": 142,
+                      "totalPages": 15,
+                      "hasNextPage": true,
+                      "hasPrevPage": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "List products with search, filter, and pagination",
+        "tags": [
+          "Products"
+        ]
+      },
+      "post": {
+        "operationId": "ProductsController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProductDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a product (Seller or Admin)",
+        "tags": [
+          "Products"
+        ]
+      }
+    },
+    "/api/v1/products/{idOrSlug}": {
+      "get": {
+        "operationId": "ProductsController_findOne_v1",
+        "parameters": [
+          {
+            "name": "idOrSlug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "variantId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the full product detail including variant axes, gallery, breadcrumbs, specs, tabs and seller profile."
+          }
+        },
+        "summary": "Get product detail by Mongo id or slug",
+        "tags": [
+          "Products"
+        ]
+      }
+    },
+    "/api/v1/products/{productId}/related": {
+      "get": {
+        "operationId": "ProductsController_findRelated_v1",
+        "parameters": [
+          {
+            "name": "productId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Get related products",
+        "tags": [
+          "Products"
+        ]
+      }
+    },
+    "/api/v1/products/{productId}/variants": {
+      "get": {
+        "operationId": "ProductsController_findVariants_v1",
+        "parameters": [
+          {
+            "name": "productId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Get product variants and axes",
+        "tags": [
+          "Products"
+        ]
+      }
+    },
+    "/api/v1/products/{productId}/availability": {
+      "get": {
+        "operationId": "ProductsController_findAvailability_v1",
+        "parameters": [
+          {
+            "name": "productId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Get product/variant stock availability",
+        "tags": [
+          "Products"
+        ]
+      }
+    },
+    "/api/v1/products/{productId}/policies": {
+      "get": {
+        "operationId": "ProductsController_findPolicies_v1",
+        "parameters": [
+          {
+            "name": "productId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Get product return and warranty policies",
+        "tags": [
+          "Products"
+        ]
+      }
+    },
+    "/api/v1/products/{id}": {
+      "patch": {
+        "operationId": "ProductsController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProductDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update a product (owner Seller or Admin)",
+        "tags": [
+          "Products"
+        ]
+      },
+      "delete": {
+        "operationId": "ProductsController_remove_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete a product (owner Seller or Admin)",
+        "tags": [
+          "Products"
+        ]
+      }
+    },
+    "/api/v1/categories/{slug}/products": {
+      "get": {
+        "operationId": "CategoryProductsController_listByCategory_v1",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Search query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "section",
+            "required": false,
+            "in": "query",
+            "description": "Section filter (best_deals, recommended, top_sellers, new_arrivals)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "category",
+            "required": false,
+            "in": "query",
+            "description": "Category slug",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "subCategory",
+            "required": false,
+            "in": "query",
+            "description": "Sub-category slug",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "brand",
+            "required": false,
+            "in": "query",
+            "description": "Single brand name (one brand filter at a time)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "minPrice",
+            "required": false,
+            "in": "query",
+            "description": "Minimum price",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "maxPrice",
+            "required": false,
+            "in": "query",
+            "description": "Maximum price",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "inStock",
+            "required": false,
+            "in": "query",
+            "description": "In stock only",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "ratingGte",
+            "required": false,
+            "in": "query",
+            "description": "Minimum rating",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "relevance",
+              "type": "string",
+              "enum": [
+                "relevance",
+                "price_asc",
+                "price_desc",
+                "newest",
+                "popular"
+              ]
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maximum": 100,
+              "default": 10,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "List products in a category by slug (paginated)",
+        "tags": [
+          "Categories"
+        ]
+      }
+    },
+    "/api/v1/policies/products/{productId}": {
+      "get": {
+        "operationId": "PoliciesController_getProductPolicy_v1",
+        "parameters": [
+          {
+            "name": "productId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Get product return and warranty policies",
+        "tags": [
+          "Policies"
+        ]
+      }
+    },
+    "/api/v1/sellers/{sellerId}/summary": {
+      "get": {
+        "operationId": "SellersController_getSummary_v1",
+        "parameters": [
+          {
+            "name": "sellerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Get seller summary card",
+        "tags": [
+          "Sellers"
+        ]
+      }
+    },
+    "/api/v1/sellers/{sellerSlug}/products": {
+      "get": {
+        "operationId": "SellersController_getSellerProducts_v1",
+        "parameters": [
+          {
+            "name": "sellerSlug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Search query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "section",
+            "required": false,
+            "in": "query",
+            "description": "Section filter (best_deals, recommended, top_sellers, new_arrivals)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "category",
+            "required": false,
+            "in": "query",
+            "description": "Category slug",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "subCategory",
+            "required": false,
+            "in": "query",
+            "description": "Sub-category slug",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "brand",
+            "required": false,
+            "in": "query",
+            "description": "Single brand name (one brand filter at a time)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "minPrice",
+            "required": false,
+            "in": "query",
+            "description": "Minimum price",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "maxPrice",
+            "required": false,
+            "in": "query",
+            "description": "Maximum price",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "inStock",
+            "required": false,
+            "in": "query",
+            "description": "In stock only",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "ratingGte",
+            "required": false,
+            "in": "query",
+            "description": "Minimum rating",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "relevance",
+              "type": "string",
+              "enum": [
+                "relevance",
+                "price_asc",
+                "price_desc",
+                "newest",
+                "popular"
+              ]
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maximum": 100,
+              "default": 10,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "List all products for a seller",
+        "tags": [
+          "Sellers"
+        ]
+      }
+    },
+    "/api/v1/sellers/{sellerId}/follow": {
+      "post": {
+        "operationId": "SellersController_follow_v1",
+        "parameters": [
+          {
+            "name": "sellerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Follow a seller",
+        "tags": [
+          "Sellers"
+        ]
+      },
+      "delete": {
+        "operationId": "SellersController_unfollow_v1",
+        "parameters": [
+          {
+            "name": "sellerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Unfollow a seller",
+        "tags": [
+          "Sellers"
+        ]
+      }
+    },
+    "/api/v1/sellers": {
+      "post": {
+        "operationId": "SellersController_createSeller_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSellerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create your seller profile (one per seller)",
+        "tags": [
+          "Sellers"
+        ]
+      }
+    },
+    "/api/v1/sellers/my": {
+      "get": {
+        "operationId": "SellersController_getMySeller_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get your seller profile",
+        "tags": [
+          "Sellers"
+        ]
+      },
+      "patch": {
+        "operationId": "SellersController_updateMySeller_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSellerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update your seller profile",
+        "tags": [
+          "Sellers"
+        ]
+      }
+    },
+    "/api/v1/sellers/my/banking": {
+      "get": {
+        "operationId": "SellersController_getMyBanking_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get your seller bank/payout details. Returns nulls if not yet submitted.",
+        "tags": [
+          "Sellers"
+        ]
+      },
+      "post": {
+        "operationId": "SellersController_setMyBanking_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BankingDetailsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Submit/update your seller bank/payout details. Required once after seller registration; collected by the FE on the same wizard screen but POSTed here after login (kept off the public registration endpoints).",
+        "tags": [
+          "Sellers"
+        ]
+      }
+    },
+    "/api/v1/products/{productId}/reviews": {
+      "get": {
+        "operationId": "ReviewsController_findByProduct_v1",
+        "parameters": [
+          {
+            "name": "productId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Get product reviews with summary",
+        "tags": [
+          "Reviews"
+        ]
+      },
+      "post": {
+        "operationId": "ReviewsController_createReview_v1",
+        "parameters": [
+          {
+            "name": "productId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReviewDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Write a review for a product (one per user per product)",
+        "tags": [
+          "Reviews"
+        ]
+      }
+    },
+    "/api/v1/products/{productId}/reviews/{reviewId}/helpful": {
+      "post": {
+        "operationId": "ReviewsController_markHelpful_v1",
+        "parameters": [
+          {
+            "name": "reviewId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Mark a review as helpful (no auth required)",
+        "tags": [
+          "Reviews"
+        ]
+      }
+    },
+    "/api/v1/home": {
+      "get": {
+        "operationId": "HomeController_getHomepage_v1",
+        "parameters": [
+          {
+            "name": "limitPerSection",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 8,
+              "type": "number"
+            }
+          },
+          {
+            "name": "location",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "lagos",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Get composite homepage payload",
+        "tags": [
+          "Home"
+        ]
+      }
+    },
+    "/api/v1/cart": {
+      "post": {
+        "operationId": "CartController_create_v1",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "For auth users: returns the existing or new primary cart id. For guests: also returns a one-time `guestToken` that MUST be saved client-side and sent as `x-guest-token` on every subsequent request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "description": "Authenticated user",
+                      "example": {
+                        "cartId": "8d2e1f4c-3b9a-4b2c-9e7a-b1c2d3e4f5a6",
+                        "ownerType": "user"
+                      }
+                    },
+                    {
+                      "description": "Guest user (store guestToken; it will not be shown again)",
+                      "example": {
+                        "cartId": "8d2e1f4c-3b9a-4b2c-9e7a-b1c2d3e4f5a6",
+                        "ownerType": "guest",
+                        "guestToken": "EXAMPLE_GUEST_TOKEN_save_this_value_from_response"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "summary": "Create or return current cart (auth users get their primary cart; guests get a new one)",
+        "tags": [
+          "Cart"
+        ]
+      },
+      "get": {
+        "operationId": "CartController_getCart_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get current user's primary cart (legacy)",
+        "tags": [
+          "Cart"
+        ]
+      }
+    },
+    "/api/v1/cart/{cartId}": {
+      "get": {
+        "operationId": "CartController_getByCartId_v1",
+        "parameters": [
+          {
+            "name": "cartId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-guest-token",
+            "in": "header",
+            "description": "Required for guest carts",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "id": "8d2e1f4c-3b9a-4b2c-9e7a-b1c2d3e4f5a6",
+                    "cartId": "8d2e1f4c-3b9a-4b2c-9e7a-b1c2d3e4f5a6",
+                    "ownerType": "guest",
+                    "currency": "NGN",
+                    "items": [
+                      {
+                        "itemId": "6710abc123def456789012ab",
+                        "productId": "6710def123abc456789012ab",
+                        "variantId": "v-blue-m",
+                        "name": "Hisense 43\" Smart TV",
+                        "thumbnailUrl": "https://res.cloudinary.com/.../hisense-43.jpg",
+                        "price": {
+                          "amount": 220000,
+                          "currency": "NGN",
+                          "formatted": "₦220,000"
+                        },
+                        "quantity": 1,
+                        "stockQty": 12,
+                        "lineTotal": {
+                          "amount": 220000,
+                          "currency": "NGN",
+                          "formatted": "₦220,000"
+                        }
+                      }
+                    ],
+                    "totals": {
+                      "subtotal": {
+                        "amount": 220000,
+                        "currency": "NGN",
+                        "formatted": "₦220,000"
+                      },
+                      "shipping": {
+                        "amount": 0,
+                        "currency": "NGN",
+                        "formatted": "₦0"
+                      },
+                      "discount": {
+                        "amount": 0,
+                        "currency": "NGN",
+                        "formatted": "₦0"
+                      },
+                      "grandTotal": {
+                        "amount": 220000,
+                        "currency": "NGN",
+                        "formatted": "₦220,000"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Retrieve cart by public cartId",
+        "tags": [
+          "Cart"
+        ]
+      },
+      "delete": {
+        "operationId": "CartController_clearCart_v1",
+        "parameters": [
+          {
+            "name": "cartId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-guest-token",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Clear all items in a cart (keeps the cart record)",
+        "tags": [
+          "Cart"
+        ]
+      }
+    },
+    "/api/v1/cart/{cartId}/items": {
+      "post": {
+        "operationId": "CartController_addItemToCart_v1",
+        "parameters": [
+          {
+            "name": "cartId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-guest-token",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddCartItemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "Add an item to a cart",
+        "tags": [
+          "Cart"
+        ]
+      }
+    },
+    "/api/v1/cart/{cartId}/items/{itemId}": {
+      "patch": {
+        "operationId": "CartController_updateItemInCart_v1",
+        "parameters": [
+          {
+            "name": "cartId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "itemId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-guest-token",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCartItemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Update quantity of an item in a cart",
+        "tags": [
+          "Cart"
+        ]
+      },
+      "delete": {
+        "operationId": "CartController_removeItemFromCart_v1",
+        "parameters": [
+          {
+            "name": "cartId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "itemId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-guest-token",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Remove an item from a cart",
+        "tags": [
+          "Cart"
+        ]
+      }
+    },
+    "/api/v1/cart/{cartId}/merge": {
+      "post": {
+        "operationId": "CartController_mergeCart_v1",
+        "parameters": [
+          {
+            "name": "cartId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MergeCartDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Merge a guest cart into the authenticated user cart",
+        "tags": [
+          "Cart"
+        ]
+      }
+    },
+    "/api/v1/cart/{cartId}/totals": {
+      "get": {
+        "operationId": "CartController_getTotals_v1",
+        "parameters": [
+          {
+            "name": "cartId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-guest-token",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "`pricingLocked` is false because the pricing-rule engine (Module 16) is not yet implemented. Tax uses a 7.5% VAT placeholder and delivery is a flat estimate.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "cartId": "8d2e1f4c-3b9a-4b2c-9e7a-b1c2d3e4f5a6",
+                    "currency": "NGN",
+                    "subtotal": {
+                      "amount": 220000,
+                      "currency": "NGN",
+                      "formatted": "₦220,000"
+                    },
+                    "taxAmount": {
+                      "amount": 16500,
+                      "currency": "NGN",
+                      "formatted": "₦16,500"
+                    },
+                    "taxRate": 0.075,
+                    "deliveryEstimate": {
+                      "amount": 1500,
+                      "currency": "NGN",
+                      "formatted": "₦1,500"
+                    },
+                    "grandTotal": {
+                      "amount": 238000,
+                      "currency": "NGN",
+                      "formatted": "₦238,000"
+                    },
+                    "pricingLocked": false,
+                    "note": "Tax and delivery use placeholder defaults until the pricing-rule engine ships."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get totals breakdown for a cart (pricing not yet locked)",
+        "tags": [
+          "Cart"
+        ]
+      }
+    },
+    "/api/v1/cart/{cartId}/validate": {
+      "post": {
+        "operationId": "CartController_validateCart_v1",
+        "parameters": [
+          {
+            "name": "cartId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-guest-token",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "cartId": "8d2e1f4c-3b9a-4b2c-9e7a-b1c2d3e4f5a6",
+                    "valid": false,
+                    "issues": [
+                      {
+                        "itemId": "6710abc123def456789012ab",
+                        "reason": "variant_out_of_stock"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Validate cart items (stock + active checks)",
+        "tags": [
+          "Cart"
+        ]
+      }
+    },
+    "/api/v1/cart/items": {
+      "post": {
+        "operationId": "CartController_addItem_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddCartItemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Add item to current user's primary cart (legacy)",
+        "tags": [
+          "Cart"
+        ]
+      }
+    },
+    "/api/v1/cart/items/{itemId}": {
+      "patch": {
+        "operationId": "CartController_updateItem_v1",
+        "parameters": [
+          {
+            "name": "itemId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCartItemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update cart item quantity (legacy)",
+        "tags": [
+          "Cart"
+        ]
+      },
+      "delete": {
+        "operationId": "CartController_removeItem_v1",
+        "parameters": [
+          {
+            "name": "itemId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remove item from cart (legacy)",
+        "tags": [
+          "Cart"
+        ]
+      }
+    },
+    "/api/v1/wishlist": {
+      "get": {
+        "operationId": "WishlistController_getWishlist_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get wishlist items",
+        "tags": [
+          "Wishlist"
+        ]
+      }
+    },
+    "/api/v1/wishlist/{productId}": {
+      "post": {
+        "operationId": "WishlistController_addToWishlist_v1",
+        "parameters": [
+          {
+            "name": "productId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Add to wishlist",
+        "tags": [
+          "Wishlist"
+        ]
+      },
+      "delete": {
+        "operationId": "WishlistController_removeFromWishlist_v1",
+        "parameters": [
+          {
+            "name": "productId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remove from wishlist",
+        "tags": [
+          "Wishlist"
+        ]
+      }
+    },
+    "/api/v1/shipping/estimate": {
+      "get": {
+        "operationId": "ShippingController_getEstimate_v1",
+        "parameters": [
+          {
+            "name": "productId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "city",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "variantId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Get shipping estimate",
+        "tags": [
+          "Shipping"
+        ]
+      }
+    },
+    "/api/v1/newsletter/subscriptions": {
+      "post": {
+        "operationId": "NewsletterController_subscribe_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubscribeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "Subscribe to newsletter",
+        "tags": [
+          "Newsletter"
+        ]
+      }
+    },
+    "/api/v1/search": {
+      "get": {
+        "operationId": "SearchController_search_v1",
+        "parameters": [
+          {
+            "name": "q",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "category",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "brand",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "minPrice",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "maxPrice",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "sort",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Global product search with filters and pagination",
+        "tags": [
+          "Search"
+        ]
+      }
+    },
+    "/api/v1/search/suggest": {
+      "get": {
+        "operationId": "SearchController_suggest_v1",
+        "parameters": [
+          {
+            "name": "q",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Search suggestions/autocomplete",
+        "tags": [
+          "Search"
+        ]
+      }
+    },
+    "/api/v1/search/suggestions": {
+      "get": {
+        "operationId": "SearchController_suggestions_v1",
+        "parameters": [
+          {
+            "name": "q",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Search suggestions/autocomplete (spec alias of /suggest)",
+        "tags": [
+          "Search"
+        ]
+      }
+    },
+    "/api/v1/site-config": {
+      "get": {
+        "operationId": "SiteConfigController_getConfig_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Get site configuration (footer, contact, social)",
+        "tags": [
+          "Site Config"
+        ]
+      }
+    },
+    "/api/v1/upload": {
+      "post": {
+        "operationId": "UploadController_upload_v1",
+        "parameters": [
+          {
+            "name": "folder",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Upload an image to Cloudflare R2 (Seller or Admin)",
+        "tags": [
+          "Upload"
+        ]
+      }
+    },
+    "/api/v1/admin/products": {
+      "get": {
+        "operationId": "AdminProductsController_findAll_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List all products (including inactive)",
+        "tags": [
+          "Admin — Products"
+        ]
+      }
+    },
+    "/api/v1/admin/products/{id}": {
+      "patch": {
+        "operationId": "AdminProductsController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProductDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update any product",
+        "tags": [
+          "Admin — Products"
+        ]
+      },
+      "delete": {
+        "operationId": "AdminProductsController_remove_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Force delete any product",
+        "tags": [
+          "Admin — Products"
+        ]
+      }
+    },
+    "/api/v1/admin/products/{id}/status": {
+      "patch": {
+        "operationId": "AdminProductsController_toggleStatus_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Toggle product active/inactive status",
+        "tags": [
+          "Admin — Products"
+        ]
+      }
+    },
+    "/api/v1/admin/sellers": {
+      "get": {
+        "operationId": "AdminSellersController_findAll_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List all sellers with profile and approval status",
+        "tags": [
+          "Admin — Sellers"
+        ]
+      }
+    },
+    "/api/v1/admin/sellers/{id}": {
+      "patch": {
+        "operationId": "AdminSellersController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSellerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update any seller",
+        "tags": [
+          "Admin — Sellers"
+        ]
+      }
+    },
+    "/api/v1/admin/sellers/{id}/verify": {
+      "patch": {
+        "operationId": "AdminSellersController_toggleVerify_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Toggle seller verified status",
+        "tags": [
+          "Admin — Sellers"
+        ]
+      }
+    },
+    "/api/v1/admin/sellers/{id}/approve": {
+      "patch": {
+        "operationId": "AdminSellersController_approve_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Approve a seller to upload products",
+        "tags": [
+          "Admin — Sellers"
+        ]
+      },
+      "post": {
+        "operationId": "AdminSellersController_approvePost_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Approve a seller (spec-aligned POST alias of PATCH /:id/approve)",
+        "tags": [
+          "Admin — Sellers"
+        ]
+      }
+    },
+    "/api/v1/admin/sellers/{id}/reject": {
+      "patch": {
+        "operationId": "AdminSellersController_reject_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reject / revoke seller approval",
+        "tags": [
+          "Admin — Sellers"
+        ]
+      },
+      "post": {
+        "operationId": "AdminSellersController_rejectPost_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reject seller (spec-aligned POST alias of PATCH /:id/reject)",
+        "tags": [
+          "Admin — Sellers"
+        ]
+      }
+    },
+    "/api/v1/admin/categories": {
+      "get": {
+        "operationId": "AdminCategoriesController_findAll_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List all categories (flat)",
+        "tags": [
+          "Admin — Categories"
+        ]
+      },
+      "post": {
+        "operationId": "AdminCategoriesController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a category or sub-category",
+        "tags": [
+          "Admin — Categories"
+        ]
+      }
+    },
+    "/api/v1/admin/categories/{id}": {
+      "patch": {
+        "operationId": "AdminCategoriesController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update a category",
+        "tags": [
+          "Admin — Categories"
+        ]
+      },
+      "delete": {
+        "operationId": "AdminCategoriesController_remove_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Soft delete a category",
+        "tags": [
+          "Admin — Categories"
+        ]
+      }
+    },
+    "/api/v1/admin/users": {
+      "get": {
+        "operationId": "AdminUsersController_findAll_v1",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "createdAt",
+              "type": "string"
+            }
+          },
+          {
+            "name": "order",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "desc",
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Search by name or email",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "accountType",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "buyer",
+                "seller",
+                "investor",
+                "admin"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List users (admin-scoped, supports search + accountType filter)",
+        "tags": [
+          "Admin — Users"
+        ]
+      }
+    },
+    "/api/v1/admin/users/{id}": {
+      "get": {
+        "operationId": "AdminUsersController_findOne_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get user by id (admin)",
+        "tags": [
+          "Admin — Users"
+        ]
+      }
+    },
+    "/api/v1/admin/users/{id}/suspend": {
+      "post": {
+        "operationId": "AdminUsersController_suspend_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Suspend (deactivate) a user account. Reactivate by sending {\"active\": true} - the body is optional and defaults to suspending.",
+        "tags": [
+          "Admin — Users"
+        ]
+      }
+    },
+    "/api/v1/collections/featured": {
+      "get": {
+        "operationId": "CollectionsController_featured_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Featured collection (products tagged sections=featured)",
+        "tags": [
+          "Collections"
+        ]
+      }
+    },
+    "/api/v1/collections/flash-sales": {
+      "get": {
+        "operationId": "CollectionsController_flashSales_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Flash sales collection (products tagged sections=flash_sale)",
+        "tags": [
+          "Collections"
+        ]
+      }
+    },
+    "/api/v1/collections/best-deals": {
+      "get": {
+        "operationId": "CollectionsController_bestDeals_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Best deals collection (products tagged sections=best_deals)",
+        "tags": [
+          "Collections"
+        ]
+      }
+    },
+    "/api/v1/brands": {
+      "get": {
+        "operationId": "BrandsController_list_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "List brands with product counts",
+        "tags": [
+          "Brands"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Cadna Mart API",
+    "description": "Backend API for the Cadna Mart marketplace.\n\n### Response envelope\nEvery successful response is wrapped by the global response interceptor:\n```json\n{\n  \"success\": true,\n  \"statusCode\": 200,\n  \"data\": { ... },\n  \"message\": \"...\",\n  \"meta\": { \"correlationId\": \"...\", \"timestamp\": \"...\" }\n}\n```\nWhen documenting individual endpoints below, the schema describes the `data` payload only.\n\n### Authentication\n- **Bearer JWT** (`Authorization: Bearer <accessToken>`) for authenticated user routes.\n- **Guest token** (`x-guest-token: <token>`) for guest-cart endpoints. Returned once from `POST /cart`.\n\n### Error shape\nErrors flow through the global `AllExceptionsFilter`:\n```json\n{\n  \"success\": false,\n  \"statusCode\": 400,\n  \"message\": \"Validation failed\",\n  \"errorCode\": \"BAD_REQUEST\",\n  \"path\": \"/api/v1/...\",\n  \"correlationId\": \"...\"\n}\n```",
+    "version": "1.0",
+    "contact": {
+      "name": "Cadna Mart Engineering",
+      "url": "",
+      "email": "cadnamart@gmail.com"
+    }
+  },
+  "tags": [
+    {
+      "name": "Auth",
+      "description": "Login, registration, OTP, password reset, 2FA, audit log"
+    },
+    {
+      "name": "Users",
+      "description": "Self profile, addresses, NDPR consent/export/delete"
+    },
+    {
+      "name": "User Addresses",
+      "description": "CRUD over the current user shipping/billing addresses"
+    },
+    {
+      "name": "Categories",
+      "description": "Catalog taxonomy and category-scoped product listings"
+    },
+    {
+      "name": "Products",
+      "description": "Product catalog: detail, variants, availability, policies, related"
+    },
+    {
+      "name": "Collections",
+      "description": "Featured / Flash Sales / Best Deals product rails"
+    },
+    {
+      "name": "Search",
+      "description": "Full search + autocomplete"
+    },
+    {
+      "name": "Brands",
+      "description": "Distinct brand list with product counts"
+    },
+    {
+      "name": "Cart",
+      "description": "Cart (auth + guest) — items, totals, validate, merge"
+    },
+    {
+      "name": "Wishlist",
+      "description": "Authenticated user wishlist"
+    },
+    {
+      "name": "Reviews",
+      "description": "Product reviews"
+    },
+    {
+      "name": "Sellers",
+      "description": "Public seller profile + seller self-management"
+    },
+    {
+      "name": "Newsletter",
+      "description": "Newsletter subscription"
+    },
+    {
+      "name": "Policies",
+      "description": "Per-product return / warranty policies"
+    },
+    {
+      "name": "Shipping",
+      "description": "Shipping estimates (placeholder)"
+    },
+    {
+      "name": "Site Config",
+      "description": "Public app config (feature flags, fees)"
+    },
+    {
+      "name": "Deals",
+      "description": "Seller-paid deal campaigns (promo precursor)"
+    },
+    {
+      "name": "Webhooks",
+      "description": "Inbound signed webhooks (Clerk, Paystack)"
+    },
+    {
+      "name": "Health",
+      "description": "Liveness + DB connectivity"
+    },
+    {
+      "name": "Admin",
+      "description": "Admin-only catalogue / seller / deals operations"
+    }
+  ],
+  "servers": [
+    {
+      "url": "https://cadna-mart-be-nsz2.onrender.com",
+      "description": "Production (Render)"
+    },
+    {
+      "url": "http://localhost:3000",
+      "description": "Local dev"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http",
+        "description": "Access token returned from /auth/login or /auth/otp/verify"
+      },
+      "guestToken": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-guest-token",
+        "description": "Guest cart access token (returned once from POST /cart for guests)"
+      }
+    },
+    "schemas": {
+      "RegisterEmailDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "john.doe@example.com"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "RegisterDetailsDto": {
+        "type": "object",
+        "properties": {
+          "sessionId": {
+            "type": "string",
+            "example": "session-uuid-here"
+          },
+          "firstName": {
+            "type": "string",
+            "example": "John"
+          },
+          "lastName": {
+            "type": "string",
+            "example": "Doe"
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "example": "1990-01-15"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "example": "+2348012345678"
+          },
+          "termsAccepted": {
+            "type": "boolean",
+            "example": true
+          }
+        },
+        "required": [
+          "sessionId",
+          "firstName",
+          "lastName",
+          "termsAccepted"
+        ]
+      },
+      "RegisterPasswordDto": {
+        "type": "object",
+        "properties": {
+          "sessionId": {
+            "type": "string",
+            "example": "session-uuid-here"
+          },
+          "password": {
+            "type": "string",
+            "example": "StrongP@ssw0rd1",
+            "minLength": 8
+          },
+          "confirmPassword": {
+            "type": "string",
+            "example": "StrongP@ssw0rd1"
+          }
+        },
+        "required": [
+          "sessionId",
+          "password",
+          "confirmPassword"
+        ]
+      },
+      "VerifyEmailDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "john.doe@example.com"
+          },
+          "code": {
+            "type": "string",
+            "example": "123456"
+          }
+        },
+        "required": [
+          "email",
+          "code"
+        ]
+      },
+      "ResendOtpDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "john.doe@example.com"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "RegisterSellerDetailsDto": {
+        "type": "object",
+        "properties": {
+          "sessionId": {
+            "type": "string",
+            "example": "session-uuid-here"
+          },
+          "firstName": {
+            "type": "string",
+            "example": "John"
+          },
+          "lastName": {
+            "type": "string",
+            "example": "Doe"
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "example": "1990-01-15"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "example": "+2348012345678"
+          },
+          "businessName": {
+            "type": "string",
+            "example": "Steppers Store NG"
+          },
+          "businessRegistrationNumber": {
+            "type": "string",
+            "example": "RC-1234567",
+            "description": "CAC registration number"
+          },
+          "businessAddress": {
+            "type": "string",
+            "example": "Shop 15, Balogun Market, Lagos Island"
+          },
+          "businessType": {
+            "type": "string",
+            "enum": [
+              "sole_proprietor",
+              "llc",
+              "partnership"
+            ],
+            "example": "sole_proprietor"
+          },
+          "termsAccepted": {
+            "type": "boolean",
+            "example": true
+          }
+        },
+        "required": [
+          "sessionId",
+          "firstName",
+          "lastName",
+          "businessName",
+          "businessAddress",
+          "businessType",
+          "termsAccepted"
+        ]
+      },
+      "RegisterSellerPasswordDto": {
+        "type": "object",
+        "properties": {
+          "sessionId": {
+            "type": "string",
+            "example": "session-uuid-here"
+          },
+          "password": {
+            "type": "string",
+            "example": "StrongP@ssw0rd1",
+            "minLength": 8
+          },
+          "confirmPassword": {
+            "type": "string",
+            "example": "StrongP@ssw0rd1"
+          },
+          "businessName": {
+            "type": "string",
+            "example": "Steppers Store NG"
+          },
+          "businessRegistrationNumber": {
+            "type": "string",
+            "example": "RC-1234567"
+          },
+          "businessAddress": {
+            "type": "string",
+            "example": "Shop 15, Balogun Market, Lagos Island"
+          },
+          "businessType": {
+            "type": "string",
+            "enum": [
+              "sole_proprietor",
+              "llc",
+              "partnership"
+            ],
+            "example": "sole_proprietor"
+          }
+        },
+        "required": [
+          "sessionId",
+          "password",
+          "confirmPassword",
+          "businessName",
+          "businessAddress",
+          "businessType"
+        ]
+      },
+      "RegisterDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "user@example.com"
+          },
+          "firstName": {
+            "type": "string",
+            "example": "John"
+          },
+          "lastName": {
+            "type": "string",
+            "example": "Doe"
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "example": "1990-01-15"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "example": "+2348012345678"
+          },
+          "termsAccepted": {
+            "type": "boolean",
+            "example": true
+          },
+          "password": {
+            "type": "string",
+            "example": "StrongP@ssw0rd!"
+          },
+          "confirmPassword": {
+            "type": "string",
+            "example": "StrongP@ssw0rd!"
+          }
+        },
+        "required": [
+          "email",
+          "firstName",
+          "lastName",
+          "termsAccepted",
+          "password",
+          "confirmPassword"
+        ]
+      },
+      "OtpRequestDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "user@example.com"
+          },
+          "purpose": {
+            "type": "string",
+            "enum": [
+              "login",
+              "email_verification",
+              "password_reset"
+            ],
+            "example": "login",
+            "default": "login"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "OtpVerifyDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "user@example.com"
+          },
+          "code": {
+            "type": "string",
+            "example": "123456"
+          },
+          "purpose": {
+            "type": "string",
+            "enum": [
+              "login",
+              "email_verification",
+              "password_reset"
+            ],
+            "example": "login",
+            "default": "login"
+          }
+        },
+        "required": [
+          "email",
+          "code"
+        ]
+      },
+      "OtpResendDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "user@example.com"
+          },
+          "purpose": {
+            "type": "string",
+            "enum": [
+              "login",
+              "email_verification",
+              "password_reset"
+            ],
+            "example": "login",
+            "default": "login"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "ClerkLoginDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "Clerk session token from the frontend SDK"
+          }
+        },
+        "required": [
+          "token"
+        ]
+      },
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "john.doe@example.com"
+          },
+          "password": {
+            "type": "string",
+            "example": "StrongP@ssw0rd"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "Verify2faLoginDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "john.doe@example.com"
+          },
+          "code": {
+            "type": "string",
+            "example": "123456"
+          }
+        },
+        "required": [
+          "email",
+          "code"
+        ]
+      },
+      "ForgotPasswordDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "john.doe@example.com"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "ForgotPasswordVerifyDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "john.doe@example.com"
+          },
+          "code": {
+            "type": "string",
+            "example": "123456"
+          }
+        },
+        "required": [
+          "email",
+          "code"
+        ]
+      },
+      "ForgotPasswordResetDto": {
+        "type": "object",
+        "properties": {
+          "resetToken": {
+            "type": "string",
+            "example": "jwt-reset-token-here"
+          },
+          "password": {
+            "type": "string",
+            "example": "NewStr0ngP@ss!",
+            "minLength": 8
+          },
+          "confirmPassword": {
+            "type": "string",
+            "example": "NewStr0ngP@ss!"
+          }
+        },
+        "required": [
+          "resetToken",
+          "password",
+          "confirmPassword"
+        ]
+      },
+      "Enable2faDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "123456"
+          }
+        },
+        "required": [
+          "code"
+        ]
+      },
+      "RefreshTokenDto": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "refreshToken"
+        ]
+      },
+      "UpdateProfileDto": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "example": "Jane"
+          },
+          "lastName": {
+            "type": "string",
+            "example": "Doe"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "example": "+2348012345678"
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "example": "1990-01-15"
+          }
+        }
+      },
+      "MarketingConsentDto": {
+        "type": "object",
+        "properties": {
+          "optIn": {
+            "type": "boolean",
+            "example": true
+          }
+        },
+        "required": [
+          "optIn"
+        ]
+      },
+      "DataDeleteRequestDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "example": "Closing account"
+          }
+        }
+      },
+      "CreateUserDto": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "example": "John"
+          },
+          "lastName": {
+            "type": "string",
+            "example": "Doe"
+          },
+          "email": {
+            "type": "string",
+            "example": "john.doe@example.com"
+          },
+          "password": {
+            "type": "string",
+            "example": "StrongP@ssw0rd",
+            "minLength": 8
+          },
+          "accountType": {
+            "type": "string",
+            "enum": [
+              "buyer",
+              "seller",
+              "investor",
+              "admin"
+            ],
+            "example": "buyer"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "example": "+2348012345678"
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "example": "1990-01-15"
+          },
+          "termsAccepted": {
+            "type": "boolean",
+            "example": true
+          }
+        },
+        "required": [
+          "firstName",
+          "lastName",
+          "email",
+          "password",
+          "accountType"
+        ]
+      },
+      "UpdateUserDto": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "example": "John"
+          },
+          "lastName": {
+            "type": "string",
+            "example": "Doe"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "example": "+2348012345678"
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "example": "1990-01-15"
+          }
+        }
+      },
+      "CreateAddressDto": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "example": "Home"
+          },
+          "recipientName": {
+            "type": "string",
+            "example": "Jane Doe"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "example": "+2348012345678"
+          },
+          "street1": {
+            "type": "string",
+            "example": "12 Allen Avenue"
+          },
+          "street2": {
+            "type": "string",
+            "example": "Flat 3B"
+          },
+          "city": {
+            "type": "string",
+            "example": "Ikeja"
+          },
+          "state": {
+            "type": "string",
+            "example": "Lagos"
+          },
+          "country": {
+            "type": "string",
+            "example": "Nigeria",
+            "default": "Nigeria"
+          },
+          "postalCode": {
+            "type": "string",
+            "example": "100001"
+          },
+          "isDefault": {
+            "type": "boolean",
+            "example": false
+          }
+        },
+        "required": [
+          "recipientName",
+          "phoneNumber",
+          "street1",
+          "city",
+          "state"
+        ]
+      },
+      "UpdateAddressDto": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "example": "Home"
+          },
+          "recipientName": {
+            "type": "string",
+            "example": "Jane Doe"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "example": "+2348012345678"
+          },
+          "street1": {
+            "type": "string",
+            "example": "12 Allen Avenue"
+          },
+          "street2": {
+            "type": "string",
+            "example": "Flat 3B"
+          },
+          "city": {
+            "type": "string",
+            "example": "Ikeja"
+          },
+          "state": {
+            "type": "string",
+            "example": "Lagos"
+          },
+          "country": {
+            "type": "string",
+            "example": "Nigeria",
+            "default": "Nigeria"
+          },
+          "postalCode": {
+            "type": "string",
+            "example": "100001"
+          },
+          "isDefault": {
+            "type": "boolean",
+            "example": false
+          }
+        }
+      },
+      "CreateDealCampaignDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Campaign title",
+            "example": "Friday Mega Flash Sales"
+          },
+          "selectedProductIds": {
+            "description": "Up to 10 seller-owned product IDs to feature in deals",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "startsAt": {
+            "type": "string",
+            "description": "Optional campaign start datetime (ISO-8601)"
+          },
+          "endsAt": {
+            "type": "string",
+            "description": "Optional campaign end datetime (ISO-8601)"
+          }
+        },
+        "required": [
+          "title",
+          "selectedProductIds"
+        ]
+      },
+      "UpdateDealCampaignDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Campaign title",
+            "example": "Weekend Flash Sales"
+          },
+          "selectedProductIds": {
+            "description": "Up to 10 seller-owned product IDs to feature in deals",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "startsAt": {
+            "type": "string",
+            "description": "Optional campaign start datetime (ISO-8601)"
+          },
+          "endsAt": {
+            "type": "string",
+            "description": "Optional campaign end datetime (ISO-8601)"
+          }
+        }
+      },
+      "AdminUpdateDealCampaignDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Campaign title",
+            "example": "Friday Mega Flash Sales"
+          },
+          "selectedProductIds": {
+            "description": "Up to 10 seller-owned product IDs to feature in deals",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "startsAt": {
+            "type": "string",
+            "description": "Optional campaign start datetime (ISO-8601)"
+          },
+          "endsAt": {
+            "type": "string",
+            "description": "Optional campaign end datetime (ISO-8601)"
+          }
+        }
+      },
+      "GalleryImageDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "alt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "url"
+        ]
+      },
+      "VariantOptionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "swatchHex": {
+            "type": "object",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "label"
+        ]
+      },
+      "VariantAxisDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VariantOptionDto"
+            }
+          }
+        },
+        "required": [
+          "name",
+          "displayName",
+          "options"
+        ]
+      },
+      "ProductVariantDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "attributes": {
+            "type": "object"
+          },
+          "priceAmount": {
+            "type": "number"
+          },
+          "stockQty": {
+            "type": "number"
+          },
+          "isInStock": {
+            "type": "boolean"
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "sku",
+          "attributes",
+          "priceAmount"
+        ]
+      },
+      "ProductTabDto": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "contentHtml": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "label",
+          "contentHtml"
+        ]
+      },
+      "SpecificationDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "value"
+        ]
+      },
+      "BreadcrumbDto": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "url": {
+            "type": "object",
+            "nullable": true
+          }
+        },
+        "required": [
+          "label"
+        ]
+      },
+      "CreateProductDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "brand": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "sellerId": {
+            "type": "string",
+            "description": "Seller ID this product belongs to"
+          },
+          "categoryId": {
+            "type": "string"
+          },
+          "subCategoryId": {
+            "type": "string"
+          },
+          "priceAmount": {
+            "type": "number",
+            "description": "Selling price in NGN (kobo or naira depending on convention)"
+          },
+          "originalPriceAmount": {
+            "type": "number",
+            "description": "Original/compare-at price (if on sale)"
+          },
+          "discountPercent": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "thumbnailUrl": {
+            "type": "string"
+          },
+          "gallery": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GalleryImageDto"
+            }
+          },
+          "variantAxes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VariantAxisDto"
+            }
+          },
+          "variants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductVariantDto"
+            }
+          },
+          "defaultVariantId": {
+            "type": "string"
+          },
+          "descriptionHtml": {
+            "type": "string"
+          },
+          "tabs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductTabDto"
+            }
+          },
+          "specifications": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SpecificationDto"
+            }
+          },
+          "breadcrumbs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BreadcrumbDto"
+            }
+          },
+          "badge": {
+            "type": "string"
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "inventoryStatus": {
+            "type": "string"
+          },
+          "returnPolicy": {
+            "type": "object",
+            "description": "Return policy for this product"
+          }
+        },
+        "required": [
+          "name",
+          "sellerId",
+          "priceAmount"
+        ]
+      },
+      "UpdateProductDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "brand": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "sellerId": {
+            "type": "string",
+            "description": "Seller ID this product belongs to"
+          },
+          "categoryId": {
+            "type": "string"
+          },
+          "subCategoryId": {
+            "type": "string"
+          },
+          "priceAmount": {
+            "type": "number",
+            "description": "Selling price in NGN (kobo or naira depending on convention)"
+          },
+          "originalPriceAmount": {
+            "type": "number",
+            "description": "Original/compare-at price (if on sale)"
+          },
+          "discountPercent": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "thumbnailUrl": {
+            "type": "string"
+          },
+          "gallery": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GalleryImageDto"
+            }
+          },
+          "variantAxes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VariantAxisDto"
+            }
+          },
+          "variants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductVariantDto"
+            }
+          },
+          "defaultVariantId": {
+            "type": "string"
+          },
+          "descriptionHtml": {
+            "type": "string"
+          },
+          "tabs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductTabDto"
+            }
+          },
+          "specifications": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SpecificationDto"
+            }
+          },
+          "breadcrumbs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BreadcrumbDto"
+            }
+          },
+          "badge": {
+            "type": "string"
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "inventoryStatus": {
+            "type": "string"
+          },
+          "returnPolicy": {
+            "type": "object",
+            "description": "Return policy for this product"
+          }
+        }
+      },
+      "CreateSellerDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "logoUrl": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "deliveryTimeRange": {
+            "type": "string",
+            "description": "Estimated delivery time range, e.g. \"25-40 min\""
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "UpdateSellerDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "logoUrl": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "deliveryTimeRange": {
+            "type": "string",
+            "description": "Estimated delivery time range, e.g. \"25-40 min\""
+          }
+        }
+      },
+      "BankingDetailsDto": {
+        "type": "object",
+        "properties": {
+          "bankName": {
+            "type": "string",
+            "example": "Access Bank"
+          },
+          "bankAccountNumber": {
+            "type": "string",
+            "example": "0123456789",
+            "description": "Nigerian NUBAN: 10 digits"
+          },
+          "bankAccountName": {
+            "type": "string",
+            "example": "John Doe Enterprises"
+          }
+        },
+        "required": [
+          "bankName",
+          "bankAccountNumber",
+          "bankAccountName"
+        ]
+      },
+      "CreateReviewDto": {
+        "type": "object",
+        "properties": {
+          "rating": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "title": {
+            "type": "string"
+          },
+          "comment": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "rating"
+        ]
+      },
+      "AddCartItemDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "example": "product-id"
+          },
+          "variantId": {
+            "type": "string",
+            "example": "variant-id"
+          },
+          "quantity": {
+            "type": "number",
+            "example": 1,
+            "minimum": 1
+          }
+        },
+        "required": [
+          "productId",
+          "quantity"
+        ]
+      },
+      "UpdateCartItemDto": {
+        "type": "object",
+        "properties": {
+          "quantity": {
+            "type": "number",
+            "example": 2,
+            "minimum": 1
+          }
+        },
+        "required": [
+          "quantity"
+        ]
+      },
+      "MergeCartDto": {
+        "type": "object",
+        "properties": {
+          "guestToken": {
+            "type": "string",
+            "description": "Plaintext guestToken returned from POST /cart"
+          }
+        },
+        "required": [
+          "guestToken"
+        ]
+      },
+      "SubscribeDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "user@example.com"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "CreateCategoryDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "iconUrl": {
+            "type": "string"
+          },
+          "parentId": {
+            "type": "string",
+            "description": "Parent category ID (null for top-level)"
+          },
+          "order": {
+            "type": "number"
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "slug"
+        ]
+      },
+      "UpdateCategoryDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "iconUrl": {
+            "type": "string"
+          },
+          "parentId": {
+            "type": "string",
+            "description": "Parent category ID (null for top-level)"
+          },
+          "order": {
+            "type": "number"
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  }
+}

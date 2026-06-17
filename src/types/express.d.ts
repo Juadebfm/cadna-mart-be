@@ -3,7 +3,7 @@ declare global {
     interface User {
       userId: string;
       email: string;
-      role: string;
+      accountType: string;
     }
   }
 }

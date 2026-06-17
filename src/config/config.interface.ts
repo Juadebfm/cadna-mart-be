@@ -23,10 +23,38 @@ export interface SessionConfig {
 }
 
 export interface CorsConfig {
-  origin: string;
+  origin: string | string[] | boolean;
 }
 
 export interface ThrottleConfig {
   ttl: number;
   limit: number;
+}
+
+export interface EmailConfig {
+  resendApiKey: string;
+  fromAddress: string;
+  logoUrl: string;
+}
+
+export interface ClerkConfig {
+  webhookSecret: string;
+  secretKey: string;
+}
+
+export interface PaystackConfig {
+  secretKey: string;
+  webhookSecret: string;
+  callbackUrl: string;
+}
+
+export interface DealsConfig {
+  feePerProduct: number;
+  maxProducts: number;
+}
+
+export interface StorageConfig {
+  cloudName: string;
+  apiKey: string;
+  apiSecret: string;
 }

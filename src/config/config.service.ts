@@ -9,27 +9,98 @@ import {
   SessionConfig,
   CorsConfig,
   ThrottleConfig,
+  EmailConfig,
+  ClerkConfig,
+  PaystackConfig,
+  DealsConfig,
+  StorageConfig,
 } from './config.interface';
 
 @Injectable()
 export class ConfigService {
   private readonly envConfig: EnvConfig;
   private readonly logger = new Logger(ConfigService.name);
+  private hasLoggedCorsOrigin = false;
+
+  private normalizeNodeEnv(value: string | undefined): 'dev' | 'staging' | 'prod' {
+    const normalized = (value ?? '').trim().toLowerCase();
+    if (normalized === 'production' || normalized === 'prod') {
+      return 'prod';
+    }
+    if (normalized === 'staging') {
+      return 'staging';
+    }
+    if (normalized === 'development' || normalized === 'dev') {
+      return 'dev';
+    }
+    return 'dev';
+  }
 
   constructor() {
-    const nodeEnv = process.env.NODE_ENV || 'dev';
+    const originalNodeEnv = process.env.NODE_ENV;
+    const nodeEnv = this.normalizeNodeEnv(originalNodeEnv);
+    process.env.NODE_ENV = nodeEnv;
+
     const envFile = `.env.${nodeEnv}`;
-    dotenvConfig({ path: resolve(process.cwd(), envFile) });
+    const baseEnvFile = '.env';
+
+    // Load env-specific file first; then fill missing values from base .env.
+    dotenvConfig({ path: resolve(process.cwd(), envFile), override: false });
+    dotenvConfig({ path: resolve(process.cwd(), baseEnvFile), override: false });
 
     const result = envSchema.safeParse(process.env);
     if (!result.success) {
-      this.logger.error(`Invalid environment variables in ${envFile}:`);
       const formatted = result.error.format();
-      this.logger.error(JSON.stringify(formatted, null, 2));
+      const errorDetails = JSON.stringify(formatted, null, 2);
+      const summary =
+        `Invalid environment variables for NODE_ENV="${originalNodeEnv ?? 'undefined'}"` +
+        ` (normalized to "${nodeEnv}") using ${envFile} + ${baseEnvFile}.`;
+
+      // Keep console output so startup failures are visible even before custom logger init.
+
+      console.error(summary);
+
+      console.error(errorDetails);
+      this.logger.error(summary);
+      this.logger.error(errorDetails);
       process.exit(1);
     }
+
     this.envConfig = result.data;
-    this.logger.log(`Configuration loaded from ${envFile} (${nodeEnv})`);
+    this.logger.log(`Configuration loaded from ${envFile} + ${baseEnvFile} (${nodeEnv})`);
+  }
+
+  private normalizeCorsOrigin(origin: string): string {
+    // Render/hosting UIs sometimes store quoted values or trailing slashes.
+    return origin
+      .trim()
+      .replace(/^['"]|['"]$/g, '')
+      .replace(/\/+$/, '');
+  }
+
+  private parseCorsOrigin(value: string): string | string[] | boolean {
+    const raw = (value ?? '').trim();
+    if (!raw) {
+      return true;
+    }
+    if (raw === '*') {
+      this.logger.warn(
+        'CORS_ORIGIN is "*" which allows any origin with credentials; prefer explicit origins.',
+      );
+      return true;
+    }
+
+    const origins = raw
+      .split(',')
+      .map((origin) => this.normalizeCorsOrigin(origin))
+      .filter((origin) => origin.length > 0);
+
+    if (origins.length === 0) {
+      return true;
+    }
+
+    const uniqueOrigins = [...new Set(origins)];
+    return uniqueOrigins.length === 1 ? uniqueOrigins[0] : uniqueOrigins;
   }
 
   get<K extends keyof EnvConfig>(key: K): EnvConfig[K] {
@@ -39,7 +110,7 @@ export class ConfigService {
   get app(): AppConfig {
     return {
       nodeEnv: this.envConfig.NODE_ENV,
-      port: this.envConfig.APP_PORT,
+      port: this.envConfig.PORT || this.envConfig.APP_PORT,
       name: this.envConfig.APP_NAME,
       apiPrefix: this.envConfig.API_PREFIX,
       apiDefaultVersion: this.envConfig.API_DEFAULT_VERSION,
@@ -69,8 +140,16 @@ export class ConfigService {
   }
 
   get cors(): CorsConfig {
+    const origin = this.parseCorsOrigin(this.envConfig.CORS_ORIGIN);
+    if (!this.hasLoggedCorsOrigin) {
+      this.logger.log(
+        `Resolved CORS origin: ${Array.isArray(origin) ? origin.join(', ') : String(origin)}`,
+      );
+      this.hasLoggedCorsOrigin = true;
+    }
+
     return {
-      origin: this.envConfig.CORS_ORIGIN,
+      origin,
     };
   }
 
@@ -78,6 +157,36 @@ export class ConfigService {
     return {
       ttl: this.envConfig.THROTTLE_TTL,
       limit: this.envConfig.THROTTLE_LIMIT,
+    };
+  }
+
+  get clerk(): ClerkConfig {
+    return {
+      webhookSecret: this.envConfig.CLERK_WEBHOOK_SECRET,
+      secretKey: this.envConfig.CLERK_SECRET_KEY,
+    };
+  }
+
+  get paystack(): PaystackConfig {
+    return {
+      secretKey: this.envConfig.PAYSTACK_SECRET_KEY,
+      webhookSecret: this.envConfig.PAYSTACK_WEBHOOK_SECRET || this.envConfig.PAYSTACK_SECRET_KEY,
+      callbackUrl: this.envConfig.PAYSTACK_CALLBACK_URL,
+    };
+  }
+
+  get deals(): DealsConfig {
+    return {
+      feePerProduct: this.envConfig.DEALS_FEE_PER_PRODUCT,
+      maxProducts: this.envConfig.DEALS_MAX_PRODUCTS,
+    };
+  }
+
+  get email(): EmailConfig {
+    return {
+      resendApiKey: this.envConfig.RESEND_API_KEY,
+      fromAddress: this.envConfig.EMAIL_FROM,
+      logoUrl: this.envConfig.EMAIL_LOGO_URL,
     };
   }
 
@@ -95,5 +204,13 @@ export class ConfigService {
 
   get isProd(): boolean {
     return this.envConfig.NODE_ENV === 'prod';
+  }
+
+  get storage(): StorageConfig {
+    return {
+      cloudName: this.envConfig.CLOUDINARY_CLOUD_NAME,
+      apiKey: this.envConfig.CLOUDINARY_API_KEY,
+      apiSecret: this.envConfig.CLOUDINARY_API_SECRET,
+    };
   }
 }

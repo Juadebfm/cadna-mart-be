@@ -1,7 +1,7 @@
 import { IsOptional, IsEnum, IsString } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { PaginationQueryDto } from '@common/dto/pagination-query.dto';
-import { Role } from '../enums/role.enum';
+import { AccountType } from '../enums/account-type.enum';
 
 export class UserQueryDto extends PaginationQueryDto {
   @ApiPropertyOptional({ description: 'Search by name or email' })
@@ -9,8 +9,8 @@ export class UserQueryDto extends PaginationQueryDto {
   @IsString()
   search?: string;
 
-  @ApiPropertyOptional({ enum: Role })
+  @ApiPropertyOptional({ enum: AccountType })
   @IsOptional()
-  @IsEnum(Role)
-  role?: Role;
+  @IsEnum(AccountType)
+  accountType?: AccountType;
 }
