@@ -34,6 +34,9 @@ import { AddressesModule } from './addresses/addresses.module';
 import { AuthEventsModule } from './auth-events/auth-events.module';
 import { DataRequestsModule } from './data-requests/data-requests.module';
 import { SystemModule } from './system/system.module';
+import { OrdersModule } from './orders/orders.module';
+import { CheckoutModule } from './checkout/checkout.module';
+import { PaymentsModule } from './payments/payments.module';
 import { CorrelationIdMiddleware } from '@common/middleware/correlation-id.middleware';
 import { RequestLoggerMiddleware } from '@common/middleware/request-logger.middleware';
 import { AppController } from './app.controller';
@@ -80,6 +83,9 @@ import { AppService } from './app.service';
     AuthEventsModule,
     DataRequestsModule,
     SystemModule,
+    OrdersModule,
+    CheckoutModule,
+    PaymentsModule,
   ],
   controllers: [AppController],
   providers: [
