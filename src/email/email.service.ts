@@ -78,6 +78,42 @@ export class EmailService {
     );
   }
 
+  async sendSellerWelcome(email: string, firstName: string, businessName: string): Promise<void> {
+    await this.send(
+      email,
+      'Welcome to Cadna Mart — your seller account is under review',
+      `<div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
+        ${this.logoHeader()}
+        <h2 style="color: #6C63FF;">Welcome, ${firstName}!</h2>
+        <p>Your seller account for <strong>${businessName}</strong> has been received and is currently under review.</p>
+        <p>Our team typically reviews new seller applications within <strong>1-2 business days</strong>. You'll receive a follow-up email once your account has been approved.</p>
+        <p>Please also verify your email address using the code we sent in a separate message.</p>
+        <p style="color: #888; font-size: 12px;">If you didn't create this account, please contact us immediately.</p>
+      </div>`,
+    );
+  }
+
+  async sendAdminNewSellerAlert(
+    adminEmail: string,
+    sellerEmail: string,
+    businessName: string,
+  ): Promise<void> {
+    await this.send(
+      adminEmail,
+      `[Action Required] New seller application: ${businessName}`,
+      `<div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
+        ${this.logoHeader()}
+        <h2 style="color: #6C63FF;">New seller application</h2>
+        <p>A new seller has completed onboarding and is awaiting approval.</p>
+        <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
+          <tr><td style="padding: 6px 0; font-weight: bold;">Business</td><td>${businessName}</td></tr>
+          <tr><td style="padding: 6px 0; font-weight: bold;">Email</td><td>${sellerEmail}</td></tr>
+        </table>
+        <p>Log in to the admin panel to review and approve this application.</p>
+      </div>`,
+    );
+  }
+
   private async send(to: string, subject: string, html: string): Promise<void> {
     try {
       await this.resend.emails.send({

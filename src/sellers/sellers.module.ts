@@ -8,6 +8,9 @@ import { SellersRepository } from './sellers.repository';
 import { SellersService } from './sellers.service';
 import { SellersController } from './sellers.controller';
 import { ProductsModule } from '@products/products.module';
+import { UsersModule } from '@users/users.module';
+import { OtpModule } from '@otp/otp.module';
+import { EmailModule } from '@email/email.module';
 
 @Module({
   imports: [
@@ -18,6 +21,9 @@ import { ProductsModule } from '@products/products.module';
       { name: Product.name, schema: ProductSchema },
     ]),
     ProductsModule,
+    UsersModule,
+    OtpModule,
+    EmailModule,
   ],
   controllers: [SellersController],
   providers: [SellersRepository, SellersService],

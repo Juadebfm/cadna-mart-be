@@ -17,6 +17,7 @@ import { CurrentUser } from '@auth/decorators/current-user.decorator';
 import { AccountType } from '@users/enums/account-type.enum';
 import { SellersService } from './sellers.service';
 import { CreateSellerDto } from './dto/create-seller.dto';
+import { OnboardSellerDto } from './dto/onboard-seller.dto';
 import { UpdateSellerDto } from './dto/update-seller.dto';
 import { BankingDetailsDto } from './dto/banking-details.dto';
 import { ProductsService } from '@products/products.service';
@@ -34,12 +35,14 @@ export class SellersController {
     private readonly productsService: ProductsService,
   ) {}
 
-  @ApiBearerAuth()
-  @AccountTypes(AccountType.SELLER)
+  @Public()
   @Post('onboard')
-  @ApiOperation({ summary: 'Submit seller onboarding (spec alias of POST /sellers)' })
-  async onboardSeller(@Body() dto: CreateSellerDto, @CurrentUser('userId') userId: string) {
-    return this.sellersService.createSeller(dto, userId);
+  @ApiOperation({
+    summary:
+      'Public single-step seller registration — creates account, profile, and sends verification email',
+  })
+  async onboardSeller(@Body() dto: OnboardSellerDto) {
+    return this.sellersService.onboardPublic(dto);
   }
 
   @ApiBearerAuth()

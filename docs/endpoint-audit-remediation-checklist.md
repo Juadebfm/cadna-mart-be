@@ -18,12 +18,12 @@ Source of truth: [docs/endpoint-audit.csv](./endpoint-audit.csv)
 
 ## Phase 1 - Quick Wins And Contract Alignment
 
-### Deferred In This Branch
+### Previously Deferred — Now Closed
 
-- [ ] Row 4 - `POST /api/v1/auth/login`
-  Phone OTP still needs an SMS channel or a broader contract decision.
-- [ ] Row 110 - `POST /api/v1/sellers/onboard`
-  Spec expects public onboarding, while the real flow is still split across `/auth/register/seller/*`.
+- [x] Row 4 - `POST /api/v1/auth/login`
+  Email OTP login implemented via `POST /auth/otp/request` + `POST /auth/otp/verify` (`purpose=login`). SMS deferred until carrier partnership is in place.
+- [x] Row 110 - `POST /api/v1/sellers/onboard`
+  Converted to a public single-step endpoint. Creates user + seller profile, sends verification OTP and welcome email to seller, sends admin alert email. KYC/business-verification partner integration deferred.
 
 ### Closed In This Branch
 
