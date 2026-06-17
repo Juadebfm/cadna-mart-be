@@ -11,6 +11,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import { AccountTypes } from '@auth/decorators/account-types.decorator';
+import { CurrentUser } from '@auth/decorators/current-user.decorator';
 import { AccountType } from '@users/enums/account-type.enum';
 import { UploadService, UploadFolder } from './upload.service';
 
@@ -25,7 +26,7 @@ export class UploadController {
   @Post()
   @AccountTypes(AccountType.SELLER, AccountType.ADMIN)
   @UseInterceptors(FileInterceptor('file', { limits: { fileSize: 5 * 1024 * 1024 } }))
-  @ApiOperation({ summary: 'Upload an image to Cloudflare R2 (Seller or Admin)' })
+  @ApiOperation({ summary: 'Upload an image to Cloudinary (legacy route for Seller or Admin)' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
@@ -44,10 +45,11 @@ export class UploadController {
     )
     file: Express.Multer.File,
     @Query('folder') folder?: string,
+    @CurrentUser('userId') userId?: string,
   ) {
     const safeFolder: UploadFolder = ALLOWED_FOLDERS.includes(folder as UploadFolder)
       ? (folder as UploadFolder)
       : 'general';
-    return this.uploadService.uploadFile(file, safeFolder);
+    return this.uploadService.uploadFile(file, safeFolder, userId);
   }
 }

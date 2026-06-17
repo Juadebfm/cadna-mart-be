@@ -108,16 +108,16 @@
 107,12. Logistics,POST,/api/v1/logistics/pickup/verify,Verify pickup via QR/order ID,Supplier,,Missing
 108,12. Logistics,POST,/api/v1/logistics/pickup/complete,Mark pickup completed,Supplier,,Missing
 109,12. Logistics,POST,/api/v1/logistics/pickup/fail,Mark pickup failed/escalate,Supplier,,Missing
-110,13. Seller Module,POST,/api/v1/sellers/onboard,Seller onboarding submission,Public,,Partial,POST,/api/v1/sellers,src/sellers/sellers.controller.ts:69,A simple seller-create exists; full onboarding wizard (with KYC/agreement gates) not built. Seller registration is also handled in /auth/register/seller/*.
-111,13. Seller Module,GET,/api/v1/sellers/me,Seller profile,Seller,,Partial,GET,/api/v1/sellers/my,src/sellers/sellers.controller.ts:77,Path rename only.
-112,13. Seller Module,PATCH,/api/v1/sellers/me,Update seller details,Seller,,Partial,PATCH,/api/v1/sellers/my,src/sellers/sellers.controller.ts:85,Path rename only.
+110,13. Seller Module,POST,/api/v1/sellers/onboard,Seller onboarding submission,Public,,Partial,POST,/api/v1/sellers/onboard,src/sellers/sellers.controller.ts:39,"Spec alias added, but it still creates the authenticated seller profile rather than replacing the broader public /auth/register/seller/* onboarding flow. KYC/agreement gates remain follow-up work."
+111,13. Seller Module,GET,/api/v1/sellers/me,Seller profile,Seller,,Present,GET,/api/v1/sellers/me,src/sellers/sellers.controller.ts:47,Spec-aligned alias added alongside the legacy /sellers/my route.
+112,13. Seller Module,PATCH,/api/v1/sellers/me,Update seller details,Seller,,Present,PATCH,/api/v1/sellers/me,src/sellers/sellers.controller.ts:55,Spec-aligned alias added alongside the legacy /sellers/my route.
 113,13. Seller Module,POST,/api/v1/sellers/me/agreement,Accept stocking & dispatch agreement,Seller,Mandatory before activation,Missing,,,,No agreement-acceptance endpoint or gating logic.
 114,13. Seller Module,POST,/api/v1/sellers/me/kyc,Submit KYC documents,Seller,KYC-light per PRD,Missing,,,,No KYC submission/storage.
-115,13. Seller Module,GET,/api/v1/sellers/me/products,List own listings,Seller,,Partial,GET,/api/v1/sellers/{sellerSlug}/products,src/sellers/sellers.controller.ts:40,Public endpoint by slug; no /me-scoped own-listings endpoint. Sellers can use GET /products with ownership filter today.
-116,13. Seller Module,POST,/api/v1/sellers/me/products,Submit new listing,Seller,,Partial,POST,/api/v1/products,src/products/products.controller.ts:51,Generic product create gated to seller/admin; no /sellers/me scope.
-117,13. Seller Module,PATCH,/api/v1/sellers/me/products/{id},Update listing,Seller,,Partial,PATCH,/api/v1/products/{id},src/products/products.controller.ts:62
-118,13. Seller Module,DELETE,/api/v1/sellers/me/products/{id},Withdraw listing,Seller,,Partial,DELETE,/api/v1/products/{id},src/products/products.controller.ts:74
-119,13. Seller Module,POST,/api/v1/sellers/me/products/{id}/images,Upload product images,Seller,,Partial,POST,/api/v1/upload,src/upload/upload.controller.ts:25,Generic upload; not product-scoped. Image association handled by client supplying URLs in product DTO.
+115,13. Seller Module,GET,/api/v1/sellers/me/products,List own listings,Seller,,Present,GET,/api/v1/sellers/me/products,src/sellers/sellers.controller.ts:66,"Seller-scoped listing endpoint now returns the caller's own catalog, including inactive items, with the same pagination model as public product rails."
+116,13. Seller Module,POST,/api/v1/sellers/me/products,Submit new listing,Seller,,Present,POST,/api/v1/sellers/me/products,src/sellers/sellers.controller.ts:77,Creates a listing under the authenticated seller automatically; sellerId no longer has to be supplied by the client on this route.
+117,13. Seller Module,PATCH,/api/v1/sellers/me/products/{id},Update listing,Seller,,Present,PATCH,/api/v1/sellers/me/products/{id},src/sellers/sellers.controller.ts:88,Ownership is enforced through the shared product service before updates are applied.
+118,13. Seller Module,DELETE,/api/v1/sellers/me/products/{id},Withdraw listing,Seller,,Present,DELETE,/api/v1/sellers/me/products/{id},src/sellers/sellers.controller.ts:100,Ownership is enforced and the listing is soft-deleted through the shared product service.
+119,13. Seller Module,POST,/api/v1/sellers/me/products/{id}/images,Upload product images,Seller,,Present,POST,/api/v1/sellers/me/products/{id}/images,src/sellers/sellers.controller.ts:112,"Product-scoped image association route added. Binary upload still happens through /media/upload or legacy /upload, then this endpoint appends the resulting URLs to the product gallery."
 120,13. Seller Module,GET,/api/v1/sellers/me/orders,View assigned orders,Seller,,Missing,,,,Orders module doesn't exist.
 121,13. Seller Module,POST,/api/v1/sellers/me/orders/{id}/acknowledge,Acknowledge order,Seller,,Missing
 122,13. Seller Module,POST,/api/v1/sellers/me/orders/{id}/dispatch,Confirm dispatch,Seller,,Missing
@@ -132,12 +132,12 @@
 131,14. Supplier Module,POST,/api/v1/suppliers/me/orders/{id}/dispatch,Mark dispatched,Supplier,,Missing
 132,14. Supplier Module,GET,/api/v1/suppliers/me/policies,Supplier-specific policy rules,Supplier,,Missing
 133,15. Admin - Catalog,GET,/api/v1/admin/products,List all products (1P + 3P),Admin,,Present,GET,/api/v1/admin/products,src/admin/admin-products.controller.ts:31,Includes inactive listings; supports pagination.
-134,15. Admin - Catalog,POST,/api/v1/admin/products,Create 1P product,Admin,,Missing,,,,No admin-scoped create; admins can still use POST /products since gating allows admin.
+134,15. Admin - Catalog,POST,/api/v1/admin/products,Create 1P product,Admin,,Present,POST,/api/v1/admin/products,src/admin/admin-products.controller.ts:56,Admin-scoped create path added. Body mirrors the existing product DTO and still requires a sellerId/owner association.
 135,15. Admin - Catalog,PATCH,/api/v1/admin/products/{id},Update product,Admin,,Present,PATCH,/api/v1/admin/products/{id},src/admin/admin-products.controller.ts:50
 136,15. Admin - Catalog,DELETE,/api/v1/admin/products/{id},Remove product,Admin,,Present,DELETE,/api/v1/admin/products/{id},src/admin/admin-products.controller.ts:69,Force delete.
-137,15. Admin - Catalog,POST,/api/v1/admin/products/{id}/approve,Approve 3P listing,Admin,,Partial,PATCH,/api/v1/admin/products/{id}/status,src/admin/admin-products.controller.ts:60,Single isActive toggle; no separate approve/reject semantics or moderation state.
-138,15. Admin - Catalog,POST,/api/v1/admin/products/{id}/reject,Reject 3P listing,Admin,,Partial,PATCH,/api/v1/admin/products/{id}/status,src/admin/admin-products.controller.ts:60,Same toggle; no rejection reason or audit trail.
-139,15. Admin - Catalog,POST,/api/v1/admin/products/{id}/feature,Feature product,Admin,,Missing,,,,No featured-flag endpoint; section tags must be set via product update.
+137,15. Admin - Catalog,POST,/api/v1/admin/products/{id}/approve,Approve 3P listing,Admin,,Present,POST,/api/v1/admin/products/{id}/approve,src/admin/admin-products.controller.ts:84,Explicit approve route now sets moderationStatus=approved, clears prior rejection reason, and reactivates the listing.
+138,15. Admin - Catalog,POST,/api/v1/admin/products/{id}/reject,Reject 3P listing,Admin,,Present,POST,/api/v1/admin/products/{id}/reject,src/admin/admin-products.controller.ts:90,Explicit reject route now stores a moderation reason and deactivates the listing.
+139,15. Admin - Catalog,POST,/api/v1/admin/products/{id}/feature,Feature product,Admin,,Present,POST,/api/v1/admin/products/{id}/feature,src/admin/admin-products.controller.ts:99,"Adds or removes the storefront featured section tag and optionally manages the badge value from an admin-scoped endpoint."
 140,15. Admin - Catalog,GET,/api/v1/admin/categories,Manage categories,Admin,,Present,GET,/api/v1/admin/categories,src/admin/admin-categories.controller.ts:31
 141,15. Admin - Catalog,POST,/api/v1/admin/categories,Create category,Admin,,Present,POST,/api/v1/admin/categories,src/admin/admin-categories.controller.ts:37
 142,15. Admin - Catalog,PATCH,/api/v1/admin/categories/{id},Update category,Admin,,Present,PATCH,/api/v1/admin/categories/{id},src/admin/admin-categories.controller.ts:52
@@ -212,9 +212,9 @@
 211,23. Notifications,POST,/api/v1/webhooks/whatsapp/delivery,WhatsApp delivery webhook,Signed,,Missing
 212,24. Ratings & Reviews,GET,/api/v1/products/{id}/reviews,List reviews,Public,Conditional Should-Have,Present,GET,/api/v1/products/{productId}/reviews,src/reviews/reviews.controller.ts:17
 213,24. Ratings & Reviews,POST,/api/v1/products/{id}/reviews,Submit review (post-purchase),User,,Present,POST,/api/v1/products/{productId}/reviews,src/reviews/reviews.controller.ts:30,Post-purchase gating not enforced.
-214,24. Ratings & Reviews,PATCH,/api/v1/reviews/{id},Edit own review,User,,Missing
-215,24. Ratings & Reviews,DELETE,/api/v1/reviews/{id},Delete own review,User,,Missing
-216,24. Ratings & Reviews,POST,/api/v1/admin/reviews/{id}/moderate,Moderate review,Admin,,Missing
+214,24. Ratings & Reviews,PATCH,/api/v1/reviews/{id},Edit own review,User,,Present,PATCH,/api/v1/reviews/{id},src/reviews/user-reviews.controller.ts:17,Buyers can update their own review content and rating. Product aggregates are resynced after edits.
+215,24. Ratings & Reviews,DELETE,/api/v1/reviews/{id},Delete own review,User,,Present,DELETE,/api/v1/reviews/{id},src/reviews/user-reviews.controller.ts:27,Own-review delete now soft-deletes the review and recalculates the product rating summary.
+216,24. Ratings & Reviews,POST,/api/v1/admin/reviews/{id}/moderate,Moderate review,Admin,,Present,POST,/api/v1/admin/reviews/{id}/moderate,src/reviews/admin-reviews.controller.ts:17,Admin moderation route can approve or hide a review with an optional reason while keeping product aggregates in sync.
 217,25. Procurement/Credit Partner,POST,/api/v1/partners/onboard,Partner onboarding,Public,Conditional V1,Missing,,,,Entire partner/credit module missing.
 218,25. Procurement/Credit Partner,POST,/api/v1/partners/me/kyc,Submit KYC,Partner,,Missing
 219,25. Procurement/Credit Partner,POST,/api/v1/partners/me/agreement,Accept terms & risk disclosure,Partner,,Missing
@@ -291,14 +291,14 @@
 290,27. Promotional Slots,POST,/api/v1/admin/promo-slots/bookings/{id}/refund,Issue refund on cancelled/suspended booking,Admin,,Missing
 291,27. Promotional Slots,GET,/api/v1/admin/promo-slots/reports/revenue,Promo slot revenue report,Admin,,Missing
 292,27. Promotional Slots,GET,/api/v1/admin/promo-slots/reports/utilization,Slot utilization & fill rate,Admin,,Missing
-293,28. File / Media Uploads,POST,/api/v1/media/upload,"Upload file (images, docs)",User/Seller,,Partial,POST,/api/v1/upload,src/upload/upload.controller.ts:25,Path rename to /media/upload. Uses Cloudinary.
-294,28. File / Media Uploads,POST,/api/v1/media/upload/presigned,Get presigned URL,User/Seller,,Missing,,,,No presigned-URL flow (current upload is direct).
-295,28. File / Media Uploads,DELETE,/api/v1/media/{id},Delete media,Owner/Admin,,Missing,,,,No media-delete endpoint.
+293,28. File / Media Uploads,POST,/api/v1/media/upload,"Upload file (images, docs)",User/Seller,,Present,POST,/api/v1/media/upload,src/upload/media.controller.ts:37,Spec-facing upload path added on top of Cloudinary. Uploaded assets are scoped into a caller-specific folder prefix for later ownership checks.
+294,28. File / Media Uploads,POST,/api/v1/media/upload/presigned,Get presigned URL,User/Seller,,Present,POST,/api/v1/media/upload/presigned,src/upload/media.controller.ts:66,Returns signed Cloudinary upload parameters for direct client uploads rather than an S3-style presigned URL.
+295,28. File / Media Uploads,DELETE,/api/v1/media/{id},Delete media,Owner/Admin,,Present,DELETE,/api/v1/media/{id},src/upload/media.controller.ts:78,"DELETE accepts a base64url-encoded Cloudinary publicId. Non-admin callers can only delete assets from their own scoped upload folder; admins can delete any asset."
 296,29. System / Utility,GET,/api/v1/health,Health check,Public,,Present,GET,/api/v1/health,src/health/health.controller.ts:16,Also extra GET /health/db for DB connectivity.
-297,29. System / Utility,GET,/api/v1/version,Build version,Public,,Missing,,,,No build-version endpoint.
-298,29. System / Utility,GET,/api/v1/config/public,"Public app config (feature flags, fees)",Public,,Partial,GET,/api/v1/site-config,src/site-config/site-config.controller.ts:12,Path rename only.
-299,29. System / Utility,GET,/api/v1/legal/{slug},"Fetch legal page (Terms, Privacy etc.)",Public,,Missing,,,,No legal-pages module.
-300,29. System / Utility,GET,/api/v1/geo/cities,Supported cities (Lagos only V1),Public,,Missing,,,,No geo/cities endpoint.
+297,29. System / Utility,GET,/api/v1/version,Build version,Public,,Present,GET,/api/v1/version,src/system/system.controller.ts:12,Returns app name + build version + environment from a lightweight public controller.
+298,29. System / Utility,GET,/api/v1/config/public,"Public app config (feature flags, fees)",Public,,Present,GET,/api/v1/config/public,src/site-config/public-config.controller.ts:12,Spec-aligned alias added for the existing public site-config payload.
+299,29. System / Utility,GET,/api/v1/legal/{slug},"Fetch legal page (Terms, Privacy etc.)",Public,,Present,GET,/api/v1/legal/{slug},src/site-config/legal-pages.controller.ts:12,Public legal-page endpoint added with site-config overrides and safe built-in defaults for common slugs.
+300,29. System / Utility,GET,/api/v1/geo/cities,Supported cities (Lagos only V1),Public,,Present,GET,/api/v1/geo/cities,src/system/system.controller.ts:19,Lagos-only supported-city payload added for V1 rollout.
 B1,BONUS - Auth,POST,/api/v1/auth/clerk/login,Login/register via Clerk OAuth (Google/Facebook),Public,,Present,POST,/api/v1/auth/clerk/login,src/auth/auth.controller.ts:126,Not in PM spec; add to spec or remove.
 B2,BONUS - Auth,POST,/api/v1/auth/register/email,Multi-step registration step 1 (email),Public,,Present,POST,/api/v1/auth/register/email,src/auth/auth.controller.ts:37,Part of multi-step register flow.
 B3,BONUS - Auth,POST,/api/v1/auth/register/details,Multi-step registration step 2 (details),Public,,Present,POST,/api/v1/auth/register/details,src/auth/auth.controller.ts:44

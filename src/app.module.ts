@@ -33,6 +33,7 @@ import { BrandsModule } from './brands/brands.module';
 import { AddressesModule } from './addresses/addresses.module';
 import { AuthEventsModule } from './auth-events/auth-events.module';
 import { DataRequestsModule } from './data-requests/data-requests.module';
+import { SystemModule } from './system/system.module';
 import { CorrelationIdMiddleware } from '@common/middleware/correlation-id.middleware';
 import { RequestLoggerMiddleware } from '@common/middleware/request-logger.middleware';
 import { AppController } from './app.controller';
@@ -78,6 +79,7 @@ import { AppService } from './app.service';
     AddressesModule,
     AuthEventsModule,
     DataRequestsModule,
+    SystemModule,
   ],
   controllers: [AppController],
   providers: [
