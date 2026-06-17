@@ -124,8 +124,17 @@ export class ProductsService {
     };
   }
 
-  async findRelated(productId: string, limit: number) {
-    const items = await this.productsRepository.findRelated(productId, limit);
+  async resolveProductId(idOrSlug: string): Promise<string> {
+    const isObjectId = /^[a-f\d]{24}$/i.test(idOrSlug);
+    if (isObjectId) return idOrSlug;
+    const product = await this.productsRepository.findBySlug(idOrSlug);
+    if (!product) throw new NotFoundException('Product not found');
+    return (product as unknown as { _id: { toString(): string } })._id.toString();
+  }
+
+  async findRelated(idOrSlug: string, limit: number) {
+    const id = await this.resolveProductId(idOrSlug);
+    const items = await this.productsRepository.findRelated(id, limit);
     return { items: items.map((p) => this.toCard(p)) };
   }
 

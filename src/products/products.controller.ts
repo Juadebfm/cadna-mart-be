@@ -110,7 +110,8 @@ export class ProductsController {
   @Get(':productId/policies')
   @ApiOperation({ summary: 'Get product return and warranty policies' })
   async findPolicies(@Param('productId') productId: string) {
-    return this.policiesService.getProductPolicy(productId);
+    const id = await this.productsService.resolveProductId(productId);
+    return this.policiesService.getProductPolicy(id);
   }
 
   @ApiBearerAuth()

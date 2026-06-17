@@ -1,9 +1,21 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AccountTypes } from '@auth/decorators/account-types.decorator';
 import { AccountType } from '@users/enums/account-type.enum';
 import { UsersService } from '@users/users.service';
 import { UserQueryDto } from '@users/dto/user-query.dto';
+import { UpdateUserDto } from '@users/dto/update-user.dto';
 import { ParseObjectIdPipe } from '@common/pipes/parse-object-id.pipe';
 
 @ApiTags('Admin — Users')
@@ -23,6 +35,19 @@ export class AdminUsersController {
   @ApiOperation({ summary: 'Get user by id (admin)' })
   async findOne(@Param('id', ParseObjectIdPipe) id: string) {
     return this.usersService.findById(id);
+  }
+
+  @Patch(':id')
+  @ApiOperation({ summary: 'Update a user by id (admin)' })
+  async update(@Param('id', ParseObjectIdPipe) id: string, @Body() dto: UpdateUserDto) {
+    return this.usersService.update(id, dto);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Soft-delete a user (admin)' })
+  async remove(@Param('id', ParseObjectIdPipe) id: string) {
+    await this.usersService.remove(id);
   }
 
   @Post(':id/suspend')
