@@ -37,6 +37,9 @@ import { SystemModule } from './system/system.module';
 import { OrdersModule } from './orders/orders.module';
 import { CheckoutModule } from './checkout/checkout.module';
 import { PaymentsModule } from './payments/payments.module';
+import { ReturnsModule } from './returns/returns.module';
+import { LogisticsModule } from './logistics/logistics.module';
+import { PromoSlotsModule } from './promo-slots/promo-slots.module';
 import { CorrelationIdMiddleware } from '@common/middleware/correlation-id.middleware';
 import { RequestLoggerMiddleware } from '@common/middleware/request-logger.middleware';
 import { AppController } from './app.controller';
@@ -86,6 +89,9 @@ import { AppService } from './app.service';
     OrdersModule,
     CheckoutModule,
     PaymentsModule,
+    ReturnsModule,
+    LogisticsModule,
+    PromoSlotsModule,
   ],
   controllers: [AppController],
   providers: [
