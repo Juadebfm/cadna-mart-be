@@ -5,9 +5,9 @@ describe('UploadService', () => {
   const createService = () =>
     new UploadService({
       storage: {
-        cloudName: 'demo-cloud',
-        apiKey: 'demo-key',
-        apiSecret: 'demo-secret',
+        cloudName: 'test-cloud',
+        apiKey: 'test-key',
+        apiSecret: 'test-secret',
       },
     } as any);
 
@@ -15,8 +15,8 @@ describe('UploadService', () => {
     const service = createService();
     const result = service.createPresignedUpload('products', 'abc123');
 
-    expect(result.cloudName).toBe('demo-cloud');
-    expect(result.apiKey).toBe('demo-key');
+    expect(result.cloudName).toBe('test-cloud');
+    expect(result.apiKey).toBe('test-key');
     expect(result.folder).toBe('cadna-mart/products/user-abc123');
     expect(result.uploadUrl).toBe('https://api.cloudinary.com/v1_1/demo-cloud/image/upload');
     expect(typeof result.signature).toBe('string');
