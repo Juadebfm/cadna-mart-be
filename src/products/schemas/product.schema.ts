@@ -187,6 +187,15 @@ export class Product extends BaseSchema {
   @Prop({ default: true })
   isActive!: boolean;
 
+  @Prop({ type: String, default: 'approved' })
+  moderationStatus!: string;
+
+  @Prop({ type: String, default: null })
+  moderationReason!: string | null;
+
+  @Prop({ type: Date, default: null })
+  moderatedAt!: Date | null;
+
   @Prop({ default: 0 })
   salesCount!: number;
 }
@@ -197,6 +206,7 @@ ProductSchema.index({ category: 1 });
 ProductSchema.index({ subCategory: 1 });
 ProductSchema.index({ seller: 1 });
 ProductSchema.index({ sections: 1 });
+ProductSchema.index({ moderationStatus: 1 });
 ProductSchema.index({ 'price.amount': 1 });
 ProductSchema.index({ rating: -1 });
 ProductSchema.index({ salesCount: -1 });

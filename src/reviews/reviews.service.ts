@@ -1,9 +1,17 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { ReviewsRepository, ReviewSortOption } from './reviews.repository';
 import { CreateReviewDto } from './dto/create-review.dto';
+import { UpdateReviewDto } from './dto/update-review.dto';
+import { ModerateReviewDto } from './dto/moderate-review.dto';
 import { Product } from '@products/schemas/product.schema';
+import { Review } from './schemas/review.schema';
 
 @Injectable()
 export class ReviewsService {
@@ -32,22 +40,16 @@ export class ReviewsService {
       comment: dto.comment ?? null,
       reviewerName: userName,
       isVerifiedPurchase: false,
+      moderationStatus: 'approved',
+      moderationReason: null,
+      moderatedAt: null,
+      moderatedBy: null,
       deletedAt: null,
     } as any);
 
     await this.syncProductRating(productId);
 
-    const id = (review as unknown as { _id: { toString(): string } })._id.toString();
-    return {
-      id,
-      rating: review.rating,
-      title: review.title,
-      comment: review.comment,
-      reviewerName: review.reviewerName,
-      isVerifiedPurchase: review.isVerifiedPurchase,
-      helpfulCount: review.helpfulCount ?? 0,
-      createdAt: review.createdAt,
-    };
+    return this.toDto(review);
   }
 
   async findByProduct(productId: string, sort: ReviewSortOption, page: number, limit: number) {
@@ -96,17 +98,102 @@ export class ReviewsService {
     return { helpfulCount: (review as any).helpfulCount };
   }
 
+  async updateOwnReview(reviewId: string, userId: string, dto: UpdateReviewDto) {
+    const review = await this.reviewsRepository.findById(reviewId);
+    if (!review || review.deletedAt) {
+      throw new NotFoundException('Review not found');
+    }
+
+    if ((review.user as any)?.toString() !== userId) {
+      throw new ForbiddenException('You do not own this review');
+    }
+
+    const updated = await this.reviewsRepository.update(reviewId, {
+      rating: dto.rating ?? review.rating,
+      title: dto.title ?? review.title,
+      comment: dto.comment ?? review.comment,
+      moderationStatus: 'approved',
+      moderationReason: null,
+      moderatedAt: null,
+      moderatedBy: null,
+    } as any);
+    if (!updated) {
+      throw new NotFoundException('Review not found');
+    }
+
+    await this.syncProductRating((updated.product as any).toString());
+    return this.toDto(updated);
+  }
+
+  async deleteOwnReview(reviewId: string, userId: string): Promise<void> {
+    const review = await this.reviewsRepository.findById(reviewId);
+    if (!review || review.deletedAt) {
+      throw new NotFoundException('Review not found');
+    }
+
+    if ((review.user as any)?.toString() !== userId) {
+      throw new ForbiddenException('You do not own this review');
+    }
+
+    await this.reviewsRepository.update(reviewId, {
+      deletedAt: new Date(),
+      moderationStatus: 'deleted',
+      moderationReason: null,
+      moderatedAt: null,
+      moderatedBy: null,
+    } as any);
+    await this.syncProductRating((review.product as any).toString());
+  }
+
+  async moderateReview(reviewId: string, adminUserId: string, dto: ModerateReviewDto) {
+    const review = await this.reviewsRepository.findById(reviewId);
+    if (!review) {
+      throw new NotFoundException('Review not found');
+    }
+
+    const isHidden = dto.action === 'hide';
+    const updated = await this.reviewsRepository.update(reviewId, {
+      deletedAt: isHidden ? new Date() : null,
+      moderationStatus: isHidden ? 'hidden' : 'approved',
+      moderationReason: dto.reason?.trim() ? dto.reason.trim() : null,
+      moderatedAt: new Date(),
+      moderatedBy: adminUserId as any,
+    } as any);
+    if (!updated) {
+      throw new NotFoundException('Review not found');
+    }
+
+    await this.syncProductRating((updated.product as any).toString());
+    return this.toDto(updated);
+  }
+
   private async syncProductRating(productId: string): Promise<void> {
     const stats = await this.reviewsRepository.reviewModel.aggregate([
       { $match: { product: productId, deletedAt: null } },
       { $group: { _id: null, avg: { $avg: '$rating' }, count: { $sum: 1 } } },
     ]);
 
-    if (stats.length > 0) {
-      await this.productModel.updateOne(
-        { _id: productId },
-        { $set: { rating: Math.round(stats[0].avg * 10) / 10, reviewCount: stats[0].count } },
-      );
-    }
+    const rating = stats.length > 0 ? Math.round(stats[0].avg * 10) / 10 : 0;
+    const reviewCount = stats[0]?.count ?? 0;
+
+    await this.productModel.updateOne({ _id: productId }, { $set: { rating, reviewCount } });
+  }
+
+  private toDto(review: Review) {
+    const id = (review as unknown as { _id: { toString(): string } })._id.toString();
+    return {
+      id,
+      rating: review.rating,
+      title: review.title,
+      comment: review.comment,
+      reviewerName: review.reviewerName,
+      isVerifiedPurchase: review.isVerifiedPurchase,
+      helpfulCount: review.helpfulCount ?? 0,
+      moderationStatus: (review as any).moderationStatus ?? 'approved',
+      moderationReason: (review as any).moderationReason ?? null,
+      createdAt: review.createdAt,
+      updatedAt: review.updatedAt,
+      moderatedAt: (review as any).moderatedAt ?? null,
+    };
   }
 }

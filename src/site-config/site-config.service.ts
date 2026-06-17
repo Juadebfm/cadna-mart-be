@@ -1,7 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { SiteConfig } from './schemas/site-config.schema';
+
+type LegalPage = {
+  title: string;
+  contentHtml: string;
+  updatedAt: string;
+};
 
 @Injectable()
 export class SiteConfigService {
@@ -22,6 +28,36 @@ export class SiteConfigService {
     return this.normalizeConfig(result);
   }
 
+  async getPublicConfig() {
+    return this.getConfig();
+  }
+
+  async getLegalPage(slug: string) {
+    const normalizedSlug = slug.trim().toLowerCase();
+    const configs = await this.siteConfigModel.find().lean().exec();
+    const raw: Record<string, any> = {};
+
+    for (const config of configs) {
+      raw[config.key] = config.value;
+    }
+
+    const configuredPages = this.extractConfiguredLegalPages(raw);
+    const defaults = this.getDefaultLegalPages();
+    const page =
+      configuredPages[normalizedSlug] ?? defaults[normalizedSlug as keyof typeof defaults];
+
+    if (!page) {
+      throw new NotFoundException('Legal page not found');
+    }
+
+    return {
+      slug: normalizedSlug,
+      title: page.title,
+      contentHtml: page.contentHtml,
+      updatedAt: page.updatedAt,
+    };
+  }
+
   private getDefaults() {
     return {
       footer: {
@@ -40,6 +76,31 @@ export class SiteConfigService {
         phone: '+234 800 000 0000',
       },
     };
+  }
+
+  private getDefaultLegalPages() {
+    const today = new Date().toISOString();
+
+    return {
+      terms: {
+        title: 'Terms of Service',
+        contentHtml:
+          '<p>By using Cadna Mart, you agree to our marketplace terms, order policies, and acceptable-use rules.</p>',
+        updatedAt: today,
+      },
+      privacy: {
+        title: 'Privacy Policy',
+        contentHtml:
+          '<p>Cadna Mart processes account, order, and support data only as needed to deliver the service and meet compliance obligations.</p>',
+        updatedAt: today,
+      },
+      returns: {
+        title: 'Returns Policy',
+        contentHtml:
+          '<p>Return eligibility depends on product condition, category restrictions, and the applicable seller or platform policy window.</p>',
+        updatedAt: today,
+      },
+    } satisfies Record<string, LegalPage>;
   }
 
   private normalizeConfig(raw: Record<string, any>) {
@@ -74,5 +135,50 @@ export class SiteConfigService {
     return Object.entries(social)
       .filter(([, url]) => typeof url === 'string' && url.trim().length > 0)
       .map(([platform, url]) => ({ platform, url: String(url) }));
+  }
+
+  private extractConfiguredLegalPages(raw: Record<string, any>) {
+    const legalPagesCandidate = raw.legalPages ?? raw.legal?.pages ?? {};
+    if (typeof legalPagesCandidate !== 'object' || legalPagesCandidate === null) {
+      return {};
+    }
+
+    return Object.entries(legalPagesCandidate).reduce<Record<string, LegalPage>>(
+      (acc, [slug, rawValue]) => {
+        if (typeof rawValue !== 'object' || rawValue === null) {
+          return acc;
+        }
+
+        const value = rawValue as {
+          title?: unknown;
+          contentHtml?: unknown;
+          content?: unknown;
+          updatedAt?: unknown;
+        };
+
+        const title =
+          typeof value.title === 'string' && value.title.trim().length > 0
+            ? value.title.trim()
+            : `${slug[0]?.toUpperCase() ?? ''}${slug.slice(1)}`;
+        const contentHtml =
+          typeof value.contentHtml === 'string'
+            ? value.contentHtml
+            : typeof value.content === 'string'
+              ? value.content
+              : '';
+        const updatedAt =
+          typeof value.updatedAt === 'string' && value.updatedAt.trim().length > 0
+            ? value.updatedAt
+            : new Date().toISOString();
+
+        if (!contentHtml.trim()) {
+          return acc;
+        }
+
+        acc[slug.toLowerCase()] = { title, contentHtml, updatedAt };
+        return acc;
+      },
+      {},
+    );
   }
 }

@@ -30,10 +30,23 @@ export class Review extends BaseSchema {
 
   @Prop({ default: 0 })
   helpfulCount!: number;
+
+  @Prop({ type: String, default: 'approved' })
+  moderationStatus!: string;
+
+  @Prop({ type: String, default: null })
+  moderationReason!: string | null;
+
+  @Prop({ type: Date, default: null })
+  moderatedAt!: Date | null;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null })
+  moderatedBy!: mongoose.Types.ObjectId | null;
 }
 
 export const ReviewSchema = SchemaFactory.createForClass(Review);
 
 ReviewSchema.index({ product: 1, createdAt: -1 });
 ReviewSchema.index({ product: 1, rating: -1 });
+ReviewSchema.index({ moderationStatus: 1 });
 ReviewSchema.index({ user: 1, product: 1 }, { unique: true });

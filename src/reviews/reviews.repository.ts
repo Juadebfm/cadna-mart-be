@@ -39,6 +39,17 @@ export class ReviewsRepository {
       .exec() as unknown as Promise<Review | null>;
   }
 
+  async findById(id: string): Promise<Review | null> {
+    return this.reviewModel.findById(id).lean().exec() as unknown as Promise<Review | null>;
+  }
+
+  async update(id: string, data: Partial<Review>): Promise<Review | null> {
+    return this.reviewModel
+      .findByIdAndUpdate(id, data, { new: true })
+      .lean()
+      .exec() as unknown as Promise<Review | null>;
+  }
+
   async getSummary(productId: string): Promise<{
     averageRating: number;
     totalReviews: number;
@@ -75,7 +86,7 @@ export class ReviewsRepository {
       case 'lowest_rating':
         return { rating: 1, createdAt: -1 };
       case 'most_helpful':
-        return { createdAt: -1 };
+        return { helpfulCount: -1, createdAt: -1 };
       case 'most_recent':
       default:
         return { createdAt: -1 };

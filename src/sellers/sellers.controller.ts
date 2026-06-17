@@ -21,6 +21,10 @@ import { UpdateSellerDto } from './dto/update-seller.dto';
 import { BankingDetailsDto } from './dto/banking-details.dto';
 import { ProductsService } from '@products/products.service';
 import { ProductQueryDto } from '@products/dto/product-query.dto';
+import { UpdateProductDto } from '@products/dto/update-product.dto';
+import { ParseObjectIdPipe } from '@common/pipes/parse-object-id.pipe';
+import { CreateMyProductDto } from './dto/create-my-product.dto';
+import { AttachProductImagesDto } from './dto/attach-product-images.dto';
 
 @ApiTags('Sellers')
 @Controller('sellers')
@@ -29,6 +33,88 @@ export class SellersController {
     private readonly sellersService: SellersService,
     private readonly productsService: ProductsService,
   ) {}
+
+  @ApiBearerAuth()
+  @AccountTypes(AccountType.SELLER)
+  @Post('onboard')
+  @ApiOperation({ summary: 'Submit seller onboarding (spec alias of POST /sellers)' })
+  async onboardSeller(@Body() dto: CreateSellerDto, @CurrentUser('userId') userId: string) {
+    return this.sellersService.createSeller(dto, userId);
+  }
+
+  @ApiBearerAuth()
+  @AccountTypes(AccountType.SELLER)
+  @Get('me')
+  @ApiOperation({ summary: 'Get your seller profile (spec alias of GET /sellers/my)' })
+  async getMeSeller(@CurrentUser('userId') userId: string) {
+    return this.sellersService.getMySeller(userId);
+  }
+
+  @ApiBearerAuth()
+  @AccountTypes(AccountType.SELLER)
+  @Patch('me')
+  @ApiOperation({ summary: 'Update your seller profile (spec alias of PATCH /sellers/my)' })
+  async updateMeSeller(
+    @Body() dto: UpdateSellerDto,
+    @CurrentUser() user: { userId: string; accountType: string },
+  ) {
+    return this.sellersService.updateMySeller(dto, user);
+  }
+
+  @ApiBearerAuth()
+  @AccountTypes(AccountType.SELLER)
+  @Get('me/products')
+  @ApiOperation({ summary: 'List your own product listings, including inactive ones' })
+  async getMyProducts(@CurrentUser('userId') userId: string, @Query() query: ProductQueryDto) {
+    return this.productsService.findMyProducts(userId, query);
+  }
+
+  @ApiBearerAuth()
+  @AccountTypes(AccountType.SELLER)
+  @Post('me/products')
+  @ApiOperation({ summary: 'Create a product under your seller profile' })
+  async createMyProduct(
+    @Body() dto: CreateMyProductDto,
+    @CurrentUser() user: { userId: string; accountType: string },
+  ) {
+    return this.productsService.createMyProduct(dto, user);
+  }
+
+  @ApiBearerAuth()
+  @AccountTypes(AccountType.SELLER)
+  @Patch('me/products/:id')
+  @ApiOperation({ summary: 'Update one of your own product listings' })
+  async updateMyProduct(
+    @Param('id', ParseObjectIdPipe) id: string,
+    @Body() dto: UpdateProductDto,
+    @CurrentUser() user: { userId: string; accountType: string },
+  ) {
+    return this.productsService.updateProduct(id, dto, user);
+  }
+
+  @ApiBearerAuth()
+  @AccountTypes(AccountType.SELLER)
+  @Delete('me/products/:id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Withdraw one of your own product listings' })
+  async removeMyProduct(
+    @Param('id', ParseObjectIdPipe) id: string,
+    @CurrentUser() user: { userId: string; accountType: string },
+  ) {
+    await this.productsService.removeProduct(id, user);
+  }
+
+  @ApiBearerAuth()
+  @AccountTypes(AccountType.SELLER)
+  @Post('me/products/:id/images')
+  @ApiOperation({ summary: 'Attach uploaded image URLs to one of your products' })
+  async attachProductImages(
+    @Param('id', ParseObjectIdPipe) id: string,
+    @Body() dto: AttachProductImagesDto,
+    @CurrentUser() user: { userId: string; accountType: string },
+  ) {
+    return this.productsService.attachProductImages(id, dto.images, user);
+  }
 
   @Public()
   @Get(':sellerId/summary')

@@ -2789,6 +2789,354 @@
         ]
       }
     },
+    "/api/v1/sellers/onboard": {
+      "post": {
+        "operationId": "SellersController_onboardSeller_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSellerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Submit seller onboarding (spec alias of POST /sellers)",
+        "tags": [
+          "Sellers"
+        ]
+      }
+    },
+    "/api/v1/sellers/me": {
+      "get": {
+        "operationId": "SellersController_getMeSeller_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get your seller profile (spec alias of GET /sellers/my)",
+        "tags": [
+          "Sellers"
+        ]
+      },
+      "patch": {
+        "operationId": "SellersController_updateMeSeller_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSellerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update your seller profile (spec alias of PATCH /sellers/my)",
+        "tags": [
+          "Sellers"
+        ]
+      }
+    },
+    "/api/v1/sellers/me/products": {
+      "get": {
+        "operationId": "SellersController_getMyProducts_v1",
+        "parameters": [
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Search query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "section",
+            "required": false,
+            "in": "query",
+            "description": "Section filter (best_deals, recommended, top_sellers, new_arrivals)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "category",
+            "required": false,
+            "in": "query",
+            "description": "Category slug",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "subCategory",
+            "required": false,
+            "in": "query",
+            "description": "Sub-category slug",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "brand",
+            "required": false,
+            "in": "query",
+            "description": "Single brand name (one brand filter at a time)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "minPrice",
+            "required": false,
+            "in": "query",
+            "description": "Minimum price",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "maxPrice",
+            "required": false,
+            "in": "query",
+            "description": "Maximum price",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "inStock",
+            "required": false,
+            "in": "query",
+            "description": "In stock only",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "ratingGte",
+            "required": false,
+            "in": "query",
+            "description": "Minimum rating",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "relevance",
+              "type": "string",
+              "enum": [
+                "relevance",
+                "price_asc",
+                "price_desc",
+                "newest",
+                "popular"
+              ]
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maximum": 100,
+              "default": 10,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List your own product listings, including inactive ones",
+        "tags": [
+          "Sellers"
+        ]
+      },
+      "post": {
+        "operationId": "SellersController_createMyProduct_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMyProductDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a product under your seller profile",
+        "tags": [
+          "Sellers"
+        ]
+      }
+    },
+    "/api/v1/sellers/me/products/{id}": {
+      "patch": {
+        "operationId": "SellersController_updateMyProduct_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProductDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update one of your own product listings",
+        "tags": [
+          "Sellers"
+        ]
+      },
+      "delete": {
+        "operationId": "SellersController_removeMyProduct_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Withdraw one of your own product listings",
+        "tags": [
+          "Sellers"
+        ]
+      }
+    },
+    "/api/v1/sellers/me/products/{id}/images": {
+      "post": {
+        "operationId": "SellersController_attachProductImages_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AttachProductImagesDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Attach uploaded image URLs to one of your products",
+        "tags": [
+          "Sellers"
+        ]
+      }
+    },
     "/api/v1/sellers/{sellerId}/summary": {
       "get": {
         "operationId": "SellersController_getSummary_v1",
@@ -3233,6 +3581,111 @@
         "summary": "Mark a review as helpful (no auth required)",
         "tags": [
           "Reviews"
+        ]
+      }
+    },
+    "/api/v1/reviews/{id}": {
+      "patch": {
+        "operationId": "UserReviewsController_updateReview_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateReviewDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Edit your own review",
+        "tags": [
+          "Reviews"
+        ]
+      },
+      "delete": {
+        "operationId": "UserReviewsController_deleteReview_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete your own review",
+        "tags": [
+          "Reviews"
+        ]
+      }
+    },
+    "/api/v1/admin/reviews/{id}/moderate": {
+      "post": {
+        "operationId": "AdminReviewsController_moderateReview_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModerateReviewDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Moderate a review by approving or hiding it",
+        "tags": [
+          "Admin — Reviews"
         ]
       }
     },
@@ -4122,6 +4575,45 @@
         ]
       }
     },
+    "/api/v1/config/public": {
+      "get": {
+        "operationId": "PublicConfigController_getPublicConfig_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Get public application configuration (spec alias)",
+        "tags": [
+          "Site Config"
+        ]
+      }
+    },
+    "/api/v1/legal/{slug}": {
+      "get": {
+        "operationId": "LegalPagesController_getLegalPage_v1",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Fetch a public legal page by slug",
+        "tags": [
+          "Legal"
+        ]
+      }
+    },
     "/api/v1/upload": {
       "post": {
         "operationId": "UploadController_upload_v1",
@@ -4161,9 +4653,104 @@
             "bearer": []
           }
         ],
-        "summary": "Upload an image to Cloudflare R2 (Seller or Admin)",
+        "summary": "Upload an image to Cloudinary (legacy route for Seller or Admin)",
         "tags": [
           "Upload"
+        ]
+      }
+    },
+    "/api/v1/media/upload": {
+      "post": {
+        "operationId": "MediaController_upload_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Upload an image to Cloudinary through the API",
+        "tags": [
+          "Media"
+        ]
+      }
+    },
+    "/api/v1/media/upload/presigned": {
+      "post": {
+        "operationId": "MediaController_createPresignedUpload_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestPresignedUploadDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create signed Cloudinary upload parameters for direct client upload. Use the returned media id for DELETE /media/{id} by base64url-encoding the resulting publicId.",
+        "tags": [
+          "Media"
+        ]
+      }
+    },
+    "/api/v1/media/{encodedPublicId}": {
+      "delete": {
+        "operationId": "MediaController_deleteMedia_v1",
+        "parameters": [
+          {
+            "name": "encodedPublicId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete a media asset by passing its base64url-encoded Cloudinary publicId",
+        "tags": [
+          "Media"
         ]
       }
     },
@@ -4182,6 +4769,34 @@
           }
         ],
         "summary": "List all products (including inactive)",
+        "tags": [
+          "Admin — Products"
+        ]
+      },
+      "post": {
+        "operationId": "AdminProductsController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProductDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a product from the admin namespace",
         "tags": [
           "Admin — Products"
         ]
@@ -4277,6 +4892,113 @@
           }
         ],
         "summary": "Toggle product active/inactive status",
+        "tags": [
+          "Admin — Products"
+        ]
+      }
+    },
+    "/api/v1/admin/products/{id}/approve": {
+      "post": {
+        "operationId": "AdminProductsController_approve_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Approve a product listing",
+        "tags": [
+          "Admin — Products"
+        ]
+      }
+    },
+    "/api/v1/admin/products/{id}/reject": {
+      "post": {
+        "operationId": "AdminProductsController_reject_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RejectProductDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reject a product listing",
+        "tags": [
+          "Admin — Products"
+        ]
+      }
+    },
+    "/api/v1/admin/products/{id}/feature": {
+      "post": {
+        "operationId": "AdminProductsController_feature_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FeatureProductDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Feature or unfeature a product in the storefront rail",
         "tags": [
           "Admin — Products"
         ]
@@ -4798,6 +5520,36 @@
         "summary": "List brands with product counts",
         "tags": [
           "Brands"
+        ]
+      }
+    },
+    "/api/v1/version": {
+      "get": {
+        "operationId": "SystemController_getVersion_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Get build/version metadata",
+        "tags": [
+          "System"
+        ]
+      }
+    },
+    "/api/v1/geo/cities": {
+      "get": {
+        "operationId": "SystemController_getCities_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "List supported delivery cities",
+        "tags": [
+          "System"
         ]
       }
     }
@@ -6040,6 +6792,136 @@
           }
         }
       },
+      "CreateMyProductDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "brand": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "categoryId": {
+            "type": "string"
+          },
+          "subCategoryId": {
+            "type": "string"
+          },
+          "priceAmount": {
+            "type": "number",
+            "description": "Selling price in NGN (kobo or naira depending on convention)"
+          },
+          "originalPriceAmount": {
+            "type": "number",
+            "description": "Original/compare-at price (if on sale)"
+          },
+          "discountPercent": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "thumbnailUrl": {
+            "type": "string"
+          },
+          "gallery": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GalleryImageDto"
+            }
+          },
+          "variantAxes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VariantAxisDto"
+            }
+          },
+          "variants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductVariantDto"
+            }
+          },
+          "defaultVariantId": {
+            "type": "string"
+          },
+          "descriptionHtml": {
+            "type": "string"
+          },
+          "tabs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductTabDto"
+            }
+          },
+          "specifications": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SpecificationDto"
+            }
+          },
+          "breadcrumbs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BreadcrumbDto"
+            }
+          },
+          "badge": {
+            "type": "string"
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "inventoryStatus": {
+            "type": "string"
+          },
+          "returnPolicy": {
+            "type": "object",
+            "description": "Return policy for this product"
+          }
+        },
+        "required": [
+          "name",
+          "priceAmount"
+        ]
+      },
+      "ProductImageInputDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "alt": {
+            "type": "object",
+            "nullable": true
+          }
+        },
+        "required": [
+          "url"
+        ]
+      },
+      "AttachProductImagesDto": {
+        "type": "object",
+        "properties": {
+          "images": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductImageInputDto"
+            }
+          }
+        },
+        "required": [
+          "images"
+        ]
+      },
       "BankingDetailsDto": {
         "type": "object",
         "properties": {
@@ -6080,6 +6962,40 @@
         },
         "required": [
           "rating"
+        ]
+      },
+      "UpdateReviewDto": {
+        "type": "object",
+        "properties": {
+          "rating": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "title": {
+            "type": "object"
+          },
+          "comment": {
+            "type": "object"
+          }
+        }
+      },
+      "ModerateReviewDto": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "approve",
+              "hide"
+            ]
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "action"
         ]
       },
       "AddCartItemDto": {
@@ -6140,6 +7056,44 @@
         "required": [
           "email"
         ]
+      },
+      "RequestPresignedUploadDto": {
+        "type": "object",
+        "properties": {
+          "folder": {
+            "type": "string",
+            "enum": [
+              "products",
+              "stores",
+              "categories",
+              "general"
+            ],
+            "default": "general"
+          }
+        }
+      },
+      "RejectProductDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "description": "Optional moderation reason saved with the rejected product"
+          }
+        }
+      },
+      "FeatureProductDto": {
+        "type": "object",
+        "properties": {
+          "featured": {
+            "type": "boolean",
+            "description": "Set to false to remove the product from the featured rail",
+            "default": true
+          },
+          "badge": {
+            "type": "object",
+            "description": "Optional badge override. Defaults to \"Featured\" when featuring a product."
+          }
+        }
       },
       "CreateCategoryDto": {
         "type": "object",
