@@ -84,4 +84,35 @@ export class OrdersRepository {
       .lean()
       .exec() as unknown as Promise<Order | null>;
   }
+
+  async findBySellerId(
+    sellerId: string,
+    page: number,
+    limit: number,
+  ): Promise<{ items: Order[]; totalItems: number }> {
+    const filter: FilterQuery<Order> = {
+      'items.sellerId': sellerId,
+      deletedAt: null,
+    };
+    const skip = (page - 1) * limit;
+    const [items, totalItems] = await Promise.all([
+      this.orderModel.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean().exec(),
+      this.orderModel.countDocuments(filter).exec(),
+    ]);
+    return { items: items as unknown as Order[], totalItems };
+  }
+
+  async findAll(
+    page: number,
+    limit: number,
+    filters: FilterQuery<Order> = {},
+  ): Promise<{ items: Order[]; totalItems: number }> {
+    const filter: FilterQuery<Order> = { ...filters, deletedAt: null };
+    const skip = (page - 1) * limit;
+    const [items, totalItems] = await Promise.all([
+      this.orderModel.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean().exec(),
+      this.orderModel.countDocuments(filter).exec(),
+    ]);
+    return { items: items as unknown as Order[], totalItems };
+  }
 }
