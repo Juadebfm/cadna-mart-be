@@ -107,12 +107,14 @@ export class UsersController {
   }
 
   @Get(':id')
+  @AccountTypes(AccountType.ADMIN)
   @ApiOperation({ summary: 'Get user by ID' })
   async findOne(@Param('id', ParseObjectIdPipe) id: string) {
     return this.usersService.findById(id);
   }
 
   @Patch(':id')
+  @AccountTypes(AccountType.ADMIN)
   @ApiOperation({ summary: 'Update user' })
   async update(@Param('id', ParseObjectIdPipe) id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(id, updateUserDto);
