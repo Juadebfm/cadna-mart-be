@@ -189,6 +189,49 @@ export class OrdersService {
     return this.toDto(updated);
   }
 
+  async findBySeller(
+    sellerId: string,
+    query: OrderQueryDto,
+  ): Promise<{ items: object[]; pagination: object }> {
+    const { items, totalItems } = await this.ordersRepository.findBySellerId(
+      sellerId,
+      query.page,
+      query.limit,
+    );
+    const totalPages = Math.ceil(totalItems / query.limit);
+    return {
+      items: items.map((o) => this.toDto(o)),
+      pagination: { page: query.page, limit: query.limit, totalItems, totalPages },
+    };
+  }
+
+  async findAllAdmin(
+    page: number,
+    limit: number,
+    status?: string,
+  ): Promise<{ items: object[]; pagination: object }> {
+    const filters = status ? { status } : {};
+    const { items, totalItems } = await this.ordersRepository.findAll(page, limit, filters);
+    const totalPages = Math.ceil(totalItems / limit);
+    return {
+      items: items.map((o) => this.toDto(o)),
+      pagination: { page, limit, totalItems, totalPages },
+    };
+  }
+
+  async adminStatusTransition(
+    orderId: string,
+    status: OrderStatus,
+    note: string | undefined,
+  ): Promise<object> {
+    const order = await this.ordersRepository.findById(orderId);
+    if (!order) throw new NotFoundException('Order not found');
+    await this.ordersRepository.updateStatus(orderId, status, note);
+    const updated = await this.ordersRepository.findById(orderId);
+    if (!updated) throw new NotFoundException('Order not found after update');
+    return this.toDto(updated);
+  }
+
   async updatePaymentStatus(
     orderId: string,
     status: OrderPaymentStatus,

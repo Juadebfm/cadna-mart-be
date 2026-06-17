@@ -7,10 +7,13 @@ import { Product, ProductSchema } from '@products/schemas/product.schema';
 import { SellersRepository } from './sellers.repository';
 import { SellersService } from './sellers.service';
 import { SellersController } from './sellers.controller';
+import { SellerPostOrderController } from './seller-post-order.controller';
 import { ProductsModule } from '@products/products.module';
 import { UsersModule } from '@users/users.module';
 import { OtpModule } from '@otp/otp.module';
 import { EmailModule } from '@email/email.module';
+import { OrdersModule } from '@orders/orders.module';
+import { ReturnsModule } from '@returns/returns.module';
 
 @Module({
   imports: [
@@ -24,8 +27,10 @@ import { EmailModule } from '@email/email.module';
     UsersModule,
     OtpModule,
     EmailModule,
+    OrdersModule,
+    ReturnsModule,
   ],
-  controllers: [SellersController],
+  controllers: [SellersController, SellerPostOrderController],
   providers: [SellersRepository, SellersService],
   exports: [SellersService, SellersRepository],
 })

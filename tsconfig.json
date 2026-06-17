@@ -52,7 +52,10 @@
       "@collections/*": ["src/collections/*"],
       "@orders/*": ["src/orders/*"],
       "@checkout/*": ["src/checkout/*"],
-      "@payments/*": ["src/payments/*"]
+      "@payments/*": ["src/payments/*"],
+      "@returns/*": ["src/returns/*"],
+      "@logistics/*": ["src/logistics/*"],
+      "@promo-slots/*": ["src/promo-slots/*"]
     }
   }
 }

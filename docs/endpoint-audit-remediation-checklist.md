@@ -58,11 +58,16 @@ Source of truth: [docs/endpoint-audit.csv](./endpoint-audit.csv)
 
 ## Phase 3 - Fulfilment And Seller Ops
 
-- [ ] Rows 88-95 - Returns and refunds
-- [ ] Rows 96-109 - Logistics
-- [ ] Rows 113-126 - Seller post-order workflows
-- [ ] Rows 150-176 - Admin orders, ops, and delivery config
-- [ ] Rows 267-292 - Promotional slots
+- [x] Rows 88-95 - Returns and refunds
+  New `src/returns/` module. `POST /returns`, `GET /returns`, `GET /returns/:id`, `PATCH /returns/:id/cancel`, `POST /returns/:id/evidence`, `GET /returns/eligibility/:orderItemId`. Refund side: `POST /refunds/:returnId/process` (admin), `GET /refunds/:id`. Return eligibility window is 7 days; supplier-specific overrides deferred.
+- [x] Rows 96-109 - Logistics
+  New `src/logistics/` module. `POST /logistics/quote`, `POST /logistics/coverage/check`, `POST /logistics/booking`, `GET /logistics/booking/:id`, `POST /logistics/booking/:id/cancel`, `POST /logistics/booking/:id/retry`, `GET /logistics/tracking/:bookingId`, `POST /logistics/pod`, `POST /webhooks/logistics/uber`, `POST /webhooks/logistics/bolt`, `POST /logistics/pickup/{ready,verify,complete,fail}`. Uber/Bolt courier integrations deferred — provider partnerships pending. In-house provider used for V1.
+- [x] Rows 113-126 - Seller post-order workflows
+  New `src/sellers/seller-post-order.controller.ts`. `POST /sellers/me/agreement`, `POST /sellers/me/kyc` (KYC partner deferred, email-only acknowledgement), `GET /sellers/me/orders`, `POST /sellers/me/orders/:id/acknowledge`, `POST /sellers/me/orders/:id/dispatch`, `GET /sellers/me/returns`, `POST /sellers/me/returns/:id/decision`, `GET /sellers/me/payouts` (Paystack Connect deferred), `GET /sellers/me/fees`.
+- [x] Rows 150-176 - Admin orders, ops, and delivery config
+  New `src/admin/admin-orders.controller.ts`: `GET /admin/orders`, `GET /admin/orders/:id`, `PATCH /admin/orders/:id/status`, `POST /admin/orders/:id/intervene`, `POST /admin/orders/:id/reassign`, `GET /admin/returns`, `POST /admin/returns/:id/decision`, `GET /admin/refunds`, `POST /admin/refunds/:id/approve`. New `src/admin/admin-delivery.controller.ts`: `GET/PATCH /admin/delivery/modes/:id`, `GET /admin/delivery/providers`, `PATCH /admin/delivery/providers/order`, `GET/PATCH /admin/delivery/coverage`.
+- [x] Rows 267-292 - Promotional slots
+  New `src/promo-slots/` module with four schemas (SlotType, DurationTier, PromoSlot, SlotBooking). Seller routes: `GET /promo-slots/available`, `GET /promo-slots/types`, `GET /promo-slots/:slotId`, `POST /promo-slots/:slotId/reserve`, `POST /promo-slots/bookings`, `GET /promo-slots/bookings`, `GET /promo-slots/bookings/:id`, `POST /promo-slots/bookings/:id/pay`, `POST /promo-slots/bookings/:id/cancel`, `GET /promo-slots/bookings/:id/performance`. Admin routes: full CRUD for slot types and duration tiers, capacity config, slot generation, booking management (suspend/refund), revenue and utilization reports.
 
 ## Phase 4 - Platform Expansion
 
