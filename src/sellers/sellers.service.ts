@@ -10,9 +10,15 @@ import { SellersRepository } from './sellers.repository';
 import { CreateSellerDto } from './dto/create-seller.dto';
 import { UpdateSellerDto } from './dto/update-seller.dto';
 import { BankingDetailsDto } from './dto/banking-details.dto';
+import { OnboardSellerDto } from './dto/onboard-seller.dto';
 import { AccountType } from '@users/enums/account-type.enum';
 import { Product } from '@products/schemas/product.schema';
 import { SellerProfile } from './schemas/seller-profile.schema';
+import { UsersService } from '@users/users.service';
+import { OtpService } from '@otp/otp.service';
+import { OtpType } from '@otp/enums/otp-type.enum';
+import { EmailService } from '@email/email.service';
+import { ConfigService } from '@config/config.service';
 
 @Injectable()
 export class SellersService {
@@ -20,7 +26,54 @@ export class SellersService {
     private readonly sellersRepository: SellersRepository,
     @InjectModel(Product.name) private readonly productModel: Model<Product>,
     @InjectModel(SellerProfile.name) private readonly sellerProfileModel: Model<SellerProfile>,
+    private readonly usersService: UsersService,
+    private readonly otpService: OtpService,
+    private readonly emailService: EmailService,
+    private readonly configService: ConfigService,
   ) {}
+
+  async onboardPublic(dto: OnboardSellerDto): Promise<{ message: string }> {
+    const existing = await this.usersService.findByEmail(dto.email).catch(() => null);
+    if (existing) throw new ConflictException('An account with this email already exists');
+
+    const user = await this.usersService.create({
+      email: dto.email,
+      password: dto.password,
+      firstName: dto.firstName,
+      lastName: dto.lastName,
+      accountType: AccountType.SELLER,
+      phoneNumber: dto.phoneNumber,
+      termsAccepted: dto.termsAccepted,
+    });
+
+    const userId = (user as unknown as { _id: { toString(): string } })._id.toString();
+
+    await this.sellerProfileModel.create({
+      user: userId,
+      businessName: dto.businessName,
+      businessRegistrationNumber: dto.businessRegistrationNumber ?? null,
+      businessAddress: dto.businessAddress,
+      businessType: dto.businessType,
+      bankName: null,
+      bankAccountNumber: null,
+      bankAccountName: null,
+      bankDetailsCompletedAt: null,
+      isApproved: false,
+    });
+
+    const code = await this.otpService.generateAndStore(dto.email, OtpType.EMAIL_VERIFICATION);
+    await Promise.all([
+      this.emailService.sendVerificationCode(dto.email, code),
+      this.emailService.sendSellerWelcome(dto.email, dto.firstName, dto.businessName),
+      this.emailService.sendAdminNewSellerAlert(
+        this.configService.email.fromAddress,
+        dto.email,
+        dto.businessName,
+      ),
+    ]);
+
+    return { message: 'Seller account created. Please verify your email to continue.' };
+  }
 
   async createSeller(dto: CreateSellerDto, ownerId: string): Promise<object> {
     const existing = await this.sellersRepository.findByOwner(ownerId);
