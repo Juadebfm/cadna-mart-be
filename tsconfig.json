@@ -49,7 +49,10 @@
       "@auth-events/*": ["src/auth-events/*"],
       "@data-requests/*": ["src/data-requests/*"],
       "@brands/*": ["src/brands/*"],
-      "@collections/*": ["src/collections/*"]
+      "@collections/*": ["src/collections/*"],
+      "@orders/*": ["src/orders/*"],
+      "@checkout/*": ["src/checkout/*"],
+      "@payments/*": ["src/payments/*"]
     }
   }
 }
