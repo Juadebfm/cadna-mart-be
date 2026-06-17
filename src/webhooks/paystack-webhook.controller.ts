@@ -6,6 +6,7 @@ import { Public } from '@auth/decorators/public.decorator';
 import { ConfigService } from '@config/config.service';
 import { LoggerService } from '@logger/logger.service';
 import { DealsService } from '../deals/deals.service';
+import { PaymentsService } from '../payments/payments.service';
 
 @ApiTags('Webhooks')
 @Controller('webhooks')
@@ -14,6 +15,7 @@ export class PaystackWebhookController {
     private readonly configService: ConfigService,
     private readonly logger: LoggerService,
     private readonly dealsService: DealsService,
+    private readonly paymentsService: PaymentsService,
   ) {}
 
   @Public()
@@ -54,6 +56,7 @@ export class PaystackWebhookController {
 
     try {
       await this.dealsService.handlePaystackEvent(req.body);
+      await this.paymentsService.handleOrderPaystackEvent(req.body);
       return res.status(200).json({ received: true });
     } catch (error) {
       this.logger.error(

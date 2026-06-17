@@ -122,7 +122,10 @@
       "^@common/(.*)$": "<rootDir>/common/$1",
       "^@logger/(.*)$": "<rootDir>/logger/$1",
       "^@health/(.*)$": "<rootDir>/health/$1",
-      "^@shared/(.*)$": "<rootDir>/shared/$1"
+      "^@shared/(.*)$": "<rootDir>/shared/$1",
+      "^@orders/(.*)$": "<rootDir>/orders/$1",
+      "^@checkout/(.*)$": "<rootDir>/checkout/$1",
+      "^@payments/(.*)$": "<rootDir>/payments/$1"
     }
   },
   "lint-staged": {
