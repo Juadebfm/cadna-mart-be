@@ -71,7 +71,9 @@ Source of truth: [docs/endpoint-audit.csv](./endpoint-audit.csv)
 
 ## Phase 4 - Platform Expansion
 
-- [ ] Rows 62-78 - Stripe, wallet, and pay-on-delivery
-- [ ] Rows 127-132 - Supplier module
-- [ ] Rows 177-211 - Reporting, compliance, support, and notifications
-- [ ] Rows 217-266 - Partners and rewards
+- [ ] Rows 62-78 - Stripe, wallet, and pay-on-delivery (Phase 4b)
+- [x] Rows 127-132 - Supplier module
+  New `src/suppliers/` module (AccountType.SUPPLIER). Endpoints: `GET /suppliers/me/products`, `PATCH /suppliers/me/products/:id/stock`, `GET /suppliers/me/orders`, `POST /suppliers/me/orders/:id/ready`, `POST /suppliers/me/orders/:id/dispatch`, `GET /suppliers/me/policies`. SUPPLIER enum value added to AccountType.
+- [x] Rows 177-211 - Reporting, compliance, support, and notifications
+  Reporting: `src/admin/admin-reporting.controller.ts` — `GET /admin/reports/sales|gmv|orders|refunds|sellers|products|delivery|export` (8 endpoints, MongoDB aggregation). Compliance: `src/admin/admin-compliance.controller.ts` — audit-log stubs, data-request processing (real DB), retention policy, RBAC stubs, VAT-record stub, legal-page management via SiteConfig (12 endpoints). Support: `src/support/` — `POST /support/tickets` (Public), `GET /support/tickets` (user), `GET/POST /support/tickets/:id/messages`, admin assign/escalate/close, `POST /webhooks/support/whatsapp/inbound` stub. Notifications: `src/notifications/` — `GET /notifications`, `PATCH /notifications/:id/read`, `POST /notifications/preferences`, `POST /admin/notifications/broadcast`, `POST /webhooks/sms/delivery`, `POST /webhooks/whatsapp/delivery`.
+- [ ] Rows 217-266 - Partners and rewards (Phase 4b)

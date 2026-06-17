@@ -55,7 +55,10 @@
       "@payments/*": ["src/payments/*"],
       "@returns/*": ["src/returns/*"],
       "@logistics/*": ["src/logistics/*"],
-      "@promo-slots/*": ["src/promo-slots/*"]
+      "@promo-slots/*": ["src/promo-slots/*"],
+      "@suppliers/*": ["src/suppliers/*"],
+      "@support/*": ["src/support/*"],
+      "@notifications/*": ["src/notifications/*"]
     }
   }
 }
