@@ -1,11 +1,13 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { randomUUID } from 'crypto';
 import { ProductsRepository } from './products.repository';
 import { ProductQueryDto } from './dto/product-query.dto';
 import { CategoriesService } from '@categories/categories.service';
 import { Product } from './schemas/product.schema';
 import { SellerProfile } from '@sellers/schemas/seller-profile.schema';
+import { Seller } from '@sellers/schemas/seller.schema';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { AccountType } from '@users/enums/account-type.enum';
@@ -16,6 +18,7 @@ export class ProductsService {
     private readonly productsRepository: ProductsRepository,
     private readonly categoriesService: CategoriesService,
     @InjectModel(SellerProfile.name) private readonly sellerProfileModel: Model<SellerProfile>,
+    @InjectModel(Seller.name) private readonly sellerModel: Model<Seller>,
   ) {}
 
   async findAll(query: ProductQueryDto) {
@@ -82,6 +85,14 @@ export class ProductsService {
     return this.toDetail(product, variantId);
   }
 
+  async resolveProductId(idOrSlug: string): Promise<string> {
+    const isObjectId = /^[a-f\d]{24}$/i.test(idOrSlug);
+    if (isObjectId) return idOrSlug;
+    const product = await this.productsRepository.findBySlug(idOrSlug);
+    if (!product) throw new NotFoundException('Product not found');
+    return (product as unknown as { _id: { toString(): string } })._id.toString();
+  }
+
   async getVariants(idOrSlug: string) {
     const isObjectId = /^[a-f\d]{24}$/i.test(idOrSlug);
     const product = isObjectId
@@ -124,14 +135,6 @@ export class ProductsService {
     };
   }
 
-  async resolveProductId(idOrSlug: string): Promise<string> {
-    const isObjectId = /^[a-f\d]{24}$/i.test(idOrSlug);
-    if (isObjectId) return idOrSlug;
-    const product = await this.productsRepository.findBySlug(idOrSlug);
-    if (!product) throw new NotFoundException('Product not found');
-    return (product as unknown as { _id: { toString(): string } })._id.toString();
-  }
-
   async findRelated(idOrSlug: string, limit: number) {
     const id = await this.resolveProductId(idOrSlug);
     const items = await this.productsRepository.findRelated(id, limit);
@@ -153,6 +156,7 @@ export class ProductsService {
     const { items, totalItems } = await this.productsRepository.findBySellerWithPagination(
       sellerId,
       query,
+      { includeInactive: false },
     );
 
     const totalPages = Math.ceil(totalItems / query.limit);
@@ -254,6 +258,9 @@ export class ProductsService {
       sections: dto.sections ?? [],
       inventoryStatus: dto.inventoryStatus ?? 'in_stock',
       isActive: dto.isActive ?? true,
+      moderationStatus: 'approved',
+      moderationReason: null,
+      moderatedAt: null,
       seller: dto.sellerId as any,
       category: (dto.categoryId as any) ?? null,
       subCategory: (dto.subCategoryId as any) ?? null,
@@ -264,7 +271,9 @@ export class ProductsService {
       deletedAt: null,
     } as any);
 
-    return this.toCard(product as any);
+    const createdId = (product as unknown as { _id: { toString(): string } })._id.toString();
+    const populated = await this.productsRepository.findByIdWithSeller(createdId);
+    return this.toCard((populated ?? product) as any);
   }
 
   async updateProduct(
@@ -331,7 +340,8 @@ export class ProductsService {
 
     const updated = await this.productsRepository.update(id, updates as any);
     if (!updated) throw new NotFoundException('Product not found');
-    return this.toCard(updated as any);
+    const populated = await this.productsRepository.findByIdWithSeller(id);
+    return this.toCard((populated ?? updated) as any);
   }
 
   async removeProduct(
@@ -386,6 +396,203 @@ export class ProductsService {
           }
         : null,
     };
+  }
+
+  toManageCard(product: Product) {
+    return {
+      ...this.toCard(product),
+      isActive: product.isActive,
+      sections: product.sections ?? [],
+      moderationStatus: (product as any).moderationStatus ?? 'approved',
+      moderationReason: (product as any).moderationReason ?? null,
+      createdAt: product.createdAt,
+      updatedAt: product.updatedAt,
+    };
+  }
+
+  async findMyProducts(ownerId: string, query: ProductQueryDto) {
+    const seller = await this.getSellerByOwner(ownerId);
+    const sellerId = (seller as unknown as { _id: { toString(): string } })._id.toString();
+    const { items, totalItems } = await this.productsRepository.findBySellerWithPagination(
+      sellerId,
+      query,
+      { includeInactive: true },
+    );
+    const totalPages = Math.ceil(totalItems / query.limit);
+
+    return {
+      seller: {
+        id: sellerId,
+        name: seller.name,
+        slug: seller.slug,
+        logoUrl: seller.logoUrl ?? null,
+        isVerified: seller.isVerified ?? false,
+      },
+      items: items.map((product) => this.toManageCard(product)),
+      pagination: {
+        page: query.page,
+        limit: query.limit,
+        totalItems,
+        totalPages,
+        hasNextPage: query.page < totalPages,
+        hasPrevPage: query.page > 1,
+      },
+    };
+  }
+
+  async createMyProduct(
+    dto: Omit<CreateProductDto, 'sellerId'>,
+    currentUser: { userId: string; accountType: string },
+  ) {
+    const seller = await this.getSellerByOwner(currentUser.userId);
+    const sellerId = (seller as unknown as { _id: { toString(): string } })._id.toString();
+    const created = (await this.createProduct({ ...dto, sellerId }, currentUser)) as unknown as {
+      id?: string;
+    };
+
+    if (!created.id) {
+      return created;
+    }
+
+    const populated = await this.productsRepository.findByIdWithSeller(created.id);
+    return populated ? this.toManageCard(populated) : created;
+  }
+
+  async attachProductImages(
+    id: string,
+    images: Array<{ url: string; alt?: string | null }>,
+    currentUser: { userId: string; accountType: string },
+  ) {
+    const product = await this.getOwnedProduct(id, currentUser);
+    const currentGallery = product.gallery ?? [];
+    const nextGallery = [
+      ...currentGallery,
+      ...images.map((image) => ({
+        id: randomUUID(),
+        url: image.url,
+        alt: image.alt ?? null,
+      })),
+    ];
+
+    const updates: Record<string, unknown> = { gallery: nextGallery };
+    if (!product.thumbnailUrl && nextGallery.length > 0) {
+      updates.thumbnailUrl = nextGallery[0].url;
+    }
+
+    const updated = await this.productsRepository.update(id, updates as any);
+    if (!updated) {
+      throw new NotFoundException('Product not found');
+    }
+
+    const populated = await this.productsRepository.findByIdWithSeller(id);
+    return populated ? this.toManageCard(populated) : this.toManageCard(updated as any);
+  }
+
+  async approveProduct(id: string) {
+    await this.assertProductExists(id);
+
+    const updated = await this.productsRepository.update(id, {
+      isActive: true,
+      moderationStatus: 'approved',
+      moderationReason: null,
+      moderatedAt: new Date(),
+    } as any);
+    if (!updated) {
+      throw new NotFoundException('Product not found');
+    }
+
+    const populated = await this.productsRepository.findByIdWithSeller(id);
+    return populated ? this.toManageCard(populated) : this.toManageCard(updated as any);
+  }
+
+  async rejectProduct(id: string, reason?: string | null) {
+    await this.assertProductExists(id);
+
+    const updated = await this.productsRepository.update(id, {
+      isActive: false,
+      moderationStatus: 'rejected',
+      moderationReason: reason?.trim() ? reason.trim() : null,
+      moderatedAt: new Date(),
+    } as any);
+    if (!updated) {
+      throw new NotFoundException('Product not found');
+    }
+
+    const populated = await this.productsRepository.findByIdWithSeller(id);
+    return populated ? this.toManageCard(populated) : this.toManageCard(updated as any);
+  }
+
+  async featureProduct(id: string, featured = true, badge?: string | null) {
+    const product = await this.productsRepository.findById(id);
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+
+    const sections = new Set(product.sections ?? []);
+    if (featured) {
+      sections.add('featured');
+    } else {
+      sections.delete('featured');
+    }
+
+    const updates: Record<string, unknown> = {
+      sections: [...sections],
+    };
+
+    if (featured) {
+      updates.badge = badge?.trim() ? badge.trim() : (product.badge ?? 'Featured');
+    } else if (badge !== undefined) {
+      updates.badge = badge;
+    } else if (product.badge === 'Featured') {
+      updates.badge = null;
+    }
+
+    const updated = await this.productsRepository.update(id, updates as any);
+    if (!updated) {
+      throw new NotFoundException('Product not found');
+    }
+
+    const populated = await this.productsRepository.findByIdWithSeller(id);
+    return populated ? this.toManageCard(populated) : this.toManageCard(updated as any);
+  }
+
+  private async getSellerByOwner(ownerId: string) {
+    const seller = await this.sellerModel
+      .findOne({ owner: ownerId, deletedAt: null })
+      .lean()
+      .exec();
+    if (!seller) {
+      throw new NotFoundException('Seller profile not found');
+    }
+
+    return seller as unknown as Seller;
+  }
+
+  private async getOwnedProduct(
+    id: string,
+    currentUser: { userId: string; accountType: string },
+  ): Promise<Product> {
+    const product = await this.productsRepository.findByIdWithSellerOwner(id);
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+
+    if (currentUser.accountType !== AccountType.ADMIN) {
+      const sellerOwner = (product.seller as any)?.owner?.toString();
+      if (sellerOwner !== currentUser.userId) {
+        throw new ForbiddenException('You do not own this product');
+      }
+    }
+
+    return product;
+  }
+
+  private async assertProductExists(id: string) {
+    const product = await this.productsRepository.findById(id);
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+    return product;
   }
 
   private toDetail(product: Product, variantId?: string) {

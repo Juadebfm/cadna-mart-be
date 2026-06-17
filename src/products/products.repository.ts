@@ -89,6 +89,14 @@ export class ProductsRepository {
       .exec() as unknown as Promise<Product | null>;
   }
 
+  async findByIdWithSeller(id: string): Promise<Product | null> {
+    return this.productModel
+      .findOne({ _id: id, deletedAt: null })
+      .populate('seller', 'name slug logoUrl isVerified location deliveryTimeRange')
+      .lean()
+      .exec() as unknown as Promise<Product | null>;
+  }
+
   async findBySection(section: string, limit: number): Promise<Product[]> {
     return this.productModel
       .find({ deletedAt: null, isActive: true, sections: section })
@@ -160,8 +168,13 @@ export class ProductsRepository {
   async findBySellerWithPagination(
     sellerId: string,
     query: ProductQueryDto,
+    options?: { includeInactive?: boolean },
   ): Promise<{ items: Product[]; totalItems: number }> {
-    const filter: FilterQuery<Product> = { deletedAt: null, isActive: true, seller: sellerId };
+    const filter: FilterQuery<Product> = { deletedAt: null, seller: sellerId };
+
+    if (!options?.includeInactive) {
+      filter.isActive = true;
+    }
 
     if (query.q) filter.$text = { $search: query.q };
     if (query.minPrice !== undefined || query.maxPrice !== undefined) {

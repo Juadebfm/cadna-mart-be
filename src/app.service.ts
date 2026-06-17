@@ -5,10 +5,12 @@ import { ConfigService } from '@config/config.service';
 export class AppService {
   constructor(private readonly configService: ConfigService) {}
 
+  private readonly version = process.env.APP_VERSION ?? '0.0.1';
+
   getWelcome() {
     return {
       name: this.configService.app.name,
-      version: '1.0.0',
+      version: this.version,
       environment: this.configService.app.nodeEnv,
       docs: `/${this.configService.app.apiPrefix}/docs`,
     };

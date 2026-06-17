@@ -11,6 +11,7 @@ dist/
 .env.prod
 .env.local
 
+zikel-backup-codes.txt
 # IDE
 .idea/
 .vscode/
