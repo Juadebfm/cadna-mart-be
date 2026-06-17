@@ -91,7 +91,7 @@ export class AddressesService {
     if (!address) {
       throw new NotFoundException('Address not found');
     }
-    if ((address as Address).userId.toString() !== userId) {
+    if ((address as unknown as Address).userId.toString() !== userId) {
       throw new ForbiddenException('You do not own this address');
     }
     return address as unknown as Address;

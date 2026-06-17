@@ -14,6 +14,7 @@
     "start:staging": "NODE_ENV=staging node dist/main",
     "start:prod": "NODE_ENV=prod node dist/main",
     "lint": "eslint \"{src,test}/**/*.ts\" --fix",
+    "typecheck": "node --max-old-space-size=8192 ./node_modules/typescript/bin/tsc --noEmit -p tsconfig.typecheck.json",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",

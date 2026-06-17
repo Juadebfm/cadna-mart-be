@@ -25,7 +25,7 @@ export class UploadController {
   @Post()
   @AccountTypes(AccountType.SELLER, AccountType.ADMIN)
   @UseInterceptors(FileInterceptor('file', { limits: { fileSize: 5 * 1024 * 1024 } }))
-  @ApiOperation({ summary: 'Upload an image to Cloudflare R2 (Seller or Admin)' })
+  @ApiOperation({ summary: 'Upload an image to Cloudinary (Seller or Admin)' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
