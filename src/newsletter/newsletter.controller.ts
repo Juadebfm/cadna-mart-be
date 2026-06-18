@@ -4,7 +4,7 @@ import { Public } from '@auth/decorators/public.decorator';
 import { NewsletterService } from './newsletter.service';
 import { SubscribeDto } from './dto/subscribe.dto';
 
-@ApiTags('Newsletter')
+@ApiTags('System')
 @Controller('newsletter')
 export class NewsletterController {
   constructor(private readonly newsletterService: NewsletterService) {}

@@ -6,7 +6,7 @@ import { AccountType } from '@users/enums/account-type.enum';
 
 const DEFERRED_NOTE = 'Stripe integration is deferred pending V1 international payments decision.';
 
-@ApiTags('Payments - Stripe')
+@ApiTags('Commerce')
 @ApiBearerAuth()
 @Controller('payments/stripe')
 export class StripeController {

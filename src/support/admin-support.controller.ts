@@ -7,7 +7,7 @@ import { AccountType } from '@users/enums/account-type.enum';
 import { SupportService } from './support.service';
 import { TicketStatus } from './schemas/support-ticket.schema';
 
-@ApiTags('Admin - Support')
+@ApiTags('Admin')
 @ApiBearerAuth()
 @Controller('admin/support/tickets')
 export class AdminSupportController {

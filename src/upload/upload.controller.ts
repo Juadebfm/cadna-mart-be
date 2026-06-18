@@ -17,7 +17,7 @@ import { UploadService, UploadFolder } from './upload.service';
 
 const ALLOWED_FOLDERS: UploadFolder[] = ['products', 'stores', 'categories', 'general'];
 
-@ApiTags('Upload')
+@ApiTags('System')
 @ApiBearerAuth()
 @Controller('upload')
 export class UploadController {

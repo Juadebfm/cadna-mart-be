@@ -7,7 +7,7 @@ import { ParseObjectIdPipe } from '@common/pipes/parse-object-id.pipe';
 import { ReviewsService } from './reviews.service';
 import { UpdateReviewDto } from './dto/update-review.dto';
 
-@ApiTags('Reviews')
+@ApiTags('Catalogue')
 @ApiBearerAuth()
 @AccountTypes(AccountType.BUYER)
 @Controller('reviews')

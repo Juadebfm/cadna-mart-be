@@ -4,7 +4,7 @@ import { Public } from '@auth/decorators/public.decorator';
 import { CategoriesService } from './categories.service';
 import { CategoryQueryDto } from './dto/category-query.dto';
 
-@ApiTags('Categories')
+@ApiTags('Catalogue')
 @Controller('categories')
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}

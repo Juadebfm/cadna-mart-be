@@ -21,7 +21,7 @@ import { RequestPresignedUploadDto } from './dto/request-presigned-upload.dto';
 
 const ALLOWED_FOLDERS: UploadFolder[] = ['products', 'stores', 'categories', 'general'];
 
-@ApiTags('Media')
+@ApiTags('System')
 @ApiBearerAuth()
 @AccountTypes(AccountType.BUYER, AccountType.SELLER, AccountType.ADMIN)
 @Controller('media')

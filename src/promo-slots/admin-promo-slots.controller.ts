@@ -20,7 +20,7 @@ import { CreateDurationTierDto, UpdateDurationTierDto } from './dto/duration-tie
 import { GenerateSlotsDto, SuspendBookingDto } from './dto/booking.dto';
 import { BookingStatus } from './schemas/slot-booking.schema';
 
-@ApiTags('Admin - Promo Slots')
+@ApiTags('Admin')
 @ApiBearerAuth()
 @AccountTypes(AccountType.ADMIN)
 @Controller('admin/promo-slots')

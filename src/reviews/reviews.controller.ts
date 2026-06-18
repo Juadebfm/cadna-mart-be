@@ -8,7 +8,7 @@ import { ReviewsService } from './reviews.service';
 import { ReviewSortOption } from './reviews.repository';
 import { CreateReviewDto } from './dto/create-review.dto';
 
-@ApiTags('Reviews')
+@ApiTags('Catalogue')
 @Controller('products')
 export class ReviewsController {
   constructor(private readonly reviewsService: ReviewsService) {}

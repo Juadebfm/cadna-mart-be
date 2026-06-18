@@ -4,7 +4,7 @@ import { HealthCheck, HealthCheckService } from '@nestjs/terminus';
 import { MongoHealthIndicator } from './indicators/mongo-health.indicator';
 import { Public } from '@auth/decorators/public.decorator';
 
-@ApiTags('Health')
+@ApiTags('System')
 @Controller('health')
 export class HealthController {
   constructor(

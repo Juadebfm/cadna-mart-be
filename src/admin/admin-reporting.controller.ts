@@ -6,7 +6,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Order } from '@orders/schemas/order.schema';
 
-@ApiTags('Admin - Reporting')
+@ApiTags('Admin')
 @ApiBearerAuth()
 @AccountTypes(AccountType.ADMIN)
 @Controller('admin/reports')

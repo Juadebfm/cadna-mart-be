@@ -1,7 +1,7 @@
 {
   "openapi": "3.0.0",
   "paths": {
-    "/api/v1": {
+    "/": {
       "get": {
         "operationId": "AppController_getRoot_v1",
         "parameters": [],
@@ -16,7 +16,7 @@
         ]
       }
     },
-    "/api/v1/auth/register/email": {
+    "/auth/register/email": {
       "post": {
         "operationId": "AuthController_registerEmail_v1",
         "parameters": [],
@@ -37,11 +37,11 @@
         },
         "summary": "Step 1: Start registration with email",
         "tags": [
-          "Auth"
+          "Authentication"
         ]
       }
     },
-    "/api/v1/auth/register/details": {
+    "/auth/register/details": {
       "post": {
         "operationId": "AuthController_registerDetails_v1",
         "parameters": [],
@@ -62,11 +62,11 @@
         },
         "summary": "Step 2: Provide personal details",
         "tags": [
-          "Auth"
+          "Authentication"
         ]
       }
     },
-    "/api/v1/auth/register/password": {
+    "/auth/register/password": {
       "post": {
         "operationId": "AuthController_registerPassword_v1",
         "parameters": [],
@@ -87,11 +87,11 @@
         },
         "summary": "Step 3: Set password and create account",
         "tags": [
-          "Auth"
+          "Authentication"
         ]
       }
     },
-    "/api/v1/auth/register/verify": {
+    "/auth/register/verify": {
       "post": {
         "operationId": "AuthController_verifyEmail_v1",
         "parameters": [],
@@ -112,11 +112,11 @@
         },
         "summary": "Step 4: Verify email with OTP code",
         "tags": [
-          "Auth"
+          "Authentication"
         ]
       }
     },
-    "/api/v1/auth/register/resend-otp": {
+    "/auth/register/resend-otp": {
       "post": {
         "operationId": "AuthController_resendOtp_v1",
         "parameters": [],
@@ -137,11 +137,11 @@
         },
         "summary": "Resend email verification OTP",
         "tags": [
-          "Auth"
+          "Authentication"
         ]
       }
     },
-    "/api/v1/auth/register/seller/email": {
+    "/auth/register/seller/email": {
       "post": {
         "operationId": "AuthController_registerSellerEmail_v1",
         "parameters": [],
@@ -162,11 +162,11 @@
         },
         "summary": "Seller Step 1: Start registration with email",
         "tags": [
-          "Auth"
+          "Authentication"
         ]
       }
     },
-    "/api/v1/auth/register/seller/profile": {
+    "/auth/register/seller/profile": {
       "post": {
         "operationId": "AuthController_registerSellerProfile_v1",
         "parameters": [],
@@ -187,11 +187,11 @@
         },
         "summary": "Seller Step 2: Provide personal + business details. Bank info is collected separately via POST /sellers/me/banking after login - do not send it here.",
         "tags": [
-          "Auth"
+          "Authentication"
         ]
       }
     },
-    "/api/v1/auth/register/seller/password": {
+    "/auth/register/seller/password": {
       "post": {
         "operationId": "AuthController_registerSellerPassword_v1",
         "parameters": [],
@@ -212,11 +212,11 @@
         },
         "summary": "Seller Step 3: Set password and create account. Bank info is collected separately via POST /sellers/me/banking after login.",
         "tags": [
-          "Auth"
+          "Authentication"
         ]
       }
     },
-    "/api/v1/auth/register/seller/verify": {
+    "/auth/register/seller/verify": {
       "post": {
         "operationId": "AuthController_verifySellerEmail_v1",
         "parameters": [],
@@ -237,11 +237,11 @@
         },
         "summary": "Seller Step 4: Verify email with OTP code",
         "tags": [
-          "Auth"
+          "Authentication"
         ]
       }
     },
-    "/api/v1/auth/register": {
+    "/auth/register": {
       "post": {
         "operationId": "AuthController_register_v1",
         "parameters": [],
@@ -272,11 +272,11 @@
         },
         "summary": "Single-call registration (orchestrates email + details + password steps)",
         "tags": [
-          "Auth"
+          "Authentication"
         ]
       }
     },
-    "/api/v1/auth/otp/request": {
+    "/auth/otp/request": {
       "post": {
         "operationId": "AuthController_otpRequest_v1",
         "parameters": [],
@@ -306,11 +306,11 @@
         },
         "summary": "Send OTP via email for login/email-verification/password-reset",
         "tags": [
-          "Auth"
+          "Authentication"
         ]
       }
     },
-    "/api/v1/auth/otp/verify": {
+    "/auth/otp/verify": {
       "post": {
         "operationId": "AuthController_otpVerify_v1",
         "parameters": [],
@@ -369,11 +369,11 @@
         },
         "summary": "Verify OTP code. Returns JWTs for login, message for verification, resetToken for password-reset",
         "tags": [
-          "Auth"
+          "Authentication"
         ]
       }
     },
-    "/api/v1/auth/otp/resend": {
+    "/auth/otp/resend": {
       "post": {
         "operationId": "AuthController_otpResend_v1",
         "parameters": [],
@@ -403,11 +403,11 @@
         },
         "summary": "Resend OTP (cooldown enforced)",
         "tags": [
-          "Auth"
+          "Authentication"
         ]
       }
     },
-    "/api/v1/auth/clerk/login": {
+    "/auth/clerk/login": {
       "post": {
         "operationId": "AuthController_clerkLogin_v1",
         "parameters": [],
@@ -428,11 +428,11 @@
         },
         "summary": "Login or register via Clerk OAuth (Google/Facebook)",
         "tags": [
-          "Auth"
+          "Authentication"
         ]
       }
     },
-    "/api/v1/auth/login": {
+    "/auth/login": {
       "post": {
         "operationId": "AuthController_login_v1",
         "parameters": [],
@@ -486,11 +486,11 @@
         },
         "summary": "Login with email and password. For passwordless email-OTP login, use /auth/otp/request then /auth/otp/verify.",
         "tags": [
-          "Auth"
+          "Authentication"
         ]
       }
     },
-    "/api/v1/auth/login/password": {
+    "/auth/login/password": {
       "post": {
         "operationId": "AuthController_loginPassword_v1",
         "parameters": [],
@@ -511,11 +511,11 @@
         },
         "summary": "Login with email and password (spec alias of /login)",
         "tags": [
-          "Auth"
+          "Authentication"
         ]
       }
     },
-    "/api/v1/auth/login/verify-2fa": {
+    "/auth/login/verify-2fa": {
       "post": {
         "operationId": "AuthController_verifyLogin2fa_v1",
         "parameters": [],
@@ -536,11 +536,11 @@
         },
         "summary": "Verify 2FA code during login",
         "tags": [
-          "Auth"
+          "Authentication"
         ]
       }
     },
-    "/api/v1/auth/forgot-password": {
+    "/auth/forgot-password": {
       "post": {
         "operationId": "AuthController_forgotPassword_v1",
         "parameters": [],
@@ -561,11 +561,11 @@
         },
         "summary": "Request password reset OTP",
         "tags": [
-          "Auth"
+          "Authentication"
         ]
       }
     },
-    "/api/v1/auth/password/reset/request": {
+    "/auth/password/reset/request": {
       "post": {
         "operationId": "AuthController_passwordResetRequest_v1",
         "parameters": [],
@@ -586,11 +586,11 @@
         },
         "summary": "Request password reset OTP (spec alias of /forgot-password)",
         "tags": [
-          "Auth"
+          "Authentication"
         ]
       }
     },
-    "/api/v1/auth/forgot-password/verify": {
+    "/auth/forgot-password/verify": {
       "post": {
         "operationId": "AuthController_forgotPasswordVerify_v1",
         "parameters": [],
@@ -611,11 +611,11 @@
         },
         "summary": "Verify password reset OTP",
         "tags": [
-          "Auth"
+          "Authentication"
         ]
       }
     },
-    "/api/v1/auth/forgot-password/reset": {
+    "/auth/forgot-password/reset": {
       "post": {
         "operationId": "AuthController_forgotPasswordReset_v1",
         "parameters": [],
@@ -636,11 +636,11 @@
         },
         "summary": "Reset password with reset token",
         "tags": [
-          "Auth"
+          "Authentication"
         ]
       }
     },
-    "/api/v1/auth/password/reset/confirm": {
+    "/auth/password/reset/confirm": {
       "post": {
         "operationId": "AuthController_passwordResetConfirm_v1",
         "parameters": [],
@@ -661,11 +661,11 @@
         },
         "summary": "Confirm password reset with token (spec alias of /forgot-password/reset)",
         "tags": [
-          "Auth"
+          "Authentication"
         ]
       }
     },
-    "/api/v1/auth/2fa/enable": {
+    "/auth/2fa/enable": {
       "post": {
         "operationId": "AuthController_enable2fa_v1",
         "parameters": [],
@@ -681,11 +681,11 @@
         ],
         "summary": "Initiate 2FA enable (sends OTP)",
         "tags": [
-          "Auth"
+          "Authentication"
         ]
       }
     },
-    "/api/v1/auth/2fa/confirm": {
+    "/auth/2fa/confirm": {
       "post": {
         "operationId": "AuthController_confirm2fa_v1",
         "parameters": [],
@@ -711,11 +711,11 @@
         ],
         "summary": "Confirm 2FA enable with OTP",
         "tags": [
-          "Auth"
+          "Authentication"
         ]
       }
     },
-    "/api/v1/auth/2fa/disable": {
+    "/auth/2fa/disable": {
       "post": {
         "operationId": "AuthController_disable2fa_v1",
         "parameters": [],
@@ -741,11 +741,11 @@
         ],
         "summary": "Disable 2FA with OTP verification",
         "tags": [
-          "Auth"
+          "Authentication"
         ]
       }
     },
-    "/api/v1/auth/refresh": {
+    "/auth/refresh": {
       "post": {
         "operationId": "AuthController_refresh_v1",
         "parameters": [],
@@ -777,11 +777,11 @@
         },
         "summary": "Refresh access token",
         "tags": [
-          "Auth"
+          "Authentication"
         ]
       }
     },
-    "/api/v1/auth/profile": {
+    "/auth/profile": {
       "get": {
         "operationId": "AuthController_getProfile_v1",
         "parameters": [],
@@ -819,11 +819,11 @@
         ],
         "summary": "Get current user profile",
         "tags": [
-          "Auth"
+          "Authentication"
         ]
       }
     },
-    "/api/v1/auth/me": {
+    "/auth/me": {
       "get": {
         "operationId": "AuthController_getMe_v1",
         "parameters": [],
@@ -839,11 +839,11 @@
         ],
         "summary": "Get current user (spec alias of /profile)",
         "tags": [
-          "Auth"
+          "Authentication"
         ]
       }
     },
-    "/api/v1/auth/logs": {
+    "/auth/logs": {
       "get": {
         "operationId": "AuthController_getLogs_v1",
         "parameters": [
@@ -876,11 +876,11 @@
         ],
         "summary": "List auth events for the current user (audit log)",
         "tags": [
-          "Auth"
+          "Authentication"
         ]
       }
     },
-    "/api/v1/auth/logout": {
+    "/auth/logout": {
       "post": {
         "operationId": "AuthController_logout_v1",
         "parameters": [],
@@ -896,11 +896,11 @@
         ],
         "summary": "Logout and invalidate tokens",
         "tags": [
-          "Auth"
+          "Authentication"
         ]
       }
     },
-    "/api/v1/users/profile": {
+    "/users/profile": {
       "get": {
         "operationId": "UsersController_getProfile_v1",
         "parameters": [],
@@ -948,7 +948,7 @@
         ]
       }
     },
-    "/api/v1/users/consent/marketing": {
+    "/users/consent/marketing": {
       "post": {
         "operationId": "UsersController_setMarketingConsent_v1",
         "parameters": [],
@@ -978,7 +978,7 @@
         ]
       }
     },
-    "/api/v1/users/data/delete-request": {
+    "/users/data/delete-request": {
       "post": {
         "operationId": "UsersController_requestDeletion_v1",
         "parameters": [],
@@ -1008,7 +1008,7 @@
         ]
       }
     },
-    "/api/v1/users/data/export": {
+    "/users/data/export": {
       "get": {
         "operationId": "UsersController_exportData_v1",
         "parameters": [],
@@ -1028,7 +1028,7 @@
         ]
       }
     },
-    "/api/v1/users/addresses": {
+    "/users/addresses": {
       "get": {
         "operationId": "AddressesController_list_v1",
         "parameters": [],
@@ -1044,7 +1044,7 @@
         ],
         "summary": "List current user addresses",
         "tags": [
-          "User Addresses"
+          "Users"
         ]
       },
       "post": {
@@ -1072,11 +1072,11 @@
         ],
         "summary": "Add a new address",
         "tags": [
-          "User Addresses"
+          "Users"
         ]
       }
     },
-    "/api/v1/users/addresses/{id}": {
+    "/users/addresses/{id}": {
       "patch": {
         "operationId": "AddressesController_update_v1",
         "parameters": [
@@ -1111,7 +1111,7 @@
         ],
         "summary": "Update an address",
         "tags": [
-          "User Addresses"
+          "Users"
         ]
       },
       "delete": {
@@ -1138,11 +1138,11 @@
         ],
         "summary": "Delete an address (soft delete)",
         "tags": [
-          "User Addresses"
+          "Users"
         ]
       }
     },
-    "/api/v1/users/addresses/{id}/default": {
+    "/users/addresses/{id}/default": {
       "post": {
         "operationId": "AddressesController_setDefault_v1",
         "parameters": [
@@ -1167,11 +1167,11 @@
         ],
         "summary": "Set an address as default",
         "tags": [
-          "User Addresses"
+          "Users"
         ]
       }
     },
-    "/api/v1/health": {
+    "/health": {
       "get": {
         "operationId": "HealthController_check_v1",
         "parameters": [],
@@ -1336,11 +1336,11 @@
         },
         "summary": "General health check",
         "tags": [
-          "Health"
+          "System"
         ]
       }
     },
-    "/api/v1/health/db": {
+    "/health/db": {
       "get": {
         "operationId": "HealthController_checkDb_v1",
         "parameters": [],
@@ -1505,11 +1505,11 @@
         },
         "summary": "Database health check",
         "tags": [
-          "Health"
+          "System"
         ]
       }
     },
-    "/api/v1/deals/campaigns": {
+    "/deals/campaigns": {
       "post": {
         "operationId": "DealsController_create_v1",
         "parameters": [],
@@ -1535,11 +1535,11 @@
         ],
         "summary": "Create a deal campaign",
         "tags": [
-          "Deals"
+          "Sellers"
         ]
       }
     },
-    "/api/v1/deals/campaigns/my": {
+    "/deals/campaigns/my": {
       "get": {
         "operationId": "DealsController_listMy_v1",
         "parameters": [
@@ -1615,11 +1615,11 @@
         ],
         "summary": "List my deal campaigns",
         "tags": [
-          "Deals"
+          "Sellers"
         ]
       }
     },
-    "/api/v1/deals/campaigns/my/{id}": {
+    "/deals/campaigns/my/{id}": {
       "get": {
         "operationId": "DealsController_getMy_v1",
         "parameters": [
@@ -1644,7 +1644,7 @@
         ],
         "summary": "Get one of my deal campaigns",
         "tags": [
-          "Deals"
+          "Sellers"
         ]
       },
       "patch": {
@@ -1681,7 +1681,7 @@
         ],
         "summary": "Update one of my deal campaigns",
         "tags": [
-          "Deals"
+          "Sellers"
         ]
       },
       "delete": {
@@ -1708,11 +1708,11 @@
         ],
         "summary": "Delete one of my deal campaigns",
         "tags": [
-          "Deals"
+          "Sellers"
         ]
       }
     },
-    "/api/v1/deals/campaigns/my/{id}/initialize-payment": {
+    "/deals/campaigns/my/{id}/initialize-payment": {
       "post": {
         "operationId": "DealsController_initializePayment_v1",
         "parameters": [
@@ -1737,11 +1737,11 @@
         ],
         "summary": "Initialize Paystack payment for my deal campaign",
         "tags": [
-          "Deals"
+          "Sellers"
         ]
       }
     },
-    "/api/v1/admin/deals/campaigns": {
+    "/admin/deals/campaigns": {
       "get": {
         "operationId": "AdminDealsController_list_v1",
         "parameters": [
@@ -1817,11 +1817,11 @@
         ],
         "summary": "List all deal campaigns",
         "tags": [
-          "Admin — Deals"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/deals/campaigns/{id}": {
+    "/admin/deals/campaigns/{id}": {
       "get": {
         "operationId": "AdminDealsController_get_v1",
         "parameters": [
@@ -1846,7 +1846,7 @@
         ],
         "summary": "Get one deal campaign",
         "tags": [
-          "Admin — Deals"
+          "Admin"
         ]
       },
       "patch": {
@@ -1883,7 +1883,7 @@
         ],
         "summary": "Update a deal campaign",
         "tags": [
-          "Admin — Deals"
+          "Admin"
         ]
       },
       "delete": {
@@ -1910,11 +1910,11 @@
         ],
         "summary": "Delete a deal campaign",
         "tags": [
-          "Admin — Deals"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/deals/campaigns/{id}/approve": {
+    "/admin/deals/campaigns/{id}/approve": {
       "patch": {
         "operationId": "AdminDealsController_approve_v1",
         "parameters": [
@@ -1939,11 +1939,11 @@
         ],
         "summary": "Approve a deal campaign",
         "tags": [
-          "Admin — Deals"
+          "Admin"
         ]
       }
     },
-    "/api/v1/payments/paystack/initialize": {
+    "/payments/paystack/initialize": {
       "post": {
         "operationId": "PaymentsController_initializePayment_v1",
         "parameters": [],
@@ -1968,11 +1968,11 @@
           }
         ],
         "tags": [
-          "Payments"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/payments/paystack/verify/{reference}": {
+    "/payments/paystack/verify/{reference}": {
       "get": {
         "operationId": "PaymentsController_verifyPayment_v1",
         "parameters": [
@@ -1996,11 +1996,11 @@
           }
         ],
         "tags": [
-          "Payments"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/payments/paystack/charge/authorize": {
+    "/payments/paystack/charge/authorize": {
       "post": {
         "operationId": "PaymentsController_authorizeCharge_v1",
         "parameters": [],
@@ -2015,11 +2015,11 @@
           }
         ],
         "tags": [
-          "Payments"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/payments/paystack/transfer/initialize": {
+    "/payments/paystack/transfer/initialize": {
       "post": {
         "operationId": "PaymentsController_initializeTransfer_v1",
         "parameters": [],
@@ -2034,11 +2034,11 @@
           }
         ],
         "tags": [
-          "Payments"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/payments/paystack/transfer/status/{ref}": {
+    "/payments/paystack/transfer/status/{ref}": {
       "get": {
         "operationId": "PaymentsController_getTransferStatus_v1",
         "parameters": [],
@@ -2053,11 +2053,11 @@
           }
         ],
         "tags": [
-          "Payments"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/payments/paystack/refund": {
+    "/payments/paystack/refund": {
       "post": {
         "operationId": "PaymentsController_initializeRefund_v1",
         "parameters": [],
@@ -2072,11 +2072,11 @@
           }
         ],
         "tags": [
-          "Payments"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/payments/stripe/payment-intent": {
+    "/payments/stripe/payment-intent": {
       "post": {
         "operationId": "StripeController_createPaymentIntent_v1",
         "parameters": [],
@@ -2091,11 +2091,11 @@
           }
         ],
         "tags": [
-          "Payments - Stripe"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/payments/stripe/payment-intent/{id}/confirm": {
+    "/payments/stripe/payment-intent/{id}/confirm": {
       "post": {
         "operationId": "StripeController_confirmPaymentIntent_v1",
         "parameters": [
@@ -2119,11 +2119,11 @@
           }
         ],
         "tags": [
-          "Payments - Stripe"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/payments/stripe/setup-intent": {
+    "/payments/stripe/setup-intent": {
       "post": {
         "operationId": "StripeController_createSetupIntent_v1",
         "parameters": [],
@@ -2138,11 +2138,11 @@
           }
         ],
         "tags": [
-          "Payments - Stripe"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/payments/stripe/refund": {
+    "/payments/stripe/refund": {
       "post": {
         "operationId": "StripeController_issueRefund_v1",
         "parameters": [],
@@ -2157,11 +2157,11 @@
           }
         ],
         "tags": [
-          "Payments - Stripe"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/payments/stripe/payment-methods": {
+    "/payments/stripe/payment-methods": {
       "get": {
         "operationId": "StripeController_listPaymentMethods_v1",
         "parameters": [],
@@ -2176,11 +2176,11 @@
           }
         ],
         "tags": [
-          "Payments - Stripe"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/payments/stripe/payment-methods/{id}": {
+    "/payments/stripe/payment-methods/{id}": {
       "delete": {
         "operationId": "StripeController_detachPaymentMethod_v1",
         "parameters": [
@@ -2204,11 +2204,11 @@
           }
         ],
         "tags": [
-          "Payments - Stripe"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/webhooks/stripe": {
+    "/webhooks/stripe": {
       "post": {
         "operationId": "StripeWebhookController_handleStripeWebhook_v1",
         "parameters": [],
@@ -2222,7 +2222,7 @@
         ]
       }
     },
-    "/api/v1/payments/pod/eligibility": {
+    "/payments/pod/eligibility": {
       "get": {
         "operationId": "PodController_checkEligibility_v1",
         "parameters": [
@@ -2246,11 +2246,11 @@
           }
         ],
         "tags": [
-          "Payments - Pay on Delivery"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/payments/pod/confirm": {
+    "/payments/pod/confirm": {
       "post": {
         "operationId": "PodController_confirmPod_v1",
         "parameters": [],
@@ -2265,11 +2265,11 @@
           }
         ],
         "tags": [
-          "Payments - Pay on Delivery"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/orders": {
+    "/orders": {
       "post": {
         "operationId": "OrdersController_createOrder_v1",
         "parameters": [],
@@ -2284,7 +2284,7 @@
           }
         ],
         "tags": [
-          "Orders"
+          "Commerce"
         ]
       },
       "get": {
@@ -2339,11 +2339,11 @@
           }
         ],
         "tags": [
-          "Orders"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/orders/guest/lookup": {
+    "/orders/guest/lookup": {
       "get": {
         "operationId": "OrdersController_guestLookup_v1",
         "parameters": [
@@ -2375,11 +2375,11 @@
           }
         ],
         "tags": [
-          "Orders"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/orders/{id}": {
+    "/orders/{id}": {
       "get": {
         "operationId": "OrdersController_findOne_v1",
         "parameters": [
@@ -2403,11 +2403,11 @@
           }
         ],
         "tags": [
-          "Orders"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/orders/{id}/timeline": {
+    "/orders/{id}/timeline": {
       "get": {
         "operationId": "OrdersController_getTimeline_v1",
         "parameters": [
@@ -2431,11 +2431,11 @@
           }
         ],
         "tags": [
-          "Orders"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/orders/{id}/tracking": {
+    "/orders/{id}/tracking": {
       "get": {
         "operationId": "OrdersController_getTracking_v1",
         "parameters": [
@@ -2459,11 +2459,11 @@
           }
         ],
         "tags": [
-          "Orders"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/orders/{id}/invoice": {
+    "/orders/{id}/invoice": {
       "get": {
         "operationId": "OrdersController_getInvoice_v1",
         "parameters": [
@@ -2487,11 +2487,11 @@
           }
         ],
         "tags": [
-          "Orders"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/orders/{id}/pod": {
+    "/orders/{id}/pod": {
       "get": {
         "operationId": "OrdersController_getPod_v1",
         "parameters": [
@@ -2515,11 +2515,11 @@
           }
         ],
         "tags": [
-          "Orders"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/orders/{id}/cancel": {
+    "/orders/{id}/cancel": {
       "post": {
         "operationId": "OrdersController_cancelOrder_v1",
         "parameters": [
@@ -2553,11 +2553,11 @@
           }
         ],
         "tags": [
-          "Orders"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/categories": {
+    "/categories": {
       "get": {
         "operationId": "CategoriesController_findAll_v1",
         "parameters": [
@@ -2589,11 +2589,11 @@
         },
         "summary": "Get categories (flat or tree)",
         "tags": [
-          "Categories"
+          "Catalogue"
         ]
       }
     },
-    "/api/v1/categories/{slug}": {
+    "/categories/{slug}": {
       "get": {
         "operationId": "CategoriesController_findBySlug_v1",
         "parameters": [
@@ -2613,11 +2613,11 @@
         },
         "summary": "Get a single category by slug",
         "tags": [
-          "Categories"
+          "Catalogue"
         ]
       }
     },
-    "/api/v1/products": {
+    "/products": {
       "get": {
         "operationId": "ProductsController_findAll_v1",
         "parameters": [
@@ -2797,7 +2797,7 @@
         },
         "summary": "List products with search, filter, and pagination",
         "tags": [
-          "Products"
+          "Catalogue"
         ]
       },
       "post": {
@@ -2825,11 +2825,11 @@
         ],
         "summary": "Create a product (Seller or Admin)",
         "tags": [
-          "Products"
+          "Catalogue"
         ]
       }
     },
-    "/api/v1/products/{idOrSlug}": {
+    "/products/{idOrSlug}": {
       "get": {
         "operationId": "ProductsController_findOne_v1",
         "parameters": [
@@ -2857,11 +2857,11 @@
         },
         "summary": "Get product detail by Mongo id or slug",
         "tags": [
-          "Products"
+          "Catalogue"
         ]
       }
     },
-    "/api/v1/products/{productId}/related": {
+    "/products/{productId}/related": {
       "get": {
         "operationId": "ProductsController_findRelated_v1",
         "parameters": [
@@ -2889,11 +2889,11 @@
         },
         "summary": "Get related products",
         "tags": [
-          "Products"
+          "Catalogue"
         ]
       }
     },
-    "/api/v1/products/{productId}/variants": {
+    "/products/{productId}/variants": {
       "get": {
         "operationId": "ProductsController_findVariants_v1",
         "parameters": [
@@ -2913,11 +2913,11 @@
         },
         "summary": "Get product variants and axes",
         "tags": [
-          "Products"
+          "Catalogue"
         ]
       }
     },
-    "/api/v1/products/{productId}/availability": {
+    "/products/{productId}/availability": {
       "get": {
         "operationId": "ProductsController_findAvailability_v1",
         "parameters": [
@@ -2937,11 +2937,11 @@
         },
         "summary": "Get product/variant stock availability",
         "tags": [
-          "Products"
+          "Catalogue"
         ]
       }
     },
-    "/api/v1/products/{productId}/policies": {
+    "/products/{productId}/policies": {
       "get": {
         "operationId": "ProductsController_findPolicies_v1",
         "parameters": [
@@ -2961,11 +2961,11 @@
         },
         "summary": "Get product return and warranty policies",
         "tags": [
-          "Products"
+          "Catalogue"
         ]
       }
     },
-    "/api/v1/products/{id}": {
+    "/products/{id}": {
       "patch": {
         "operationId": "ProductsController_update_v1",
         "parameters": [
@@ -3000,7 +3000,7 @@
         ],
         "summary": "Update a product (owner Seller or Admin)",
         "tags": [
-          "Products"
+          "Catalogue"
         ]
       },
       "delete": {
@@ -3027,11 +3027,11 @@
         ],
         "summary": "Delete a product (owner Seller or Admin)",
         "tags": [
-          "Products"
+          "Catalogue"
         ]
       }
     },
-    "/api/v1/categories/{slug}/products": {
+    "/categories/{slug}/products": {
       "get": {
         "operationId": "CategoryProductsController_listByCategory_v1",
         "parameters": [
@@ -3167,11 +3167,11 @@
         },
         "summary": "List products in a category by slug (paginated)",
         "tags": [
-          "Categories"
+          "Catalogue"
         ]
       }
     },
-    "/api/v1/policies/products/{productId}": {
+    "/policies/products/{productId}": {
       "get": {
         "operationId": "PoliciesController_getProductPolicy_v1",
         "parameters": [
@@ -3191,11 +3191,11 @@
         },
         "summary": "Get product return and warranty policies",
         "tags": [
-          "Policies"
+          "Catalogue"
         ]
       }
     },
-    "/api/v1/sellers/onboard": {
+    "/sellers/onboard": {
       "post": {
         "operationId": "SellersController_onboardSeller_v1",
         "parameters": [],
@@ -3220,7 +3220,7 @@
         ]
       }
     },
-    "/api/v1/sellers/me": {
+    "/sellers/me": {
       "get": {
         "operationId": "SellersController_getMeSeller_v1",
         "parameters": [],
@@ -3268,7 +3268,7 @@
         ]
       }
     },
-    "/api/v1/sellers/me/products": {
+    "/sellers/me/products": {
       "get": {
         "operationId": "SellersController_getMyProducts_v1",
         "parameters": [
@@ -3433,7 +3433,7 @@
         ]
       }
     },
-    "/api/v1/sellers/me/products/{id}": {
+    "/sellers/me/products/{id}": {
       "patch": {
         "operationId": "SellersController_updateMyProduct_v1",
         "parameters": [
@@ -3499,7 +3499,7 @@
         ]
       }
     },
-    "/api/v1/sellers/me/products/{id}/images": {
+    "/sellers/me/products/{id}/images": {
       "post": {
         "operationId": "SellersController_attachProductImages_v1",
         "parameters": [
@@ -3538,7 +3538,7 @@
         ]
       }
     },
-    "/api/v1/sellers/{sellerId}/summary": {
+    "/sellers/{sellerId}/summary": {
       "get": {
         "operationId": "SellersController_getSummary_v1",
         "parameters": [
@@ -3562,7 +3562,7 @@
         ]
       }
     },
-    "/api/v1/sellers/{sellerSlug}/products": {
+    "/sellers/{sellerSlug}/products": {
       "get": {
         "operationId": "SellersController_getSellerProducts_v1",
         "parameters": [
@@ -3702,7 +3702,7 @@
         ]
       }
     },
-    "/api/v1/sellers/{sellerId}/follow": {
+    "/sellers/{sellerId}/follow": {
       "post": {
         "operationId": "SellersController_follow_v1",
         "parameters": [
@@ -3758,7 +3758,7 @@
         ]
       }
     },
-    "/api/v1/sellers": {
+    "/sellers": {
       "post": {
         "operationId": "SellersController_createSeller_v1",
         "parameters": [],
@@ -3788,7 +3788,7 @@
         ]
       }
     },
-    "/api/v1/sellers/my": {
+    "/sellers/my": {
       "get": {
         "operationId": "SellersController_getMySeller_v1",
         "parameters": [],
@@ -3836,7 +3836,7 @@
         ]
       }
     },
-    "/api/v1/sellers/my/banking": {
+    "/sellers/my/banking": {
       "get": {
         "operationId": "SellersController_getMyBanking_v1",
         "parameters": [],
@@ -3884,7 +3884,7 @@
         ]
       }
     },
-    "/api/v1/sellers/me/agreement": {
+    "/sellers/me/agreement": {
       "post": {
         "operationId": "SellerPostOrderController_acceptAgreement_v1",
         "parameters": [],
@@ -3909,11 +3909,11 @@
           }
         ],
         "tags": [
-          "Sellers - Post-Order"
+          "Sellers"
         ]
       }
     },
-    "/api/v1/sellers/me/kyc": {
+    "/sellers/me/kyc": {
       "post": {
         "operationId": "SellerPostOrderController_submitKyc_v1",
         "parameters": [],
@@ -3938,11 +3938,11 @@
           }
         ],
         "tags": [
-          "Sellers - Post-Order"
+          "Sellers"
         ]
       }
     },
-    "/api/v1/sellers/me/orders": {
+    "/sellers/me/orders": {
       "get": {
         "operationId": "SellerPostOrderController_getMyOrders_v1",
         "parameters": [
@@ -3995,11 +3995,11 @@
           }
         ],
         "tags": [
-          "Sellers - Post-Order"
+          "Sellers"
         ]
       }
     },
-    "/api/v1/sellers/me/orders/{id}/acknowledge": {
+    "/sellers/me/orders/{id}/acknowledge": {
       "post": {
         "operationId": "SellerPostOrderController_acknowledgeOrder_v1",
         "parameters": [
@@ -4033,11 +4033,11 @@
           }
         ],
         "tags": [
-          "Sellers - Post-Order"
+          "Sellers"
         ]
       }
     },
-    "/api/v1/sellers/me/orders/{id}/dispatch": {
+    "/sellers/me/orders/{id}/dispatch": {
       "post": {
         "operationId": "SellerPostOrderController_dispatchOrder_v1",
         "parameters": [
@@ -4071,11 +4071,11 @@
           }
         ],
         "tags": [
-          "Sellers - Post-Order"
+          "Sellers"
         ]
       }
     },
-    "/api/v1/sellers/me/returns": {
+    "/sellers/me/returns": {
       "get": {
         "operationId": "SellerPostOrderController_getMyReturns_v1",
         "parameters": [],
@@ -4090,11 +4090,11 @@
           }
         ],
         "tags": [
-          "Sellers - Post-Order"
+          "Sellers"
         ]
       }
     },
-    "/api/v1/sellers/me/returns/{id}/decision": {
+    "/sellers/me/returns/{id}/decision": {
       "post": {
         "operationId": "SellerPostOrderController_returnDecision_v1",
         "parameters": [
@@ -4128,11 +4128,11 @@
           }
         ],
         "tags": [
-          "Sellers - Post-Order"
+          "Sellers"
         ]
       }
     },
-    "/api/v1/sellers/me/payouts": {
+    "/sellers/me/payouts": {
       "get": {
         "operationId": "SellerPostOrderController_getPayouts_v1",
         "parameters": [],
@@ -4147,11 +4147,11 @@
           }
         ],
         "tags": [
-          "Sellers - Post-Order"
+          "Sellers"
         ]
       }
     },
-    "/api/v1/sellers/me/fees": {
+    "/sellers/me/fees": {
       "get": {
         "operationId": "SellerPostOrderController_getFees_v1",
         "parameters": [],
@@ -4166,11 +4166,11 @@
           }
         ],
         "tags": [
-          "Sellers - Post-Order"
+          "Sellers"
         ]
       }
     },
-    "/api/v1/returns": {
+    "/returns": {
       "post": {
         "operationId": "ReturnsController_createReturn_v1",
         "parameters": [],
@@ -4195,7 +4195,7 @@
           }
         ],
         "tags": [
-          "Returns"
+          "Fulfilment"
         ]
       },
       "get": {
@@ -4212,11 +4212,11 @@
           }
         ],
         "tags": [
-          "Returns"
+          "Fulfilment"
         ]
       }
     },
-    "/api/v1/returns/eligibility/{orderItemId}": {
+    "/returns/eligibility/{orderItemId}": {
       "get": {
         "operationId": "ReturnsController_checkEligibility_v1",
         "parameters": [
@@ -4240,11 +4240,11 @@
           }
         ],
         "tags": [
-          "Returns"
+          "Fulfilment"
         ]
       }
     },
-    "/api/v1/returns/{id}": {
+    "/returns/{id}": {
       "get": {
         "operationId": "ReturnsController_getReturn_v1",
         "parameters": [
@@ -4268,11 +4268,11 @@
           }
         ],
         "tags": [
-          "Returns"
+          "Fulfilment"
         ]
       }
     },
-    "/api/v1/returns/{id}/cancel": {
+    "/returns/{id}/cancel": {
       "patch": {
         "operationId": "ReturnsController_cancelReturn_v1",
         "parameters": [
@@ -4296,11 +4296,11 @@
           }
         ],
         "tags": [
-          "Returns"
+          "Fulfilment"
         ]
       }
     },
-    "/api/v1/returns/{id}/evidence": {
+    "/returns/{id}/evidence": {
       "post": {
         "operationId": "ReturnsController_addEvidence_v1",
         "parameters": [
@@ -4334,11 +4334,11 @@
           }
         ],
         "tags": [
-          "Returns"
+          "Fulfilment"
         ]
       }
     },
-    "/api/v1/refunds/{returnId}/process": {
+    "/refunds/{returnId}/process": {
       "post": {
         "operationId": "RefundsController_processRefund_v1",
         "parameters": [
@@ -4372,11 +4372,11 @@
           }
         ],
         "tags": [
-          "Refunds"
+          "Fulfilment"
         ]
       }
     },
-    "/api/v1/refunds/{id}": {
+    "/refunds/{id}": {
       "get": {
         "operationId": "RefundsController_getRefundStatus_v1",
         "parameters": [
@@ -4400,11 +4400,11 @@
           }
         ],
         "tags": [
-          "Refunds"
+          "Fulfilment"
         ]
       }
     },
-    "/api/v1/products/{productId}/reviews": {
+    "/products/{productId}/reviews": {
       "get": {
         "operationId": "ReviewsController_findByProduct_v1",
         "parameters": [
@@ -4440,7 +4440,7 @@
         },
         "summary": "Get product reviews with summary",
         "tags": [
-          "Reviews"
+          "Catalogue"
         ]
       },
       "post": {
@@ -4477,11 +4477,11 @@
         ],
         "summary": "Write a review for a product (one per user per product)",
         "tags": [
-          "Reviews"
+          "Catalogue"
         ]
       }
     },
-    "/api/v1/products/{productId}/reviews/{reviewId}/helpful": {
+    "/products/{productId}/reviews/{reviewId}/helpful": {
       "post": {
         "operationId": "ReviewsController_markHelpful_v1",
         "parameters": [
@@ -4501,11 +4501,11 @@
         },
         "summary": "Mark a review as helpful (no auth required)",
         "tags": [
-          "Reviews"
+          "Catalogue"
         ]
       }
     },
-    "/api/v1/reviews/{id}": {
+    "/reviews/{id}": {
       "patch": {
         "operationId": "UserReviewsController_updateReview_v1",
         "parameters": [
@@ -4540,7 +4540,7 @@
         ],
         "summary": "Edit your own review",
         "tags": [
-          "Reviews"
+          "Catalogue"
         ]
       },
       "delete": {
@@ -4567,11 +4567,11 @@
         ],
         "summary": "Delete your own review",
         "tags": [
-          "Reviews"
+          "Catalogue"
         ]
       }
     },
-    "/api/v1/admin/reviews/{id}/moderate": {
+    "/admin/reviews/{id}/moderate": {
       "post": {
         "operationId": "AdminReviewsController_moderateReview_v1",
         "parameters": [
@@ -4606,11 +4606,11 @@
         ],
         "summary": "Moderate a review by approving or hiding it",
         "tags": [
-          "Admin — Reviews"
+          "Admin"
         ]
       }
     },
-    "/api/v1/home": {
+    "/home": {
       "get": {
         "operationId": "HomeController_getHomepage_v1",
         "parameters": [
@@ -4640,11 +4640,11 @@
         },
         "summary": "Get composite homepage payload",
         "tags": [
-          "Home"
+          "Catalogue"
         ]
       }
     },
-    "/api/v1/cart": {
+    "/cart": {
       "post": {
         "operationId": "CartController_create_v1",
         "parameters": [],
@@ -4678,7 +4678,7 @@
         },
         "summary": "Create or return current cart (auth users get their primary cart; guests get a new one)",
         "tags": [
-          "Cart"
+          "Commerce"
         ]
       },
       "get": {
@@ -4696,11 +4696,11 @@
         ],
         "summary": "Get current user's primary cart (legacy)",
         "tags": [
-          "Cart"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/cart/{cartId}": {
+    "/cart/{cartId}": {
       "get": {
         "operationId": "CartController_getByCartId_v1",
         "parameters": [
@@ -4784,7 +4784,7 @@
         },
         "summary": "Retrieve cart by public cartId",
         "tags": [
-          "Cart"
+          "Commerce"
         ]
       },
       "delete": {
@@ -4814,11 +4814,11 @@
         },
         "summary": "Clear all items in a cart (keeps the cart record)",
         "tags": [
-          "Cart"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/cart/{cartId}/items": {
+    "/cart/{cartId}/items": {
       "post": {
         "operationId": "CartController_addItemToCart_v1",
         "parameters": [
@@ -4856,11 +4856,11 @@
         },
         "summary": "Add an item to a cart",
         "tags": [
-          "Cart"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/cart/{cartId}/items/{itemId}": {
+    "/cart/{cartId}/items/{itemId}": {
       "patch": {
         "operationId": "CartController_updateItemInCart_v1",
         "parameters": [
@@ -4906,7 +4906,7 @@
         },
         "summary": "Update quantity of an item in a cart",
         "tags": [
-          "Cart"
+          "Commerce"
         ]
       },
       "delete": {
@@ -4944,11 +4944,11 @@
         },
         "summary": "Remove an item from a cart",
         "tags": [
-          "Cart"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/cart/{cartId}/merge": {
+    "/cart/{cartId}/merge": {
       "post": {
         "operationId": "CartController_mergeCart_v1",
         "parameters": [
@@ -4983,11 +4983,11 @@
         ],
         "summary": "Merge a guest cart into the authenticated user cart",
         "tags": [
-          "Cart"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/cart/{cartId}/totals": {
+    "/cart/{cartId}/totals": {
       "get": {
         "operationId": "CartController_getTotals_v1",
         "parameters": [
@@ -5048,11 +5048,11 @@
         },
         "summary": "Get totals breakdown for a cart (pricing not yet locked)",
         "tags": [
-          "Cart"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/cart/{cartId}/validate": {
+    "/cart/{cartId}/validate": {
       "post": {
         "operationId": "CartController_validateCart_v1",
         "parameters": [
@@ -5096,11 +5096,11 @@
         },
         "summary": "Validate cart items (stock + active checks)",
         "tags": [
-          "Cart"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/cart/items": {
+    "/cart/items": {
       "post": {
         "operationId": "CartController_addItem_v1",
         "parameters": [],
@@ -5126,11 +5126,11 @@
         ],
         "summary": "Add item to current user's primary cart (legacy)",
         "tags": [
-          "Cart"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/cart/items/{itemId}": {
+    "/cart/items/{itemId}": {
       "patch": {
         "operationId": "CartController_updateItem_v1",
         "parameters": [
@@ -5165,7 +5165,7 @@
         ],
         "summary": "Update cart item quantity (legacy)",
         "tags": [
-          "Cart"
+          "Commerce"
         ]
       },
       "delete": {
@@ -5192,11 +5192,11 @@
         ],
         "summary": "Remove item from cart (legacy)",
         "tags": [
-          "Cart"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/wishlist": {
+    "/wishlist": {
       "get": {
         "operationId": "WishlistController_getWishlist_v1",
         "parameters": [],
@@ -5212,11 +5212,11 @@
         ],
         "summary": "Get wishlist items",
         "tags": [
-          "Wishlist"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/wishlist/{productId}": {
+    "/wishlist/{productId}": {
       "post": {
         "operationId": "WishlistController_addToWishlist_v1",
         "parameters": [
@@ -5241,7 +5241,7 @@
         ],
         "summary": "Add to wishlist",
         "tags": [
-          "Wishlist"
+          "Commerce"
         ]
       },
       "delete": {
@@ -5268,11 +5268,11 @@
         ],
         "summary": "Remove from wishlist",
         "tags": [
-          "Wishlist"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/shipping/estimate": {
+    "/shipping/estimate": {
       "get": {
         "operationId": "ShippingController_getEstimate_v1",
         "parameters": [
@@ -5308,11 +5308,11 @@
         },
         "summary": "Get shipping estimate",
         "tags": [
-          "Shipping"
+          "Catalogue"
         ]
       }
     },
-    "/api/v1/newsletter/subscriptions": {
+    "/newsletter/subscriptions": {
       "post": {
         "operationId": "NewsletterController_subscribe_v1",
         "parameters": [],
@@ -5333,11 +5333,11 @@
         },
         "summary": "Subscribe to newsletter",
         "tags": [
-          "Newsletter"
+          "System"
         ]
       }
     },
-    "/api/v1/search": {
+    "/search": {
       "get": {
         "operationId": "SearchController_search_v1",
         "parameters": [
@@ -5413,11 +5413,11 @@
         },
         "summary": "Global product search with filters and pagination",
         "tags": [
-          "Search"
+          "Catalogue"
         ]
       }
     },
-    "/api/v1/search/suggest": {
+    "/search/suggest": {
       "get": {
         "operationId": "SearchController_suggest_v1",
         "parameters": [
@@ -5445,11 +5445,11 @@
         },
         "summary": "Search suggestions/autocomplete",
         "tags": [
-          "Search"
+          "Catalogue"
         ]
       }
     },
-    "/api/v1/search/suggestions": {
+    "/search/suggestions": {
       "get": {
         "operationId": "SearchController_suggestions_v1",
         "parameters": [
@@ -5477,11 +5477,11 @@
         },
         "summary": "Search suggestions/autocomplete (spec alias of /suggest)",
         "tags": [
-          "Search"
+          "Catalogue"
         ]
       }
     },
-    "/api/v1/site-config": {
+    "/site-config": {
       "get": {
         "operationId": "SiteConfigController_getConfig_v1",
         "parameters": [],
@@ -5492,11 +5492,11 @@
         },
         "summary": "Get site configuration (footer, contact, social)",
         "tags": [
-          "Site Config"
+          "System"
         ]
       }
     },
-    "/api/v1/config/public": {
+    "/config/public": {
       "get": {
         "operationId": "PublicConfigController_getPublicConfig_v1",
         "parameters": [],
@@ -5507,11 +5507,11 @@
         },
         "summary": "Get public application configuration (spec alias)",
         "tags": [
-          "Site Config"
+          "System"
         ]
       }
     },
-    "/api/v1/legal/{slug}": {
+    "/legal/{slug}": {
       "get": {
         "operationId": "LegalPagesController_getLegalPage_v1",
         "parameters": [
@@ -5531,11 +5531,11 @@
         },
         "summary": "Fetch a public legal page by slug",
         "tags": [
-          "Legal"
+          "System"
         ]
       }
     },
-    "/api/v1/upload": {
+    "/upload": {
       "post": {
         "operationId": "UploadController_upload_v1",
         "parameters": [
@@ -5576,11 +5576,11 @@
         ],
         "summary": "Upload an image to Cloudinary (Seller or Admin)",
         "tags": [
-          "Upload"
+          "System"
         ]
       }
     },
-    "/api/v1/media/upload": {
+    "/media/upload": {
       "post": {
         "operationId": "MediaController_upload_v1",
         "parameters": [],
@@ -5612,11 +5612,11 @@
         ],
         "summary": "Upload an image to Cloudinary through the API",
         "tags": [
-          "Media"
+          "System"
         ]
       }
     },
-    "/api/v1/media/upload/presigned": {
+    "/media/upload/presigned": {
       "post": {
         "operationId": "MediaController_createPresignedUpload_v1",
         "parameters": [],
@@ -5642,11 +5642,11 @@
         ],
         "summary": "Create signed Cloudinary upload parameters for direct client upload. Use the returned media id for DELETE /media/{id} by base64url-encoding the resulting publicId.",
         "tags": [
-          "Media"
+          "System"
         ]
       }
     },
-    "/api/v1/media/{encodedPublicId}": {
+    "/media/{encodedPublicId}": {
       "delete": {
         "operationId": "MediaController_deleteMedia_v1",
         "parameters": [
@@ -5671,11 +5671,11 @@
         ],
         "summary": "Delete a media asset by passing its base64url-encoded Cloudinary publicId",
         "tags": [
-          "Media"
+          "System"
         ]
       }
     },
-    "/api/v1/admin/products": {
+    "/admin/products": {
       "get": {
         "operationId": "AdminProductsController_findAll_v1",
         "parameters": [],
@@ -5691,7 +5691,7 @@
         ],
         "summary": "List all products (including inactive)",
         "tags": [
-          "Admin — Products"
+          "Admin"
         ]
       },
       "post": {
@@ -5719,11 +5719,11 @@
         ],
         "summary": "Create a product from the admin namespace",
         "tags": [
-          "Admin — Products"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/products/{id}": {
+    "/admin/products/{id}": {
       "patch": {
         "operationId": "AdminProductsController_update_v1",
         "parameters": [
@@ -5758,7 +5758,7 @@
         ],
         "summary": "Update any product",
         "tags": [
-          "Admin — Products"
+          "Admin"
         ]
       },
       "delete": {
@@ -5785,11 +5785,11 @@
         ],
         "summary": "Force delete any product",
         "tags": [
-          "Admin — Products"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/products/{id}/status": {
+    "/admin/products/{id}/status": {
       "patch": {
         "operationId": "AdminProductsController_toggleStatus_v1",
         "parameters": [
@@ -5814,11 +5814,11 @@
         ],
         "summary": "Toggle product active/inactive status",
         "tags": [
-          "Admin — Products"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/products/{id}/approve": {
+    "/admin/products/{id}/approve": {
       "post": {
         "operationId": "AdminProductsController_approve_v1",
         "parameters": [
@@ -5843,11 +5843,11 @@
         ],
         "summary": "Approve a product listing",
         "tags": [
-          "Admin — Products"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/products/{id}/reject": {
+    "/admin/products/{id}/reject": {
       "post": {
         "operationId": "AdminProductsController_reject_v1",
         "parameters": [
@@ -5882,11 +5882,11 @@
         ],
         "summary": "Reject a product listing",
         "tags": [
-          "Admin — Products"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/products/{id}/feature": {
+    "/admin/products/{id}/feature": {
       "post": {
         "operationId": "AdminProductsController_feature_v1",
         "parameters": [
@@ -5921,11 +5921,11 @@
         ],
         "summary": "Feature or unfeature a product in the storefront rail",
         "tags": [
-          "Admin — Products"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/sellers": {
+    "/admin/sellers": {
       "get": {
         "operationId": "AdminSellersController_findAll_v1",
         "parameters": [],
@@ -5941,11 +5941,11 @@
         ],
         "summary": "List all sellers with profile and approval status",
         "tags": [
-          "Admin — Sellers"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/sellers/{id}": {
+    "/admin/sellers/{id}": {
       "patch": {
         "operationId": "AdminSellersController_update_v1",
         "parameters": [
@@ -5980,11 +5980,11 @@
         ],
         "summary": "Update any seller",
         "tags": [
-          "Admin — Sellers"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/sellers/{id}/verify": {
+    "/admin/sellers/{id}/verify": {
       "patch": {
         "operationId": "AdminSellersController_toggleVerify_v1",
         "parameters": [
@@ -6009,11 +6009,11 @@
         ],
         "summary": "Toggle seller verified status",
         "tags": [
-          "Admin — Sellers"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/sellers/{id}/approve": {
+    "/admin/sellers/{id}/approve": {
       "patch": {
         "operationId": "AdminSellersController_approve_v1",
         "parameters": [
@@ -6038,7 +6038,7 @@
         ],
         "summary": "Approve a seller to upload products",
         "tags": [
-          "Admin — Sellers"
+          "Admin"
         ]
       },
       "post": {
@@ -6065,11 +6065,11 @@
         ],
         "summary": "Approve a seller (spec-aligned POST alias of PATCH /:id/approve)",
         "tags": [
-          "Admin — Sellers"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/sellers/{id}/reject": {
+    "/admin/sellers/{id}/reject": {
       "patch": {
         "operationId": "AdminSellersController_reject_v1",
         "parameters": [
@@ -6094,7 +6094,7 @@
         ],
         "summary": "Reject / revoke seller approval",
         "tags": [
-          "Admin — Sellers"
+          "Admin"
         ]
       },
       "post": {
@@ -6121,11 +6121,11 @@
         ],
         "summary": "Reject seller (spec-aligned POST alias of PATCH /:id/reject)",
         "tags": [
-          "Admin — Sellers"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/categories": {
+    "/admin/categories": {
       "get": {
         "operationId": "AdminCategoriesController_findAll_v1",
         "parameters": [],
@@ -6141,7 +6141,7 @@
         ],
         "summary": "List all categories (flat)",
         "tags": [
-          "Admin — Categories"
+          "Admin"
         ]
       },
       "post": {
@@ -6169,11 +6169,11 @@
         ],
         "summary": "Create a category or sub-category",
         "tags": [
-          "Admin — Categories"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/categories/{id}": {
+    "/admin/categories/{id}": {
       "patch": {
         "operationId": "AdminCategoriesController_update_v1",
         "parameters": [
@@ -6208,7 +6208,7 @@
         ],
         "summary": "Update a category",
         "tags": [
-          "Admin — Categories"
+          "Admin"
         ]
       },
       "delete": {
@@ -6235,11 +6235,11 @@
         ],
         "summary": "Soft delete a category",
         "tags": [
-          "Admin — Categories"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/users": {
+    "/admin/users": {
       "get": {
         "operationId": "AdminUsersController_findAll_v1",
         "parameters": [
@@ -6323,11 +6323,11 @@
         ],
         "summary": "List users (admin-scoped, supports search + accountType filter)",
         "tags": [
-          "Admin — Users"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/users/{id}": {
+    "/admin/users/{id}": {
       "get": {
         "operationId": "AdminUsersController_findOne_v1",
         "parameters": [
@@ -6352,7 +6352,7 @@
         ],
         "summary": "Get user by id (admin)",
         "tags": [
-          "Admin — Users"
+          "Admin"
         ]
       },
       "patch": {
@@ -6389,7 +6389,7 @@
         ],
         "summary": "Update a user by id (admin)",
         "tags": [
-          "Admin — Users"
+          "Admin"
         ]
       },
       "delete": {
@@ -6416,11 +6416,11 @@
         ],
         "summary": "Soft-delete a user (admin)",
         "tags": [
-          "Admin — Users"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/users/{id}/suspend": {
+    "/admin/users/{id}/suspend": {
       "post": {
         "operationId": "AdminUsersController_suspend_v1",
         "parameters": [
@@ -6445,11 +6445,11 @@
         ],
         "summary": "Suspend (deactivate) a user account. Reactivate by sending {\"active\": true} - the body is optional and defaults to suspending.",
         "tags": [
-          "Admin — Users"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/pricing/rules": {
+    "/admin/pricing/rules": {
       "get": {
         "operationId": "AdminPricingController_listRules_v1",
         "parameters": [],
@@ -6465,7 +6465,7 @@
         ],
         "summary": "List all pricing rules",
         "tags": [
-          "Admin — Pricing"
+          "Admin"
         ]
       },
       "post": {
@@ -6493,11 +6493,11 @@
         ],
         "summary": "Create a pricing rule",
         "tags": [
-          "Admin — Pricing"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/pricing/rules/{id}": {
+    "/admin/pricing/rules/{id}": {
       "patch": {
         "operationId": "AdminPricingController_updateRule_v1",
         "parameters": [
@@ -6532,11 +6532,11 @@
         ],
         "summary": "Update a pricing rule",
         "tags": [
-          "Admin — Pricing"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/pricing/fees": {
+    "/admin/pricing/fees": {
       "get": {
         "operationId": "AdminPricingController_getFees_v1",
         "parameters": [],
@@ -6552,7 +6552,7 @@
         ],
         "summary": "Get platform fee configuration",
         "tags": [
-          "Admin — Pricing"
+          "Admin"
         ]
       },
       "patch": {
@@ -6580,11 +6580,11 @@
         ],
         "summary": "Update platform fee configuration",
         "tags": [
-          "Admin — Pricing"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/pricing/simulate": {
+    "/admin/pricing/simulate": {
       "post": {
         "operationId": "AdminPricingController_simulate_v1",
         "parameters": [],
@@ -6610,11 +6610,11 @@
         ],
         "summary": "Simulate order cost breakdown",
         "tags": [
-          "Admin — Pricing"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/orders": {
+    "/admin/orders": {
       "get": {
         "operationId": "AdminOrdersController_listOrders_v1",
         "parameters": [
@@ -6638,11 +6638,11 @@
           }
         ],
         "tags": [
-          "Admin - Orders & Ops"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/orders/{id}": {
+    "/admin/orders/{id}": {
       "get": {
         "operationId": "AdminOrdersController_getOrder_v1",
         "parameters": [
@@ -6666,11 +6666,11 @@
           }
         ],
         "tags": [
-          "Admin - Orders & Ops"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/orders/{id}/status": {
+    "/admin/orders/{id}/status": {
       "patch": {
         "operationId": "AdminOrdersController_updateOrderStatus_v1",
         "parameters": [
@@ -6704,11 +6704,11 @@
           }
         ],
         "tags": [
-          "Admin - Orders & Ops"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/orders/{id}/intervene": {
+    "/admin/orders/{id}/intervene": {
       "post": {
         "operationId": "AdminOrdersController_intervene_v1",
         "parameters": [
@@ -6742,11 +6742,11 @@
           }
         ],
         "tags": [
-          "Admin - Orders & Ops"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/orders/{id}/reassign": {
+    "/admin/orders/{id}/reassign": {
       "post": {
         "operationId": "AdminOrdersController_reassign_v1",
         "parameters": [
@@ -6780,11 +6780,11 @@
           }
         ],
         "tags": [
-          "Admin - Orders & Ops"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/returns": {
+    "/admin/returns": {
       "get": {
         "operationId": "AdminOrdersController_listReturns_v1",
         "parameters": [
@@ -6808,11 +6808,11 @@
           }
         ],
         "tags": [
-          "Admin - Orders & Ops"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/returns/{id}/decision": {
+    "/admin/returns/{id}/decision": {
       "post": {
         "operationId": "AdminOrdersController_returnDecision_v1",
         "parameters": [
@@ -6836,11 +6836,11 @@
           }
         ],
         "tags": [
-          "Admin - Orders & Ops"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/refunds": {
+    "/admin/refunds": {
       "get": {
         "operationId": "AdminOrdersController_listRefunds_v1",
         "parameters": [],
@@ -6855,11 +6855,11 @@
           }
         ],
         "tags": [
-          "Admin - Orders & Ops"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/refunds/{id}/approve": {
+    "/admin/refunds/{id}/approve": {
       "post": {
         "operationId": "AdminOrdersController_approveRefund_v1",
         "parameters": [
@@ -6883,11 +6883,11 @@
           }
         ],
         "tags": [
-          "Admin - Orders & Ops"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/delivery/modes": {
+    "/admin/delivery/modes": {
       "get": {
         "operationId": "AdminDeliveryController_listModes_v1",
         "parameters": [],
@@ -6902,11 +6902,11 @@
           }
         ],
         "tags": [
-          "Admin - Delivery Config"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/delivery/modes/{id}": {
+    "/admin/delivery/modes/{id}": {
       "patch": {
         "operationId": "AdminDeliveryController_updateMode_v1",
         "parameters": [
@@ -6930,11 +6930,11 @@
           }
         ],
         "tags": [
-          "Admin - Delivery Config"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/delivery/providers": {
+    "/admin/delivery/providers": {
       "get": {
         "operationId": "AdminDeliveryController_listProviders_v1",
         "parameters": [],
@@ -6949,11 +6949,11 @@
           }
         ],
         "tags": [
-          "Admin - Delivery Config"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/delivery/providers/order": {
+    "/admin/delivery/providers/order": {
       "patch": {
         "operationId": "AdminDeliveryController_updateProviderOrder_v1",
         "parameters": [],
@@ -6968,11 +6968,11 @@
           }
         ],
         "tags": [
-          "Admin - Delivery Config"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/delivery/coverage": {
+    "/admin/delivery/coverage": {
       "get": {
         "operationId": "AdminDeliveryController_getCoverage_v1",
         "parameters": [],
@@ -6987,7 +6987,7 @@
           }
         ],
         "tags": [
-          "Admin - Delivery Config"
+          "Admin"
         ]
       },
       "patch": {
@@ -7004,11 +7004,11 @@
           }
         ],
         "tags": [
-          "Admin - Delivery Config"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/reports/sales": {
+    "/admin/reports/sales": {
       "get": {
         "operationId": "AdminReportingController_salesReport_v1",
         "parameters": [
@@ -7040,11 +7040,11 @@
           }
         ],
         "tags": [
-          "Admin - Reporting"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/reports/gmv": {
+    "/admin/reports/gmv": {
       "get": {
         "operationId": "AdminReportingController_gmvReport_v1",
         "parameters": [
@@ -7076,11 +7076,11 @@
           }
         ],
         "tags": [
-          "Admin - Reporting"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/reports/orders": {
+    "/admin/reports/orders": {
       "get": {
         "operationId": "AdminReportingController_ordersReport_v1",
         "parameters": [
@@ -7112,11 +7112,11 @@
           }
         ],
         "tags": [
-          "Admin - Reporting"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/reports/refunds": {
+    "/admin/reports/refunds": {
       "get": {
         "operationId": "AdminReportingController_refundsReport_v1",
         "parameters": [
@@ -7148,11 +7148,11 @@
           }
         ],
         "tags": [
-          "Admin - Reporting"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/reports/sellers": {
+    "/admin/reports/sellers": {
       "get": {
         "operationId": "AdminReportingController_sellersReport_v1",
         "parameters": [],
@@ -7167,11 +7167,11 @@
           }
         ],
         "tags": [
-          "Admin - Reporting"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/reports/products": {
+    "/admin/reports/products": {
       "get": {
         "operationId": "AdminReportingController_productsReport_v1",
         "parameters": [],
@@ -7186,11 +7186,11 @@
           }
         ],
         "tags": [
-          "Admin - Reporting"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/reports/delivery": {
+    "/admin/reports/delivery": {
       "get": {
         "operationId": "AdminReportingController_deliveryReport_v1",
         "parameters": [],
@@ -7205,11 +7205,11 @@
           }
         ],
         "tags": [
-          "Admin - Reporting"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/reports/export": {
+    "/admin/reports/export": {
       "get": {
         "operationId": "AdminReportingController_exportReport_v1",
         "parameters": [],
@@ -7224,11 +7224,11 @@
           }
         ],
         "tags": [
-          "Admin - Reporting"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/audit-logs": {
+    "/admin/audit-logs": {
       "get": {
         "operationId": "AdminComplianceController_getAuditLogs_v1",
         "parameters": [],
@@ -7243,11 +7243,11 @@
           }
         ],
         "tags": [
-          "Admin - Compliance & RBAC"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/audit-logs/{id}": {
+    "/admin/audit-logs/{id}": {
       "get": {
         "operationId": "AdminComplianceController_getAuditLog_v1",
         "parameters": [
@@ -7271,11 +7271,11 @@
           }
         ],
         "tags": [
-          "Admin - Compliance & RBAC"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/compliance/data-requests": {
+    "/admin/compliance/data-requests": {
       "get": {
         "operationId": "AdminComplianceController_listDataRequests_v1",
         "parameters": [
@@ -7299,11 +7299,11 @@
           }
         ],
         "tags": [
-          "Admin - Compliance & RBAC"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/compliance/data-requests/{id}/process": {
+    "/admin/compliance/data-requests/{id}/process": {
       "post": {
         "operationId": "AdminComplianceController_processDataRequest_v1",
         "parameters": [
@@ -7327,11 +7327,11 @@
           }
         ],
         "tags": [
-          "Admin - Compliance & RBAC"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/compliance/retention": {
+    "/admin/compliance/retention": {
       "get": {
         "operationId": "AdminComplianceController_getRetentionPolicy_v1",
         "parameters": [],
@@ -7346,11 +7346,11 @@
           }
         ],
         "tags": [
-          "Admin - Compliance & RBAC"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/roles": {
+    "/admin/roles": {
       "get": {
         "operationId": "AdminComplianceController_getRoles_v1",
         "parameters": [],
@@ -7365,7 +7365,7 @@
           }
         ],
         "tags": [
-          "Admin - Compliance & RBAC"
+          "Admin"
         ]
       },
       "post": {
@@ -7382,11 +7382,11 @@
           }
         ],
         "tags": [
-          "Admin - Compliance & RBAC"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/roles/{id}": {
+    "/admin/roles/{id}": {
       "patch": {
         "operationId": "AdminComplianceController_updateRole_v1",
         "parameters": [
@@ -7410,11 +7410,11 @@
           }
         ],
         "tags": [
-          "Admin - Compliance & RBAC"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/users/{id}/roles": {
+    "/admin/users/{id}/roles": {
       "post": {
         "operationId": "AdminComplianceController_assignRole_v1",
         "parameters": [
@@ -7438,11 +7438,11 @@
           }
         ],
         "tags": [
-          "Admin - Compliance & RBAC"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/tax/vat-records": {
+    "/admin/tax/vat-records": {
       "get": {
         "operationId": "AdminComplianceController_getVatRecords_v1",
         "parameters": [],
@@ -7457,11 +7457,11 @@
           }
         ],
         "tags": [
-          "Admin - Compliance & RBAC"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/legal/pages": {
+    "/admin/legal/pages": {
       "get": {
         "operationId": "AdminComplianceController_getLegalPages_v1",
         "parameters": [],
@@ -7476,11 +7476,11 @@
           }
         ],
         "tags": [
-          "Admin - Compliance & RBAC"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/legal/pages/{slug}": {
+    "/admin/legal/pages/{slug}": {
       "patch": {
         "operationId": "AdminComplianceController_updateLegalPage_v1",
         "parameters": [
@@ -7504,11 +7504,11 @@
           }
         ],
         "tags": [
-          "Admin - Compliance & RBAC"
+          "Admin"
         ]
       }
     },
-    "/api/v1/collections/featured": {
+    "/collections/featured": {
       "get": {
         "operationId": "CollectionsController_featured_v1",
         "parameters": [],
@@ -7519,11 +7519,11 @@
         },
         "summary": "Featured collection (products tagged sections=featured)",
         "tags": [
-          "Collections"
+          "Catalogue"
         ]
       }
     },
-    "/api/v1/collections/flash-sales": {
+    "/collections/flash-sales": {
       "get": {
         "operationId": "CollectionsController_flashSales_v1",
         "parameters": [],
@@ -7534,11 +7534,11 @@
         },
         "summary": "Flash sales collection (products tagged sections=flash_sale)",
         "tags": [
-          "Collections"
+          "Catalogue"
         ]
       }
     },
-    "/api/v1/collections/best-deals": {
+    "/collections/best-deals": {
       "get": {
         "operationId": "CollectionsController_bestDeals_v1",
         "parameters": [],
@@ -7549,11 +7549,11 @@
         },
         "summary": "Best deals collection (products tagged sections=best_deals)",
         "tags": [
-          "Collections"
+          "Catalogue"
         ]
       }
     },
-    "/api/v1/brands": {
+    "/brands": {
       "get": {
         "operationId": "BrandsController_list_v1",
         "parameters": [],
@@ -7564,11 +7564,11 @@
         },
         "summary": "List brands with product counts",
         "tags": [
-          "Brands"
+          "Catalogue"
         ]
       }
     },
-    "/api/v1/version": {
+    "/version": {
       "get": {
         "operationId": "SystemController_getVersion_v1",
         "parameters": [],
@@ -7583,7 +7583,7 @@
         ]
       }
     },
-    "/api/v1/geo/cities": {
+    "/geo/cities": {
       "get": {
         "operationId": "SystemController_getCities_v1",
         "parameters": [],
@@ -7598,7 +7598,7 @@
         ]
       }
     },
-    "/api/v1/checkout/session": {
+    "/checkout/session": {
       "post": {
         "operationId": "CheckoutController_createSession_v1",
         "parameters": [],
@@ -7623,11 +7623,11 @@
           }
         ],
         "tags": [
-          "Checkout"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/checkout/{sessionId}": {
+    "/checkout/{sessionId}": {
       "get": {
         "operationId": "CheckoutController_getSession_v1",
         "parameters": [
@@ -7646,11 +7646,11 @@
           }
         },
         "tags": [
-          "Checkout"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/checkout/{sessionId}/address": {
+    "/checkout/{sessionId}/address": {
       "post": {
         "operationId": "CheckoutController_setAddress_v1",
         "parameters": [
@@ -7679,11 +7679,11 @@
           }
         },
         "tags": [
-          "Checkout"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/checkout/{sessionId}/address/validate": {
+    "/checkout/{sessionId}/address/validate": {
       "post": {
         "operationId": "CheckoutController_validateAddress_v1",
         "parameters": [
@@ -7702,11 +7702,11 @@
           }
         },
         "tags": [
-          "Checkout"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/checkout/{sessionId}/delivery-options": {
+    "/checkout/{sessionId}/delivery-options": {
       "get": {
         "operationId": "CheckoutController_getDeliveryOptions_v1",
         "parameters": [
@@ -7725,11 +7725,11 @@
           }
         },
         "tags": [
-          "Checkout"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/checkout/{sessionId}/delivery": {
+    "/checkout/{sessionId}/delivery": {
       "post": {
         "operationId": "CheckoutController_selectDelivery_v1",
         "parameters": [
@@ -7758,11 +7758,11 @@
           }
         },
         "tags": [
-          "Checkout"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/checkout/{sessionId}/pickup-details": {
+    "/checkout/{sessionId}/pickup-details": {
       "post": {
         "operationId": "CheckoutController_setPickupDetails_v1",
         "parameters": [
@@ -7791,11 +7791,11 @@
           }
         },
         "tags": [
-          "Checkout"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/checkout/{sessionId}/summary": {
+    "/checkout/{sessionId}/summary": {
       "get": {
         "operationId": "CheckoutController_getSummary_v1",
         "parameters": [
@@ -7814,11 +7814,11 @@
           }
         },
         "tags": [
-          "Checkout"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/checkout/{sessionId}/confirm": {
+    "/checkout/{sessionId}/confirm": {
       "post": {
         "operationId": "CheckoutController_confirmSession_v1",
         "parameters": [
@@ -7842,11 +7842,11 @@
           }
         ],
         "tags": [
-          "Checkout"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/logistics/quote": {
+    "/logistics/quote": {
       "post": {
         "operationId": "LogisticsController_getQuote_v1",
         "parameters": [],
@@ -7871,11 +7871,11 @@
           }
         ],
         "tags": [
-          "Logistics"
+          "Fulfilment"
         ]
       }
     },
-    "/api/v1/logistics/coverage/check": {
+    "/logistics/coverage/check": {
       "post": {
         "operationId": "LogisticsController_checkCoverage_v1",
         "parameters": [],
@@ -7900,11 +7900,11 @@
           }
         ],
         "tags": [
-          "Logistics"
+          "Fulfilment"
         ]
       }
     },
-    "/api/v1/logistics/booking": {
+    "/logistics/booking": {
       "post": {
         "operationId": "LogisticsController_bookCourier_v1",
         "parameters": [],
@@ -7929,11 +7929,11 @@
           }
         ],
         "tags": [
-          "Logistics"
+          "Fulfilment"
         ]
       }
     },
-    "/api/v1/logistics/booking/{id}": {
+    "/logistics/booking/{id}": {
       "get": {
         "operationId": "LogisticsController_getBooking_v1",
         "parameters": [
@@ -7957,11 +7957,11 @@
           }
         ],
         "tags": [
-          "Logistics"
+          "Fulfilment"
         ]
       }
     },
-    "/api/v1/logistics/booking/{id}/cancel": {
+    "/logistics/booking/{id}/cancel": {
       "post": {
         "operationId": "LogisticsController_cancelBooking_v1",
         "parameters": [
@@ -7985,11 +7985,11 @@
           }
         ],
         "tags": [
-          "Logistics"
+          "Fulfilment"
         ]
       }
     },
-    "/api/v1/logistics/booking/{id}/retry": {
+    "/logistics/booking/{id}/retry": {
       "post": {
         "operationId": "LogisticsController_retryBooking_v1",
         "parameters": [
@@ -8013,11 +8013,11 @@
           }
         ],
         "tags": [
-          "Logistics"
+          "Fulfilment"
         ]
       }
     },
-    "/api/v1/logistics/tracking/{bookingId}": {
+    "/logistics/tracking/{bookingId}": {
       "get": {
         "operationId": "LogisticsController_getTracking_v1",
         "parameters": [
@@ -8041,11 +8041,11 @@
           }
         ],
         "tags": [
-          "Logistics"
+          "Fulfilment"
         ]
       }
     },
-    "/api/v1/logistics/pod": {
+    "/logistics/pod": {
       "post": {
         "operationId": "LogisticsController_uploadPod_v1",
         "parameters": [],
@@ -8070,11 +8070,11 @@
           }
         ],
         "tags": [
-          "Logistics"
+          "Fulfilment"
         ]
       }
     },
-    "/api/v1/logistics/pickup/ready": {
+    "/logistics/pickup/ready": {
       "post": {
         "operationId": "LogisticsController_pickupReady_v1",
         "parameters": [],
@@ -8099,11 +8099,11 @@
           }
         ],
         "tags": [
-          "Logistics"
+          "Fulfilment"
         ]
       }
     },
-    "/api/v1/logistics/pickup/verify": {
+    "/logistics/pickup/verify": {
       "post": {
         "operationId": "LogisticsController_pickupVerify_v1",
         "parameters": [],
@@ -8128,11 +8128,11 @@
           }
         ],
         "tags": [
-          "Logistics"
+          "Fulfilment"
         ]
       }
     },
-    "/api/v1/logistics/pickup/complete": {
+    "/logistics/pickup/complete": {
       "post": {
         "operationId": "LogisticsController_pickupComplete_v1",
         "parameters": [],
@@ -8157,11 +8157,11 @@
           }
         ],
         "tags": [
-          "Logistics"
+          "Fulfilment"
         ]
       }
     },
-    "/api/v1/logistics/pickup/fail": {
+    "/logistics/pickup/fail": {
       "post": {
         "operationId": "LogisticsController_pickupFail_v1",
         "parameters": [],
@@ -8186,11 +8186,11 @@
           }
         ],
         "tags": [
-          "Logistics"
+          "Fulfilment"
         ]
       }
     },
-    "/api/v1/webhooks/logistics/uber": {
+    "/webhooks/logistics/uber": {
       "post": {
         "operationId": "LogisticsWebhooksController_uberWebhook_v1",
         "parameters": [],
@@ -8204,7 +8204,7 @@
         ]
       }
     },
-    "/api/v1/webhooks/logistics/bolt": {
+    "/webhooks/logistics/bolt": {
       "post": {
         "operationId": "LogisticsWebhooksController_boltWebhook_v1",
         "parameters": [],
@@ -8218,7 +8218,7 @@
         ]
       }
     },
-    "/api/v1/promo-slots/available": {
+    "/promo-slots/available": {
       "get": {
         "operationId": "PromoSlotsController_getAvailable_v1",
         "parameters": [
@@ -8242,11 +8242,11 @@
           }
         ],
         "tags": [
-          "Promo Slots"
+          "Sellers"
         ]
       }
     },
-    "/api/v1/promo-slots/types": {
+    "/promo-slots/types": {
       "get": {
         "operationId": "PromoSlotsController_getTypes_v1",
         "parameters": [],
@@ -8261,11 +8261,11 @@
           }
         ],
         "tags": [
-          "Promo Slots"
+          "Sellers"
         ]
       }
     },
-    "/api/v1/promo-slots/bookings": {
+    "/promo-slots/bookings": {
       "get": {
         "operationId": "PromoSlotsController_getMyBookings_v1",
         "parameters": [],
@@ -8280,7 +8280,7 @@
           }
         ],
         "tags": [
-          "Promo Slots"
+          "Sellers"
         ]
       },
       "post": {
@@ -8307,11 +8307,11 @@
           }
         ],
         "tags": [
-          "Promo Slots"
+          "Sellers"
         ]
       }
     },
-    "/api/v1/promo-slots/bookings/{id}": {
+    "/promo-slots/bookings/{id}": {
       "get": {
         "operationId": "PromoSlotsController_getBooking_v1",
         "parameters": [
@@ -8335,11 +8335,11 @@
           }
         ],
         "tags": [
-          "Promo Slots"
+          "Sellers"
         ]
       }
     },
-    "/api/v1/promo-slots/bookings/{id}/pay": {
+    "/promo-slots/bookings/{id}/pay": {
       "post": {
         "operationId": "PromoSlotsController_payForBooking_v1",
         "parameters": [
@@ -8363,11 +8363,11 @@
           }
         ],
         "tags": [
-          "Promo Slots"
+          "Sellers"
         ]
       }
     },
-    "/api/v1/promo-slots/bookings/{id}/cancel": {
+    "/promo-slots/bookings/{id}/cancel": {
       "post": {
         "operationId": "PromoSlotsController_cancelBooking_v1",
         "parameters": [
@@ -8391,11 +8391,11 @@
           }
         ],
         "tags": [
-          "Promo Slots"
+          "Sellers"
         ]
       }
     },
-    "/api/v1/promo-slots/bookings/{id}/performance": {
+    "/promo-slots/bookings/{id}/performance": {
       "get": {
         "operationId": "PromoSlotsController_getPerformance_v1",
         "parameters": [
@@ -8419,11 +8419,11 @@
           }
         ],
         "tags": [
-          "Promo Slots"
+          "Sellers"
         ]
       }
     },
-    "/api/v1/promo-slots/{slotId}/reserve": {
+    "/promo-slots/{slotId}/reserve": {
       "post": {
         "operationId": "PromoSlotsController_reserveSlot_v1",
         "parameters": [
@@ -8447,11 +8447,11 @@
           }
         ],
         "tags": [
-          "Promo Slots"
+          "Sellers"
         ]
       }
     },
-    "/api/v1/promo-slots/{slotId}": {
+    "/promo-slots/{slotId}": {
       "get": {
         "operationId": "PromoSlotsController_getSlot_v1",
         "parameters": [
@@ -8475,11 +8475,11 @@
           }
         ],
         "tags": [
-          "Promo Slots"
+          "Sellers"
         ]
       }
     },
-    "/api/v1/admin/promo-slots/types": {
+    "/admin/promo-slots/types": {
       "get": {
         "operationId": "AdminPromoSlotsController_listTypes_v1",
         "parameters": [],
@@ -8494,7 +8494,7 @@
           }
         ],
         "tags": [
-          "Admin - Promo Slots"
+          "Admin"
         ]
       },
       "post": {
@@ -8521,11 +8521,11 @@
           }
         ],
         "tags": [
-          "Admin - Promo Slots"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/promo-slots/types/{id}": {
+    "/admin/promo-slots/types/{id}": {
       "patch": {
         "operationId": "AdminPromoSlotsController_updateType_v1",
         "parameters": [
@@ -8559,7 +8559,7 @@
           }
         ],
         "tags": [
-          "Admin - Promo Slots"
+          "Admin"
         ]
       },
       "delete": {
@@ -8585,11 +8585,11 @@
           }
         ],
         "tags": [
-          "Admin - Promo Slots"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/promo-slots/duration-tiers": {
+    "/admin/promo-slots/duration-tiers": {
       "get": {
         "operationId": "AdminPromoSlotsController_listTiers_v1",
         "parameters": [],
@@ -8604,7 +8604,7 @@
           }
         ],
         "tags": [
-          "Admin - Promo Slots"
+          "Admin"
         ]
       },
       "post": {
@@ -8631,11 +8631,11 @@
           }
         ],
         "tags": [
-          "Admin - Promo Slots"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/promo-slots/duration-tiers/{id}": {
+    "/admin/promo-slots/duration-tiers/{id}": {
       "patch": {
         "operationId": "AdminPromoSlotsController_updateTier_v1",
         "parameters": [
@@ -8669,7 +8669,7 @@
           }
         ],
         "tags": [
-          "Admin - Promo Slots"
+          "Admin"
         ]
       },
       "delete": {
@@ -8695,11 +8695,11 @@
           }
         ],
         "tags": [
-          "Admin - Promo Slots"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/promo-slots/capacity": {
+    "/admin/promo-slots/capacity": {
       "get": {
         "operationId": "AdminPromoSlotsController_getCapacity_v1",
         "parameters": [],
@@ -8714,7 +8714,7 @@
           }
         ],
         "tags": [
-          "Admin - Promo Slots"
+          "Admin"
         ]
       },
       "patch": {
@@ -8731,11 +8731,11 @@
           }
         ],
         "tags": [
-          "Admin - Promo Slots"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/promo-slots/generate": {
+    "/admin/promo-slots/generate": {
       "post": {
         "operationId": "AdminPromoSlotsController_generateSlots_v1",
         "parameters": [],
@@ -8760,11 +8760,11 @@
           }
         ],
         "tags": [
-          "Admin - Promo Slots"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/promo-slots/bookings": {
+    "/admin/promo-slots/bookings": {
       "get": {
         "operationId": "AdminPromoSlotsController_listBookings_v1",
         "parameters": [
@@ -8788,11 +8788,11 @@
           }
         ],
         "tags": [
-          "Admin - Promo Slots"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/promo-slots/bookings/{id}/suspend": {
+    "/admin/promo-slots/bookings/{id}/suspend": {
       "post": {
         "operationId": "AdminPromoSlotsController_suspendBooking_v1",
         "parameters": [
@@ -8826,11 +8826,11 @@
           }
         ],
         "tags": [
-          "Admin - Promo Slots"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/promo-slots/bookings/{id}/refund": {
+    "/admin/promo-slots/bookings/{id}/refund": {
       "post": {
         "operationId": "AdminPromoSlotsController_refundBooking_v1",
         "parameters": [
@@ -8854,11 +8854,11 @@
           }
         ],
         "tags": [
-          "Admin - Promo Slots"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/promo-slots/reports/revenue": {
+    "/admin/promo-slots/reports/revenue": {
       "get": {
         "operationId": "AdminPromoSlotsController_getRevenueReport_v1",
         "parameters": [],
@@ -8873,11 +8873,11 @@
           }
         ],
         "tags": [
-          "Admin - Promo Slots"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/promo-slots/reports/utilization": {
+    "/admin/promo-slots/reports/utilization": {
       "get": {
         "operationId": "AdminPromoSlotsController_getUtilizationReport_v1",
         "parameters": [],
@@ -8892,11 +8892,11 @@
           }
         ],
         "tags": [
-          "Admin - Promo Slots"
+          "Admin"
         ]
       }
     },
-    "/api/v1/suppliers/me/products": {
+    "/suppliers/me/products": {
       "get": {
         "operationId": "SuppliersController_getMyProducts_v1",
         "parameters": [
@@ -9032,7 +9032,7 @@
         ]
       }
     },
-    "/api/v1/suppliers/me/products/{id}/stock": {
+    "/suppliers/me/products/{id}/stock": {
       "patch": {
         "operationId": "SuppliersController_updateStock_v1",
         "parameters": [
@@ -9070,7 +9070,7 @@
         ]
       }
     },
-    "/api/v1/suppliers/me/orders": {
+    "/suppliers/me/orders": {
       "get": {
         "operationId": "SuppliersController_getMyOrders_v1",
         "parameters": [
@@ -9127,7 +9127,7 @@
         ]
       }
     },
-    "/api/v1/suppliers/me/orders/{id}/ready": {
+    "/suppliers/me/orders/{id}/ready": {
       "post": {
         "operationId": "SuppliersController_markReady_v1",
         "parameters": [
@@ -9165,7 +9165,7 @@
         ]
       }
     },
-    "/api/v1/suppliers/me/orders/{id}/dispatch": {
+    "/suppliers/me/orders/{id}/dispatch": {
       "post": {
         "operationId": "SuppliersController_markDispatched_v1",
         "parameters": [
@@ -9203,7 +9203,7 @@
         ]
       }
     },
-    "/api/v1/suppliers/me/policies": {
+    "/suppliers/me/policies": {
       "get": {
         "operationId": "SuppliersController_getPolicies_v1",
         "parameters": [],
@@ -9222,7 +9222,7 @@
         ]
       }
     },
-    "/api/v1/support/tickets": {
+    "/support/tickets": {
       "post": {
         "operationId": "SupportController_createTicket_v1",
         "parameters": [],
@@ -9247,7 +9247,7 @@
           }
         ],
         "tags": [
-          "Support"
+          "Support & Notifications"
         ]
       },
       "get": {
@@ -9264,11 +9264,11 @@
           }
         ],
         "tags": [
-          "Support"
+          "Support & Notifications"
         ]
       }
     },
-    "/api/v1/support/tickets/{id}": {
+    "/support/tickets/{id}": {
       "get": {
         "operationId": "SupportController_getTicket_v1",
         "parameters": [
@@ -9292,11 +9292,11 @@
           }
         ],
         "tags": [
-          "Support"
+          "Support & Notifications"
         ]
       }
     },
-    "/api/v1/support/tickets/{id}/messages": {
+    "/support/tickets/{id}/messages": {
       "post": {
         "operationId": "SupportController_addMessage_v1",
         "parameters": [
@@ -9330,11 +9330,11 @@
           }
         ],
         "tags": [
-          "Support"
+          "Support & Notifications"
         ]
       }
     },
-    "/api/v1/admin/support/tickets": {
+    "/admin/support/tickets": {
       "get": {
         "operationId": "AdminSupportController_listAll_v1",
         "parameters": [
@@ -9366,11 +9366,11 @@
           }
         ],
         "tags": [
-          "Admin - Support"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/support/tickets/{id}/assign": {
+    "/admin/support/tickets/{id}/assign": {
       "post": {
         "operationId": "AdminSupportController_assign_v1",
         "parameters": [
@@ -9394,11 +9394,11 @@
           }
         ],
         "tags": [
-          "Admin - Support"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/support/tickets/{id}/escalate": {
+    "/admin/support/tickets/{id}/escalate": {
       "post": {
         "operationId": "AdminSupportController_escalate_v1",
         "parameters": [
@@ -9422,11 +9422,11 @@
           }
         ],
         "tags": [
-          "Admin - Support"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/support/tickets/{id}/close": {
+    "/admin/support/tickets/{id}/close": {
       "post": {
         "operationId": "AdminSupportController_close_v1",
         "parameters": [
@@ -9450,11 +9450,11 @@
           }
         ],
         "tags": [
-          "Admin - Support"
+          "Admin"
         ]
       }
     },
-    "/api/v1/webhooks/support/whatsapp/inbound": {
+    "/webhooks/support/whatsapp/inbound": {
       "post": {
         "operationId": "SupportWebhooksController_handleWhatsappInbound_v1",
         "parameters": [],
@@ -9468,7 +9468,7 @@
         ]
       }
     },
-    "/api/v1/notifications": {
+    "/notifications": {
       "get": {
         "operationId": "NotificationsController_list_v1",
         "parameters": [],
@@ -9483,11 +9483,11 @@
           }
         ],
         "tags": [
-          "Notifications"
+          "Support & Notifications"
         ]
       }
     },
-    "/api/v1/notifications/{id}/read": {
+    "/notifications/{id}/read": {
       "patch": {
         "operationId": "NotificationsController_markRead_v1",
         "parameters": [
@@ -9511,11 +9511,11 @@
           }
         ],
         "tags": [
-          "Notifications"
+          "Support & Notifications"
         ]
       }
     },
-    "/api/v1/notifications/preferences": {
+    "/notifications/preferences": {
       "post": {
         "operationId": "NotificationsController_updatePreferences_v1",
         "parameters": [],
@@ -9540,11 +9540,11 @@
           }
         ],
         "tags": [
-          "Notifications"
+          "Support & Notifications"
         ]
       }
     },
-    "/api/v1/admin/notifications/broadcast": {
+    "/admin/notifications/broadcast": {
       "post": {
         "operationId": "AdminNotificationsController_broadcast_v1",
         "parameters": [],
@@ -9569,11 +9569,11 @@
           }
         ],
         "tags": [
-          "Admin - Notifications"
+          "Admin"
         ]
       }
     },
-    "/api/v1/webhooks/sms/delivery": {
+    "/webhooks/sms/delivery": {
       "post": {
         "operationId": "NotificationWebhooksController_handleSmsDelivery_v1",
         "parameters": [],
@@ -9587,7 +9587,7 @@
         ]
       }
     },
-    "/api/v1/webhooks/whatsapp/delivery": {
+    "/webhooks/whatsapp/delivery": {
       "post": {
         "operationId": "NotificationWebhooksController_handleWhatsappDelivery_v1",
         "parameters": [],
@@ -9601,7 +9601,7 @@
         ]
       }
     },
-    "/api/v1/wallet": {
+    "/wallet": {
       "get": {
         "operationId": "WalletController_getWallet_v1",
         "parameters": [],
@@ -9616,11 +9616,11 @@
           }
         ],
         "tags": [
-          "Wallet"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/wallet/transactions": {
+    "/wallet/transactions": {
       "get": {
         "operationId": "WalletController_getTransactions_v1",
         "parameters": [],
@@ -9635,11 +9635,11 @@
           }
         ],
         "tags": [
-          "Wallet"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/wallet/topup/initialize": {
+    "/wallet/topup/initialize": {
       "post": {
         "operationId": "WalletController_topupInitialize_v1",
         "parameters": [],
@@ -9654,11 +9654,11 @@
           }
         ],
         "tags": [
-          "Wallet"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/wallet/debit": {
+    "/wallet/debit": {
       "post": {
         "operationId": "WalletController_debit_v1",
         "parameters": [],
@@ -9673,11 +9673,11 @@
           }
         ],
         "tags": [
-          "Wallet"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/wallet/credit": {
+    "/wallet/credit": {
       "post": {
         "operationId": "WalletController_credit_v1",
         "parameters": [],
@@ -9692,11 +9692,11 @@
           }
         ],
         "tags": [
-          "Wallet"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/wallet/transfer": {
+    "/wallet/transfer": {
       "post": {
         "operationId": "WalletController_transfer_v1",
         "parameters": [],
@@ -9711,11 +9711,11 @@
           }
         ],
         "tags": [
-          "Wallet"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/wallet/holds": {
+    "/wallet/holds": {
       "get": {
         "operationId": "WalletController_getHolds_v1",
         "parameters": [],
@@ -9730,11 +9730,11 @@
           }
         ],
         "tags": [
-          "Wallet"
+          "Commerce"
         ]
       }
     },
-    "/api/v1/partners/onboard": {
+    "/partners/onboard": {
       "post": {
         "operationId": "PartnersController_onboard_v1",
         "parameters": [],
@@ -9749,11 +9749,11 @@
           }
         ],
         "tags": [
-          "Partners"
+          "Partners & Rewards"
         ]
       }
     },
-    "/api/v1/partners/me/kyc": {
+    "/partners/me/kyc": {
       "post": {
         "operationId": "PartnersController_submitKyc_v1",
         "parameters": [],
@@ -9768,11 +9768,11 @@
           }
         ],
         "tags": [
-          "Partners"
+          "Partners & Rewards"
         ]
       }
     },
-    "/api/v1/partners/me/agreement": {
+    "/partners/me/agreement": {
       "post": {
         "operationId": "PartnersController_acceptAgreement_v1",
         "parameters": [],
@@ -9787,11 +9787,11 @@
           }
         ],
         "tags": [
-          "Partners"
+          "Partners & Rewards"
         ]
       }
     },
-    "/api/v1/partners/me/dashboard": {
+    "/partners/me/dashboard": {
       "get": {
         "operationId": "PartnersController_getDashboard_v1",
         "parameters": [],
@@ -9806,11 +9806,11 @@
           }
         ],
         "tags": [
-          "Partners"
+          "Partners & Rewards"
         ]
       }
     },
-    "/api/v1/partners/me/eligible-items": {
+    "/partners/me/eligible-items": {
       "get": {
         "operationId": "PartnersController_getEligibleItems_v1",
         "parameters": [],
@@ -9825,11 +9825,11 @@
           }
         ],
         "tags": [
-          "Partners"
+          "Partners & Rewards"
         ]
       }
     },
-    "/api/v1/partners/me/eligible-items/{id}": {
+    "/partners/me/eligible-items/{id}": {
       "get": {
         "operationId": "PartnersController_getEligibleItem_v1",
         "parameters": [
@@ -9853,11 +9853,11 @@
           }
         ],
         "tags": [
-          "Partners"
+          "Partners & Rewards"
         ]
       }
     },
-    "/api/v1/partners/me/commitments": {
+    "/partners/me/commitments": {
       "post": {
         "operationId": "PartnersController_createCommitment_v1",
         "parameters": [],
@@ -9872,7 +9872,7 @@
           }
         ],
         "tags": [
-          "Partners"
+          "Partners & Rewards"
         ]
       },
       "get": {
@@ -9889,11 +9889,11 @@
           }
         ],
         "tags": [
-          "Partners"
+          "Partners & Rewards"
         ]
       }
     },
-    "/api/v1/partners/me/commitments/{id}": {
+    "/partners/me/commitments/{id}": {
       "get": {
         "operationId": "PartnersController_getCommitment_v1",
         "parameters": [
@@ -9917,11 +9917,11 @@
           }
         ],
         "tags": [
-          "Partners"
+          "Partners & Rewards"
         ]
       }
     },
-    "/api/v1/partners/me/commitments/{id}/status": {
+    "/partners/me/commitments/{id}/status": {
       "get": {
         "operationId": "PartnersController_getCommitmentStatus_v1",
         "parameters": [
@@ -9945,11 +9945,11 @@
           }
         ],
         "tags": [
-          "Partners"
+          "Partners & Rewards"
         ]
       }
     },
-    "/api/v1/partners/me/settlements": {
+    "/partners/me/settlements": {
       "get": {
         "operationId": "PartnersController_getSettlements_v1",
         "parameters": [],
@@ -9964,11 +9964,11 @@
           }
         ],
         "tags": [
-          "Partners"
+          "Partners & Rewards"
         ]
       }
     },
-    "/api/v1/partners/me/disputes": {
+    "/partners/me/disputes": {
       "post": {
         "operationId": "PartnersController_raiseDispute_v1",
         "parameters": [],
@@ -9983,11 +9983,11 @@
           }
         ],
         "tags": [
-          "Partners"
+          "Partners & Rewards"
         ]
       }
     },
-    "/api/v1/admin/partners": {
+    "/admin/partners": {
       "get": {
         "operationId": "AdminPartnersController_listPartners_v1",
         "parameters": [],
@@ -10002,11 +10002,11 @@
           }
         ],
         "tags": [
-          "Admin - Partners"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/partners/{id}/approve": {
+    "/admin/partners/{id}/approve": {
       "post": {
         "operationId": "AdminPartnersController_approvePartner_v1",
         "parameters": [
@@ -10030,11 +10030,11 @@
           }
         ],
         "tags": [
-          "Admin - Partners"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/partners/eligibility-rules": {
+    "/admin/partners/eligibility-rules": {
       "get": {
         "operationId": "AdminPartnersController_getEligibilityRules_v1",
         "parameters": [],
@@ -10049,7 +10049,7 @@
           }
         ],
         "tags": [
-          "Admin - Partners"
+          "Admin"
         ]
       },
       "post": {
@@ -10066,11 +10066,11 @@
           }
         ],
         "tags": [
-          "Admin - Partners"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/partners/commitments": {
+    "/admin/partners/commitments": {
       "get": {
         "operationId": "AdminPartnersController_listAllCommitments_v1",
         "parameters": [],
@@ -10085,11 +10085,11 @@
           }
         ],
         "tags": [
-          "Admin - Partners"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/partners/commitments/{id}/approve": {
+    "/admin/partners/commitments/{id}/approve": {
       "post": {
         "operationId": "AdminPartnersController_approveCommitment_v1",
         "parameters": [
@@ -10113,11 +10113,11 @@
           }
         ],
         "tags": [
-          "Admin - Partners"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/partners/disputes/{id}/resolve": {
+    "/admin/partners/disputes/{id}/resolve": {
       "post": {
         "operationId": "AdminPartnersController_resolveDispute_v1",
         "parameters": [
@@ -10141,11 +10141,11 @@
           }
         ],
         "tags": [
-          "Admin - Partners"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/partners/funding-caps": {
+    "/admin/partners/funding-caps": {
       "get": {
         "operationId": "AdminPartnersController_getFundingCaps_v1",
         "parameters": [],
@@ -10160,7 +10160,7 @@
           }
         ],
         "tags": [
-          "Admin - Partners"
+          "Admin"
         ]
       },
       "post": {
@@ -10177,11 +10177,11 @@
           }
         ],
         "tags": [
-          "Admin - Partners"
+          "Admin"
         ]
       }
     },
-    "/api/v1/rewards/program": {
+    "/rewards/program": {
       "get": {
         "operationId": "RewardsController_getPublicProgram_v1",
         "parameters": [],
@@ -10196,11 +10196,11 @@
           }
         ],
         "tags": [
-          "Rewards"
+          "Partners & Rewards"
         ]
       }
     },
-    "/api/v1/rewards/me": {
+    "/rewards/me": {
       "get": {
         "operationId": "RewardsController_getMyRewards_v1",
         "parameters": [],
@@ -10215,11 +10215,11 @@
           }
         ],
         "tags": [
-          "Rewards"
+          "Partners & Rewards"
         ]
       }
     },
-    "/api/v1/rewards/me/cashback": {
+    "/rewards/me/cashback": {
       "get": {
         "operationId": "RewardsController_getCashback_v1",
         "parameters": [],
@@ -10234,11 +10234,11 @@
           }
         ],
         "tags": [
-          "Rewards"
+          "Partners & Rewards"
         ]
       }
     },
-    "/api/v1/rewards/me/transactions": {
+    "/rewards/me/transactions": {
       "get": {
         "operationId": "RewardsController_getTransactions_v1",
         "parameters": [],
@@ -10253,11 +10253,11 @@
           }
         ],
         "tags": [
-          "Rewards"
+          "Partners & Rewards"
         ]
       }
     },
-    "/api/v1/rewards/cashback/redeem": {
+    "/rewards/cashback/redeem": {
       "post": {
         "operationId": "RewardsController_redeemCashback_v1",
         "parameters": [],
@@ -10272,11 +10272,11 @@
           }
         ],
         "tags": [
-          "Rewards"
+          "Partners & Rewards"
         ]
       }
     },
-    "/api/v1/rewards/tiers": {
+    "/rewards/tiers": {
       "get": {
         "operationId": "RewardsController_getTiers_v1",
         "parameters": [],
@@ -10291,11 +10291,11 @@
           }
         ],
         "tags": [
-          "Rewards"
+          "Partners & Rewards"
         ]
       }
     },
-    "/api/v1/rewards/campaigns": {
+    "/rewards/campaigns": {
       "get": {
         "operationId": "RewardsController_getActiveCampaigns_v1",
         "parameters": [],
@@ -10310,11 +10310,11 @@
           }
         ],
         "tags": [
-          "Rewards"
+          "Partners & Rewards"
         ]
       }
     },
-    "/api/v1/rewards/affiliates/enroll": {
+    "/rewards/affiliates/enroll": {
       "post": {
         "operationId": "RewardsController_enrollAffiliate_v1",
         "parameters": [],
@@ -10329,11 +10329,11 @@
           }
         ],
         "tags": [
-          "Rewards"
+          "Partners & Rewards"
         ]
       }
     },
-    "/api/v1/rewards/affiliates/me": {
+    "/rewards/affiliates/me": {
       "get": {
         "operationId": "RewardsController_getAffiliateProfile_v1",
         "parameters": [],
@@ -10348,11 +10348,11 @@
           }
         ],
         "tags": [
-          "Rewards"
+          "Partners & Rewards"
         ]
       }
     },
-    "/api/v1/rewards/affiliates/me/earnings": {
+    "/rewards/affiliates/me/earnings": {
       "get": {
         "operationId": "RewardsController_getAffiliateEarnings_v1",
         "parameters": [],
@@ -10367,11 +10367,11 @@
           }
         ],
         "tags": [
-          "Rewards"
+          "Partners & Rewards"
         ]
       }
     },
-    "/api/v1/rewards/affiliates/me/payout": {
+    "/rewards/affiliates/me/payout": {
       "post": {
         "operationId": "RewardsController_requestPayout_v1",
         "parameters": [],
@@ -10386,11 +10386,11 @@
           }
         ],
         "tags": [
-          "Rewards"
+          "Partners & Rewards"
         ]
       }
     },
-    "/api/v1/rewards/affiliates/me/referrals": {
+    "/rewards/affiliates/me/referrals": {
       "get": {
         "operationId": "RewardsController_getReferrals_v1",
         "parameters": [],
@@ -10405,11 +10405,11 @@
           }
         ],
         "tags": [
-          "Rewards"
+          "Partners & Rewards"
         ]
       }
     },
-    "/api/v1/rewards/sellers/me/rewards": {
+    "/rewards/sellers/me/rewards": {
       "get": {
         "operationId": "RewardsController_getSellerRewards_v1",
         "parameters": [],
@@ -10424,11 +10424,11 @@
           }
         ],
         "tags": [
-          "Rewards"
+          "Partners & Rewards"
         ]
       }
     },
-    "/api/v1/rewards/financiers/me/rewards": {
+    "/rewards/financiers/me/rewards": {
       "get": {
         "operationId": "RewardsController_getFinancierRewards_v1",
         "parameters": [],
@@ -10443,11 +10443,11 @@
           }
         ],
         "tags": [
-          "Rewards"
+          "Partners & Rewards"
         ]
       }
     },
-    "/api/v1/admin/rewards/program": {
+    "/admin/rewards/program": {
       "get": {
         "operationId": "AdminRewardsController_getProgram_v1",
         "parameters": [],
@@ -10462,7 +10462,7 @@
           }
         ],
         "tags": [
-          "Admin - Rewards"
+          "Admin"
         ]
       },
       "post": {
@@ -10479,7 +10479,7 @@
           }
         ],
         "tags": [
-          "Admin - Rewards"
+          "Admin"
         ]
       },
       "patch": {
@@ -10496,11 +10496,11 @@
           }
         ],
         "tags": [
-          "Admin - Rewards"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/rewards/config": {
+    "/admin/rewards/config": {
       "get": {
         "operationId": "AdminRewardsController_getConfig_v1",
         "parameters": [],
@@ -10515,7 +10515,7 @@
           }
         ],
         "tags": [
-          "Admin - Rewards"
+          "Admin"
         ]
       },
       "patch": {
@@ -10532,11 +10532,11 @@
           }
         ],
         "tags": [
-          "Admin - Rewards"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/rewards/tiers": {
+    "/admin/rewards/tiers": {
       "get": {
         "operationId": "AdminRewardsController_listTiers_v1",
         "parameters": [],
@@ -10551,7 +10551,7 @@
           }
         ],
         "tags": [
-          "Admin - Rewards"
+          "Admin"
         ]
       },
       "post": {
@@ -10568,11 +10568,11 @@
           }
         ],
         "tags": [
-          "Admin - Rewards"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/rewards/tiers/{id}": {
+    "/admin/rewards/tiers/{id}": {
       "patch": {
         "operationId": "AdminRewardsController_updateTier_v1",
         "parameters": [
@@ -10596,7 +10596,7 @@
           }
         ],
         "tags": [
-          "Admin - Rewards"
+          "Admin"
         ]
       },
       "delete": {
@@ -10622,11 +10622,11 @@
           }
         ],
         "tags": [
-          "Admin - Rewards"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/rewards/campaigns": {
+    "/admin/rewards/campaigns": {
       "get": {
         "operationId": "AdminRewardsController_listCampaigns_v1",
         "parameters": [],
@@ -10641,7 +10641,7 @@
           }
         ],
         "tags": [
-          "Admin - Rewards"
+          "Admin"
         ]
       },
       "post": {
@@ -10658,11 +10658,11 @@
           }
         ],
         "tags": [
-          "Admin - Rewards"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/rewards/campaigns/{id}": {
+    "/admin/rewards/campaigns/{id}": {
       "patch": {
         "operationId": "AdminRewardsController_updateCampaign_v1",
         "parameters": [
@@ -10686,7 +10686,7 @@
           }
         ],
         "tags": [
-          "Admin - Rewards"
+          "Admin"
         ]
       },
       "delete": {
@@ -10712,11 +10712,11 @@
           }
         ],
         "tags": [
-          "Admin - Rewards"
+          "Admin"
         ]
       }
     },
-    "/api/v1/admin/rewards/fraud-alerts": {
+    "/admin/rewards/fraud-alerts": {
       "get": {
         "operationId": "AdminRewardsController_getFraudAlerts_v1",
         "parameters": [],
@@ -10731,7 +10731,7 @@
           }
         ],
         "tags": [
-          "Admin - Rewards"
+          "Admin"
         ]
       }
     }
@@ -10830,12 +10830,12 @@
   ],
   "servers": [
     {
-      "url": "https://cadna-mart-be-nsz2.onrender.com",
-      "description": "Production (Render)"
+      "url": "https://cadna-mart-be-nsz2.onrender.com/api/v1",
+      "description": "Production"
     },
     {
-      "url": "http://localhost:3000",
-      "description": "Local dev"
+      "url": "http://localhost:3000/api/v1",
+      "description": "Local"
     }
   ],
   "components": {

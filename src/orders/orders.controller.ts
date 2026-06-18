@@ -8,7 +8,7 @@ import { OrdersService } from './orders.service';
 import { OrderQueryDto } from './dto/order-query.dto';
 import { CancelOrderDto } from './dto/cancel-order.dto';
 
-@ApiTags('Orders')
+@ApiTags('Commerce')
 @ApiBearerAuth()
 @Controller('orders')
 export class OrdersController {

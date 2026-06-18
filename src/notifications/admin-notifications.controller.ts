@@ -6,7 +6,7 @@ import { AccountType } from '@users/enums/account-type.enum';
 import { NotificationsService } from './notifications.service';
 import { BroadcastDto } from './dto/notification.dto';
 
-@ApiTags('Admin - Notifications')
+@ApiTags('Admin')
 @ApiBearerAuth()
 @Controller('admin/notifications')
 export class AdminNotificationsController {

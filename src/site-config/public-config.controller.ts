@@ -3,7 +3,7 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Public } from '@auth/decorators/public.decorator';
 import { SiteConfigService } from './site-config.service';
 
-@ApiTags('Site Config')
+@ApiTags('System')
 @Controller('config')
 export class PublicConfigController {
   constructor(private readonly siteConfigService: SiteConfigService) {}

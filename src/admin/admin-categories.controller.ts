@@ -18,7 +18,7 @@ import { ParseObjectIdPipe } from '@common/pipes/parse-object-id.pipe';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 
-@ApiTags('Admin — Categories')
+@ApiTags('Admin')
 @ApiBearerAuth()
 @AccountTypes(AccountType.ADMIN)
 @Controller('admin/categories')

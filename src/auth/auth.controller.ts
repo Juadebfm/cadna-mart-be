@@ -44,7 +44,7 @@ import { CurrentUser } from './decorators/current-user.decorator';
 import { UsersService } from '@users/users.service';
 import { AuthEventsService } from '@auth-events/auth-events.service';
 
-@ApiTags('Auth')
+@ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
   constructor(

@@ -22,7 +22,7 @@ import { ParseObjectIdPipe } from '@common/pipes/parse-object-id.pipe';
 import { RejectProductDto } from './dto/reject-product.dto';
 import { FeatureProductDto } from './dto/feature-product.dto';
 
-@ApiTags('Admin — Products')
+@ApiTags('Admin')
 @ApiBearerAuth()
 @AccountTypes(AccountType.ADMIN)
 @Controller('admin/products')

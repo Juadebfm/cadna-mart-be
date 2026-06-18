@@ -8,7 +8,7 @@ import { PromoSlotsService } from './promo-slots.service';
 import { CreateBookingDto } from './dto/booking.dto';
 import { SellersService } from '@sellers/sellers.service';
 
-@ApiTags('Promo Slots')
+@ApiTags('Sellers')
 @ApiBearerAuth()
 @Controller('promo-slots')
 export class PromoSlotsController {

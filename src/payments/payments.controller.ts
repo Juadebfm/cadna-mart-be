@@ -7,7 +7,7 @@ import { AccountTypes } from '@auth/decorators/account-types.decorator';
 import { PaymentsService } from './payments.service';
 import { InitializePaymentDto } from './dto/initialize-payment.dto';
 
-@ApiTags('Payments')
+@ApiTags('Commerce')
 @ApiBearerAuth()
 @Controller('payments')
 export class PaymentsController {

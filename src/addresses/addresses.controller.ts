@@ -16,7 +16,7 @@ import { AddressesService } from './addresses.service';
 import { CreateAddressDto } from './dto/create-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
 
-@ApiTags('User Addresses')
+@ApiTags('Users')
 @ApiBearerAuth()
 @Controller('users/addresses')
 export class AddressesController {

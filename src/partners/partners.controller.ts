@@ -6,7 +6,7 @@ import { CurrentUser } from '@auth/decorators/current-user.decorator';
 import { AccountType } from '@users/enums/account-type.enum';
 import { PartnersRepository } from './partners.repository';
 
-@ApiTags('Partners')
+@ApiTags('Partners & Rewards')
 @ApiBearerAuth()
 @Controller('partners')
 export class PartnersController {
@@ -152,7 +152,7 @@ export class PartnersController {
   }
 }
 
-@ApiTags('Admin - Partners')
+@ApiTags('Admin')
 @ApiBearerAuth()
 @AccountTypes(AccountType.ADMIN)
 @Controller('admin/partners')

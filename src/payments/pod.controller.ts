@@ -2,7 +2,7 @@ import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query } from '@nestj
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '@auth/decorators/current-user.decorator';
 
-@ApiTags('Payments - Pay on Delivery')
+@ApiTags('Commerce')
 @ApiBearerAuth()
 @Controller('payments/pod')
 export class PodController {

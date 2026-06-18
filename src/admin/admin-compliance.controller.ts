@@ -19,7 +19,7 @@ import { Model, Types } from 'mongoose';
 import { DataRequest, DataRequestStatus } from '@data-requests/schemas/data-request.schema';
 import { SiteConfigService } from '@site-config/site-config.service';
 
-@ApiTags('Admin - Compliance & RBAC')
+@ApiTags('Admin')
 @ApiBearerAuth()
 @AccountTypes(AccountType.ADMIN)
 @Controller('admin')

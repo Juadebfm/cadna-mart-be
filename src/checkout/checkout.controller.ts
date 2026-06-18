@@ -8,7 +8,7 @@ import { SetCheckoutAddressDto } from './dto/set-address.dto';
 import { SelectDeliveryDto } from './dto/select-delivery.dto';
 import { PickupDetailsDto } from './dto/pickup-details.dto';
 
-@ApiTags('Checkout')
+@ApiTags('Commerce')
 @Controller('checkout')
 export class CheckoutController {
   constructor(private readonly checkoutService: CheckoutService) {}

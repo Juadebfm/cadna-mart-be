@@ -25,7 +25,7 @@ import { CartService } from './cart.service';
 import { AddCartItemDto, UpdateCartItemDto } from './dto/add-cart-item.dto';
 import { MergeCartDto } from './dto/merge-cart.dto';
 
-@ApiTags('Cart')
+@ApiTags('Commerce')
 @Controller('cart')
 export class CartController {
   constructor(private readonly cartService: CartService) {}

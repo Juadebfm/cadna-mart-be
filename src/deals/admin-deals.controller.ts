@@ -18,7 +18,7 @@ import { DealsService } from './deals.service';
 import { DealCampaignQueryDto } from './dto/deal-campaign-query.dto';
 import { AdminUpdateDealCampaignDto } from './dto/admin-update-deal-campaign.dto';
 
-@ApiTags('Admin — Deals')
+@ApiTags('Admin')
 @ApiBearerAuth()
 @AccountTypes(AccountType.ADMIN)
 @Controller('admin/deals/campaigns')

@@ -7,7 +7,7 @@ import { AccountType } from '@users/enums/account-type.enum';
 import { SupportService } from './support.service';
 import { CreateTicketDto, AddMessageDto } from './dto/ticket.dto';
 
-@ApiTags('Support')
+@ApiTags('Support & Notifications')
 @ApiBearerAuth()
 @Controller('support/tickets')
 export class SupportController {

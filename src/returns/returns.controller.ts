@@ -17,7 +17,7 @@ import { ReturnsService } from './returns.service';
 import { CreateReturnDto } from './dto/create-return.dto';
 import { AddEvidenceDto } from './dto/evidence.dto';
 
-@ApiTags('Returns')
+@ApiTags('Fulfilment')
 @ApiBearerAuth()
 @Controller('returns')
 export class ReturnsController {

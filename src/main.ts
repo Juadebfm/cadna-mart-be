@@ -174,8 +174,8 @@ async function bootstrap(): Promise<void> {
       )
       .setVersion('1.0')
       .setContact('Cadna Mart Engineering', '', 'cadnamart@gmail.com')
-      .addServer('https://cadna-mart-be-nsz2.onrender.com', 'Production (Render)')
-      .addServer(`http://localhost:${configService.app.port}`, 'Local dev')
+      .addServer('https://cadna-mart-be-nsz2.onrender.com/api/v1', 'Production')
+      .addServer(`http://localhost:${configService.app.port}/api/v1`, 'Local')
       .addBearerAuth(
         {
           type: 'http',
@@ -216,7 +216,19 @@ async function bootstrap(): Promise<void> {
       .addTag('Admin', 'Admin-only catalogue / seller / deals operations')
       .build();
 
-    const document = SwaggerModule.createDocument(app, swaggerConfig);
+    const rawDocument = SwaggerModule.createDocument(app, swaggerConfig);
+
+    // Strip /api/v1 from all paths so Postman imports with tag-based folders
+    // only, without an extra api/v1 nesting level. The server entries already
+    // carry the full base URL including /api/v1.
+    const fullPrefix = `/${configService.app.apiPrefix}/v${configService.app.apiDefaultVersion}`;
+    const strippedPaths: Record<string, unknown> = {};
+    for (const [path, value] of Object.entries(rawDocument.paths ?? {})) {
+      const clean = path.startsWith(fullPrefix) ? path.slice(fullPrefix.length) || '/' : path;
+      strippedPaths[clean] = value;
+    }
+    const document = { ...rawDocument, paths: strippedPaths } as typeof rawDocument;
+
     SwaggerModule.setup(`${configService.app.apiPrefix}/docs`, app, document, {
       swaggerOptions: {
         persistAuthorization: true,

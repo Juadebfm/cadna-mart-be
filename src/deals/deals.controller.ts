@@ -20,7 +20,7 @@ import { CreateDealCampaignDto } from './dto/create-deal-campaign.dto';
 import { UpdateDealCampaignDto } from './dto/update-deal-campaign.dto';
 import { DealCampaignQueryDto } from './dto/deal-campaign-query.dto';
 
-@ApiTags('Deals')
+@ApiTags('Sellers')
 @ApiBearerAuth()
 @AccountTypes(AccountType.SELLER)
 @Controller('deals/campaigns')

@@ -14,7 +14,7 @@ import { CurrentUser } from '@auth/decorators/current-user.decorator';
 import { NotificationsService } from './notifications.service';
 import { NotificationPreferencesDto } from './dto/notification.dto';
 
-@ApiTags('Notifications')
+@ApiTags('Support & Notifications')
 @ApiBearerAuth()
 @Controller('notifications')
 export class NotificationsController {

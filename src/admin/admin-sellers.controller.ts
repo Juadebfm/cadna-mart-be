@@ -11,7 +11,7 @@ import { UpdateSellerDto } from '@sellers/dto/update-seller.dto';
 import { SellerProfile } from '@sellers/schemas/seller-profile.schema';
 import { ParseObjectIdPipe } from '@common/pipes/parse-object-id.pipe';
 
-@ApiTags('Admin — Sellers')
+@ApiTags('Admin')
 @ApiBearerAuth()
 @AccountTypes(AccountType.ADMIN)
 @Controller('admin/sellers')

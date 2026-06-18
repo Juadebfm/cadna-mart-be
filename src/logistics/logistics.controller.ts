@@ -12,7 +12,7 @@ import {
   PickupActionDto,
 } from './dto/quote.dto';
 
-@ApiTags('Logistics')
+@ApiTags('Fulfilment')
 @ApiBearerAuth()
 @Controller('logistics')
 export class LogisticsController {

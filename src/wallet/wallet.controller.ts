@@ -5,7 +5,7 @@ import { AccountType } from '@users/enums/account-type.enum';
 import { CurrentUser } from '@auth/decorators/current-user.decorator';
 import { WalletService } from './wallet.service';
 
-@ApiTags('Wallet')
+@ApiTags('Commerce')
 @ApiBearerAuth()
 @Controller('wallet')
 export class WalletController {

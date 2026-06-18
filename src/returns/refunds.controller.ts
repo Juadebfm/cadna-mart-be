@@ -6,7 +6,7 @@ import { AccountType } from '@users/enums/account-type.enum';
 import { ReturnsService } from './returns.service';
 import { ProcessRefundDto } from './dto/process-refund.dto';
 
-@ApiTags('Refunds')
+@ApiTags('Fulfilment')
 @ApiBearerAuth()
 @Controller('refunds')
 export class RefundsController {

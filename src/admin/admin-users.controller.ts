@@ -18,7 +18,7 @@ import { UserQueryDto } from '@users/dto/user-query.dto';
 import { UpdateUserDto } from '@users/dto/update-user.dto';
 import { ParseObjectIdPipe } from '@common/pipes/parse-object-id.pipe';
 
-@ApiTags('Admin — Users')
+@ApiTags('Admin')
 @ApiBearerAuth()
 @AccountTypes(AccountType.ADMIN)
 @Controller('admin/users')

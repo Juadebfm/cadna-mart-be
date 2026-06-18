@@ -19,7 +19,7 @@ const DEFAULT_COVERAGE = [
   { city: 'Lagos', state: 'Lagos', enabled: true, zones: ['Island', 'Mainland', 'Lekki', 'Ajah'] },
 ];
 
-@ApiTags('Admin - Delivery Config')
+@ApiTags('Admin')
 @ApiBearerAuth()
 @AccountTypes(AccountType.ADMIN)
 @Controller('admin/delivery')

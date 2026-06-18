@@ -24,7 +24,7 @@ import { SellerAgreementDto } from './dto/seller-agreement.dto';
 import { SellerKycDto } from './dto/seller-kyc.dto';
 import { SellerOrderActionDto, SellerReturnDecisionDto } from './dto/seller-order-action.dto';
 
-@ApiTags('Sellers - Post-Order')
+@ApiTags('Sellers')
 @ApiBearerAuth()
 @AccountTypes(AccountType.SELLER)
 @Controller('sellers/me')

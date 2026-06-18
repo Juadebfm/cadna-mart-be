@@ -18,7 +18,7 @@ import { AccountType } from '@users/enums/account-type.enum';
 import { RewardsRepository } from './rewards.repository';
 import { RewardsAccount } from './schemas/rewards.schema';
 
-@ApiTags('Rewards')
+@ApiTags('Partners & Rewards')
 @ApiBearerAuth()
 @Controller('rewards')
 export class RewardsController {
@@ -176,7 +176,7 @@ export class RewardsController {
   }
 }
 
-@ApiTags('Admin - Rewards')
+@ApiTags('Admin')
 @ApiBearerAuth()
 @AccountTypes(AccountType.ADMIN)
 @Controller('admin/rewards')

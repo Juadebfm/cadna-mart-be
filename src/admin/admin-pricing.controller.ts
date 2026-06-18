@@ -11,7 +11,7 @@ import {
   SimulateDto,
 } from './pricing/dto/pricing-rule.dto';
 
-@ApiTags('Admin — Pricing')
+@ApiTags('Admin')
 @ApiBearerAuth()
 @AccountTypes(AccountType.ADMIN)
 @Controller('admin/pricing')

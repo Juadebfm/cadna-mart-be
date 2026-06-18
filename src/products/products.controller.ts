@@ -21,7 +21,7 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { PoliciesService } from '@policies/policies.service';
 
-@ApiTags('Products')
+@ApiTags('Catalogue')
 @Controller('products')
 export class ProductsController {
   constructor(

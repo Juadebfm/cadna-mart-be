@@ -22,7 +22,7 @@ import {
   AdminOrderReassignDto,
 } from './dto/admin-order.dto';
 
-@ApiTags('Admin - Orders & Ops')
+@ApiTags('Admin')
 @ApiBearerAuth()
 @AccountTypes(AccountType.ADMIN)
 @Controller('admin')

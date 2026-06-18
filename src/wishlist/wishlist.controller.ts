@@ -3,7 +3,7 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { CurrentUser } from '@auth/decorators/current-user.decorator';
 import { WishlistService } from './wishlist.service';
 
-@ApiTags('Wishlist')
+@ApiTags('Commerce')
 @ApiBearerAuth()
 @Controller('wishlist')
 export class WishlistController {
