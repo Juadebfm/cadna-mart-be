@@ -43,6 +43,9 @@ import { PromoSlotsModule } from './promo-slots/promo-slots.module';
 import { SuppliersModule } from './suppliers/suppliers.module';
 import { SupportModule } from './support/support.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { WalletModule } from './wallet/wallet.module';
+import { PartnersModule } from './partners/partners.module';
+import { RewardsModule } from './rewards/rewards.module';
 import { CorrelationIdMiddleware } from '@common/middleware/correlation-id.middleware';
 import { RequestLoggerMiddleware } from '@common/middleware/request-logger.middleware';
 import { AppController } from './app.controller';
@@ -98,6 +101,9 @@ import { AppService } from './app.service';
     SuppliersModule,
     SupportModule,
     NotificationsModule,
+    WalletModule,
+    PartnersModule,
+    RewardsModule,
   ],
   controllers: [AppController],
   providers: [
