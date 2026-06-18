@@ -129,7 +129,10 @@
       "^@payments/(.*)$": "<rootDir>/payments/$1",
       "^@returns/(.*)$": "<rootDir>/returns/$1",
       "^@logistics/(.*)$": "<rootDir>/logistics/$1",
-      "^@promo-slots/(.*)$": "<rootDir>/promo-slots/$1"
+      "^@promo-slots/(.*)$": "<rootDir>/promo-slots/$1",
+      "^@suppliers/(.*)$": "<rootDir>/suppliers/$1",
+      "^@support/(.*)$": "<rootDir>/support/$1",
+      "^@notifications/(.*)$": "<rootDir>/notifications/$1"
     }
   },
   "lint-staged": {
