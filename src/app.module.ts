@@ -40,6 +40,9 @@ import { PaymentsModule } from './payments/payments.module';
 import { ReturnsModule } from './returns/returns.module';
 import { LogisticsModule } from './logistics/logistics.module';
 import { PromoSlotsModule } from './promo-slots/promo-slots.module';
+import { SuppliersModule } from './suppliers/suppliers.module';
+import { SupportModule } from './support/support.module';
+import { NotificationsModule } from './notifications/notifications.module';
 import { CorrelationIdMiddleware } from '@common/middleware/correlation-id.middleware';
 import { RequestLoggerMiddleware } from '@common/middleware/request-logger.middleware';
 import { AppController } from './app.controller';
@@ -92,6 +95,9 @@ import { AppService } from './app.service';
     ReturnsModule,
     LogisticsModule,
     PromoSlotsModule,
+    SuppliersModule,
+    SupportModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [
