@@ -2,7 +2,7 @@
   "info": {
     "name": "Cadna Mart API",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "description": "All endpoints grouped into 12 flat folders. Each request uses {{baseUrl}} — set it in your active environment."
+    "description": "All endpoints in 12 flat folders. Set {{baseUrl}} in your active environment."
   },
   "auth": {
     "type": "bearer",
@@ -125,7 +125,7 @@
             "description": "Step 1: Start registration with email",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/RegisterEmailDto\"\n}",
+              "raw": "{\n  \"email\": \"john.doe@example.com\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -160,7 +160,7 @@
             "description": "Step 2: Provide personal details",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/RegisterDetailsDto\"\n}",
+              "raw": "{\n  \"sessionId\": \"session-uuid-here\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"dateOfBirth\": \"1990-01-15\",\n  \"phoneNumber\": \"+2348012345678\",\n  \"termsAccepted\": true\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -195,7 +195,7 @@
             "description": "Step 3: Set password and create account",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/RegisterPasswordDto\"\n}",
+              "raw": "{\n  \"sessionId\": \"session-uuid-here\",\n  \"password\": \"StrongP@ssw0rd1\",\n  \"confirmPassword\": \"StrongP@ssw0rd1\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -230,7 +230,7 @@
             "description": "Step 4: Verify email with OTP code",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/VerifyEmailDto\"\n}",
+              "raw": "{\n  \"email\": \"john.doe@example.com\",\n  \"code\": \"123456\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -265,7 +265,7 @@
             "description": "Resend email verification OTP",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/ResendOtpDto\"\n}",
+              "raw": "{\n  \"email\": \"john.doe@example.com\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -301,7 +301,7 @@
             "description": "Seller Step 1: Start registration with email",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/RegisterEmailDto\"\n}",
+              "raw": "{\n  \"email\": \"john.doe@example.com\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -337,7 +337,7 @@
             "description": "Seller Step 2: Provide personal + business details. Bank info is collected separately via POST /sellers/me/banking after login - do not send it here.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/RegisterSellerDetailsDto\"\n}",
+              "raw": "{\n  \"sessionId\": \"session-uuid-here\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"dateOfBirth\": \"1990-01-15\",\n  \"phoneNumber\": \"+2348012345678\",\n  \"businessName\": \"Steppers Store NG\",\n  \"businessRegistrationNumber\": \"RC-1234567\",\n  \"businessAddress\": \"Shop 15, Balogun Market, Lagos Island\",\n  \"businessType\": \"sole_proprietor\",\n  \"termsAccepted\": true\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -373,7 +373,7 @@
             "description": "Seller Step 3: Set password and create account. Bank info is collected separately via POST /sellers/me/banking after login.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/RegisterSellerPasswordDto\"\n}",
+              "raw": "{\n  \"sessionId\": \"session-uuid-here\",\n  \"password\": \"StrongP@ssw0rd1\",\n  \"confirmPassword\": \"StrongP@ssw0rd1\",\n  \"businessName\": \"Steppers Store NG\",\n  \"businessRegistrationNumber\": \"RC-1234567\",\n  \"businessAddress\": \"Shop 15, Balogun Market, Lagos Island\",\n  \"businessType\": \"sole_proprietor\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -409,7 +409,7 @@
             "description": "Seller Step 4: Verify email with OTP code",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/VerifyEmailDto\"\n}",
+              "raw": "{\n  \"email\": \"john.doe@example.com\",\n  \"code\": \"123456\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -443,7 +443,7 @@
             "description": "Single-call registration (orchestrates email + details + password steps)",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/RegisterDto\"\n}",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"dateOfBirth\": \"1990-01-15\",\n  \"phoneNumber\": \"+2348012345678\",\n  \"termsAccepted\": true,\n  \"password\": \"StrongP@ssw0rd!\",\n  \"confirmPassword\": \"StrongP@ssw0rd!\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -478,7 +478,7 @@
             "description": "Send OTP via email for login/email-verification/password-reset",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/OtpRequestDto\"\n}",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"purpose\": \"login\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -513,7 +513,7 @@
             "description": "Verify OTP code. Returns JWTs for login, message for verification, resetToken for password-reset",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/OtpVerifyDto\"\n}",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"code\": \"123456\",\n  \"purpose\": \"login\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -548,7 +548,7 @@
             "description": "Resend OTP (cooldown enforced)",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/OtpResendDto\"\n}",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"purpose\": \"login\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -583,7 +583,7 @@
             "description": "Login or register via Clerk OAuth (Google/Facebook)",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/ClerkLoginDto\"\n}",
+              "raw": "{\n  \"token\": \"sample-token\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -617,7 +617,7 @@
             "description": "Login with email and password. For passwordless email-OTP login, use /auth/otp/request then /auth/otp/verify.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/LoginDto\"\n}",
+              "raw": "{\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"StrongP@ssw0rd\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -652,7 +652,7 @@
             "description": "Login with email and password (spec alias of /login)",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/LoginDto\"\n}",
+              "raw": "{\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"StrongP@ssw0rd\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -687,7 +687,7 @@
             "description": "Verify 2FA code during login",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/Verify2faLoginDto\"\n}",
+              "raw": "{\n  \"email\": \"john.doe@example.com\",\n  \"code\": \"123456\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -721,7 +721,7 @@
             "description": "Request password reset OTP",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/ForgotPasswordDto\"\n}",
+              "raw": "{\n  \"email\": \"john.doe@example.com\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -757,7 +757,7 @@
             "description": "Request password reset OTP (spec alias of /forgot-password)",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/ForgotPasswordDto\"\n}",
+              "raw": "{\n  \"email\": \"john.doe@example.com\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -792,7 +792,7 @@
             "description": "Verify password reset OTP",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/ForgotPasswordVerifyDto\"\n}",
+              "raw": "{\n  \"email\": \"john.doe@example.com\",\n  \"code\": \"123456\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -827,7 +827,7 @@
             "description": "Reset password with reset token",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/ForgotPasswordResetDto\"\n}",
+              "raw": "{\n  \"resetToken\": \"jwt-reset-token-here\",\n  \"password\": \"NewStr0ngP@ss!\",\n  \"confirmPassword\": \"NewStr0ngP@ss!\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -863,7 +863,7 @@
             "description": "Confirm password reset with token (spec alias of /forgot-password/reset)",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/ForgotPasswordResetDto\"\n}",
+              "raw": "{\n  \"resetToken\": \"jwt-reset-token-here\",\n  \"password\": \"NewStr0ngP@ss!\",\n  \"confirmPassword\": \"NewStr0ngP@ss!\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -918,7 +918,7 @@
             "description": "Confirm 2FA enable with OTP",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/Enable2faDto\"\n}",
+              "raw": "{\n  \"code\": \"123456\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -953,7 +953,7 @@
             "description": "Disable 2FA with OTP verification",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/Enable2faDto\"\n}",
+              "raw": "{\n  \"code\": \"123456\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -987,7 +987,7 @@
             "description": "Refresh access token",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/RefreshTokenDto\"\n}",
+              "raw": "{\n  \"refreshToken\": \"sample-token\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1135,7 +1135,7 @@
             "description": "Update the current user profile",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/UpdateProfileDto\"\n}",
+              "raw": "{\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Doe\",\n  \"phoneNumber\": \"+2348012345678\",\n  \"dateOfBirth\": \"1990-01-15\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1170,7 +1170,7 @@
             "description": "Set marketing consent (NDPR)",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/MarketingConsentDto\"\n}",
+              "raw": "{\n  \"optIn\": true\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1205,7 +1205,7 @@
             "description": "Submit right-to-be-forgotten request (NDPR)",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/DataDeleteRequestDto\"\n}",
+              "raw": "{\n  \"reason\": \"Closing account\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1278,7 +1278,7 @@
             "description": "Add a new address",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/CreateAddressDto\"\n}",
+              "raw": "{\n  \"label\": \"Home\",\n  \"recipientName\": \"Jane Doe\",\n  \"phoneNumber\": \"+2348012345678\",\n  \"street1\": \"12 Allen Avenue\",\n  \"street2\": \"Flat 3B\",\n  \"city\": \"Ikeja\",\n  \"state\": \"Lagos\",\n  \"country\": \"Nigeria\",\n  \"postalCode\": \"100001\",\n  \"isDefault\": false\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1313,7 +1313,7 @@
             "description": "Update an address",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/UpdateAddressDto\"\n}",
+              "raw": "{\n  \"label\": \"Home\",\n  \"recipientName\": \"Jane Doe\",\n  \"phoneNumber\": \"+2348012345678\",\n  \"street1\": \"12 Allen Avenue\",\n  \"street2\": \"Flat 3B\",\n  \"city\": \"Ikeja\",\n  \"state\": \"Lagos\",\n  \"country\": \"Nigeria\",\n  \"postalCode\": \"100001\",\n  \"isDefault\": false\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1375,7 +1375,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/categories?tree=&includeCounts=",
+              "raw": "{{baseUrl}}/categories",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -1426,7 +1426,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/products?q=&section=&category=&subCategory=&brand=&minPrice=&maxPrice=&inStock=&ratingGte=&sort=&page=&limit=",
+              "raw": "{{baseUrl}}/products",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -1535,7 +1535,7 @@
             "description": "Create a product (Seller or Admin)",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/CreateProductDto\"\n}",
+              "raw": "{\n  \"name\": \"Sample Name\",\n  \"brand\": \"\",\n  \"sku\": \"\",\n  \"sellerId\": \"64a1f2e3b4c5d6e7f8a9b0c1\",\n  \"categoryId\": \"64a1f2e3b4c5d6e7f8a9b0c1\",\n  \"subCategoryId\": \"64a1f2e3b4c5d6e7f8a9b0c1\",\n  \"priceAmount\": 100000,\n  \"originalPriceAmount\": 100000,\n  \"discountPercent\": 0,\n  \"thumbnailUrl\": \"https://example.com/image.jpg\",\n  \"gallery\": [\n    {\n      \"id\": \"64a1f2e3b4c5d6e7f8a9b0c1\",\n      \"url\": \"https://example.com/image.jpg\",\n      \"alt\": \"\"\n    }\n  ],\n  \"variantAxes\": [\n    {\n      \"name\": \"Sample Name\",\n      \"displayName\": \"Sample Name\",\n      \"options\": [\n        {\n          \"id\": \"64a1f2e3b4c5d6e7f8a9b0c1\",\n          \"label\": \"\",\n          \"swatchHex\": null\n        }\n      ]\n    }\n  ],\n  \"variants\": [\n    {\n      \"id\": \"64a1f2e3b4c5d6e7f8a9b0c1\",\n      \"sku\": \"\",\n      \"attributes\": {},\n      \"priceAmount\": 100000,\n      \"stockQty\": 1,\n      \"isInStock\": false,\n      \"images\": [\n        \"\"\n      ]\n    }\n  ],\n  \"defaultVariantId\": \"64a1f2e3b4c5d6e7f8a9b0c1\",\n  \"descriptionHtml\": \"Sample text here\",\n  \"tabs\": [\n    {\n      \"label\": \"\",\n      \"contentHtml\": \"\"\n    }\n  ],\n  \"specifications\": [\n    {\n      \"name\": \"Sample Name\",\n      \"value\": \"\"\n    }\n  ],\n  \"breadcrumbs\": [\n    {\n      \"label\": \"\",\n      \"url\": {}\n    }\n  ],\n  \"badge\": \"\",\n  \"sections\": [\n    \"\"\n  ],\n  \"isActive\": false,\n  \"inventoryStatus\": \"\",\n  \"returnPolicy\": {}\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1684,7 +1684,7 @@
             "description": "Update a product (owner Seller or Admin)",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/UpdateProductDto\"\n}",
+              "raw": "{\n  \"name\": \"Sample Name\",\n  \"brand\": \"\",\n  \"sku\": \"\",\n  \"sellerId\": \"64a1f2e3b4c5d6e7f8a9b0c1\",\n  \"categoryId\": \"64a1f2e3b4c5d6e7f8a9b0c1\",\n  \"subCategoryId\": \"64a1f2e3b4c5d6e7f8a9b0c1\",\n  \"priceAmount\": 100000,\n  \"originalPriceAmount\": 100000,\n  \"discountPercent\": 0,\n  \"thumbnailUrl\": \"https://example.com/image.jpg\",\n  \"gallery\": [\n    {\n      \"id\": \"64a1f2e3b4c5d6e7f8a9b0c1\",\n      \"url\": \"https://example.com/image.jpg\",\n      \"alt\": \"\"\n    }\n  ],\n  \"variantAxes\": [\n    {\n      \"name\": \"Sample Name\",\n      \"displayName\": \"Sample Name\",\n      \"options\": [\n        {\n          \"id\": \"64a1f2e3b4c5d6e7f8a9b0c1\",\n          \"label\": \"\",\n          \"swatchHex\": null\n        }\n      ]\n    }\n  ],\n  \"variants\": [\n    {\n      \"id\": \"64a1f2e3b4c5d6e7f8a9b0c1\",\n      \"sku\": \"\",\n      \"attributes\": {},\n      \"priceAmount\": 100000,\n      \"stockQty\": 1,\n      \"isInStock\": false,\n      \"images\": [\n        \"\"\n      ]\n    }\n  ],\n  \"defaultVariantId\": \"64a1f2e3b4c5d6e7f8a9b0c1\",\n  \"descriptionHtml\": \"Sample text here\",\n  \"tabs\": [\n    {\n      \"label\": \"\",\n      \"contentHtml\": \"\"\n    }\n  ],\n  \"specifications\": [\n    {\n      \"name\": \"Sample Name\",\n      \"value\": \"\"\n    }\n  ],\n  \"breadcrumbs\": [\n    {\n      \"label\": \"\",\n      \"url\": {}\n    }\n  ],\n  \"badge\": \"\",\n  \"sections\": [\n    \"\"\n  ],\n  \"isActive\": false,\n  \"inventoryStatus\": \"\",\n  \"returnPolicy\": {}\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1719,7 +1719,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/categories/:slug/products?q=&section=&category=&subCategory=&brand=&minPrice=&maxPrice=&inStock=&ratingGte=&sort=&page=&limit=",
+              "raw": "{{baseUrl}}/categories/:slug/products",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -1886,7 +1886,7 @@
             "description": "Write a review for a product (one per user per product)",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/CreateReviewDto\"\n}",
+              "raw": "{\n  \"rating\": 0,\n  \"title\": \"\",\n  \"comment\": \"\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1942,7 +1942,7 @@
             "description": "Edit your own review",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/UpdateReviewDto\"\n}",
+              "raw": "{\n  \"rating\": 0,\n  \"title\": {},\n  \"comment\": {}\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1977,7 +1977,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/home?limitPerSection=&location=",
+              "raw": "{{baseUrl}}/home",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -2280,7 +2280,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/InitializePaymentDto\"\n}",
+              "raw": "{}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -2576,7 +2576,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/orders?status=&page=&limit=",
+              "raw": "{{baseUrl}}/orders",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -2758,7 +2758,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/CancelOrderDto\"\n}",
+              "raw": "{\n  \"reason\": \"Sample text here\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -2867,7 +2867,7 @@
             "description": "Add an item to a cart",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/AddCartItemDto\"\n}",
+              "raw": "{\n  \"productId\": \"product-id\",\n  \"variantId\": \"variant-id\",\n  \"quantity\": 1\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -2903,7 +2903,7 @@
             "description": "Update quantity of an item in a cart",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/UpdateCartItemDto\"\n}",
+              "raw": "{\n  \"quantity\": 2\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -2959,7 +2959,7 @@
             "description": "Merge a guest cart into the authenticated user cart",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/MergeCartDto\"\n}",
+              "raw": "{\n  \"guestToken\": \"sample-token\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3033,7 +3033,7 @@
             "description": "Add item to current user's primary cart (legacy)",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/AddCartItemDto\"\n}",
+              "raw": "{\n  \"productId\": \"product-id\",\n  \"variantId\": \"variant-id\",\n  \"quantity\": 1\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3068,7 +3068,7 @@
             "description": "Update cart item quantity (legacy)",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/UpdateCartItemDto\"\n}",
+              "raw": "{\n  \"quantity\": 2\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3177,7 +3177,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/CreateCheckoutSessionDto\"\n}",
+              "raw": "{}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3229,7 +3229,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/SetCheckoutAddressDto\"\n}",
+              "raw": "{}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3302,7 +3302,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/SelectDeliveryDto\"\n}",
+              "raw": "{}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3336,7 +3336,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/PickupDetailsDto\"\n}",
+              "raw": "{}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3537,7 +3537,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/CreateReturnDto\"\n}",
+              "raw": "{}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3644,7 +3644,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/AddEvidenceDto\"\n}",
+              "raw": "{}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3678,7 +3678,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/ProcessRefundDto\"\n}",
+              "raw": "{}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3729,7 +3729,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/LogisticsQuoteDto\"\n}",
+              "raw": "{}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3763,7 +3763,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/CoverageCheckDto\"\n}",
+              "raw": "{}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3796,7 +3796,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/BookCourierDto\"\n}",
+              "raw": "{}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3907,7 +3907,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/PodUploadDto\"\n}",
+              "raw": "{}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3941,7 +3941,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/PickupActionDto\"\n}",
+              "raw": "{}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3975,7 +3975,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/PickupActionDto\"\n}",
+              "raw": "{}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -4009,7 +4009,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/PickupActionDto\"\n}",
+              "raw": "{}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -4043,7 +4043,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/PickupActionDto\"\n}",
+              "raw": "{}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -4082,7 +4082,7 @@
             "description": "Create a deal campaign",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/CreateDealCampaignDto\"\n}",
+              "raw": "{\n  \"title\": \"Friday Mega Flash Sales\",\n  \"selectedProductIds\": [\n    \"\"\n  ],\n  \"startsAt\": \"\",\n  \"endsAt\": \"\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -4098,7 +4098,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/deals/campaigns/my?status=&paymentStatus=&sellerId=&page=&limit=",
+              "raw": "{{baseUrl}}/deals/campaigns/my",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -4191,7 +4191,7 @@
             "description": "Update one of my deal campaigns",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/UpdateDealCampaignDto\"\n}",
+              "raw": "{\n  \"title\": \"Weekend Flash Sales\",\n  \"selectedProductIds\": [\n    \"\"\n  ],\n  \"startsAt\": \"\",\n  \"endsAt\": \"\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -4268,7 +4268,7 @@
             "description": "Public single-step seller registration — creates account, profile, and sends verification email",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/OnboardSellerDto\"\n}",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"Password123!\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"businessName\": \"Sample Name\",\n  \"businessAddress\": \"\",\n  \"businessType\": \"sole_proprietorship\",\n  \"phoneNumber\": \"+2348012345678\",\n  \"businessRegistrationNumber\": \"\",\n  \"termsAccepted\": false\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -4321,7 +4321,7 @@
             "description": "Update your seller profile (spec alias of PATCH /sellers/my)",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/UpdateSellerDto\"\n}",
+              "raw": "{\n  \"name\": \"Sample Name\",\n  \"logoUrl\": \"https://example.com/image.jpg\",\n  \"location\": \"\",\n  \"deliveryTimeRange\": \"\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -4337,7 +4337,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/sellers/me/products?q=&section=&category=&subCategory=&brand=&minPrice=&maxPrice=&inStock=&ratingGte=&sort=&page=&limit=",
+              "raw": "{{baseUrl}}/sellers/me/products",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -4450,7 +4450,7 @@
             "description": "Create a product under your seller profile",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/CreateMyProductDto\"\n}",
+              "raw": "{\n  \"name\": \"Sample Name\",\n  \"brand\": \"\",\n  \"sku\": \"\",\n  \"categoryId\": \"64a1f2e3b4c5d6e7f8a9b0c1\",\n  \"subCategoryId\": \"64a1f2e3b4c5d6e7f8a9b0c1\",\n  \"priceAmount\": 100000,\n  \"originalPriceAmount\": 100000,\n  \"discountPercent\": 0,\n  \"thumbnailUrl\": \"https://example.com/image.jpg\",\n  \"gallery\": [\n    {\n      \"id\": \"64a1f2e3b4c5d6e7f8a9b0c1\",\n      \"url\": \"https://example.com/image.jpg\",\n      \"alt\": \"\"\n    }\n  ],\n  \"variantAxes\": [\n    {\n      \"name\": \"Sample Name\",\n      \"displayName\": \"Sample Name\",\n      \"options\": [\n        {\n          \"id\": \"64a1f2e3b4c5d6e7f8a9b0c1\",\n          \"label\": \"\",\n          \"swatchHex\": null\n        }\n      ]\n    }\n  ],\n  \"variants\": [\n    {\n      \"id\": \"64a1f2e3b4c5d6e7f8a9b0c1\",\n      \"sku\": \"\",\n      \"attributes\": {},\n      \"priceAmount\": 100000,\n      \"stockQty\": 1,\n      \"isInStock\": false,\n      \"images\": [\n        \"\"\n      ]\n    }\n  ],\n  \"defaultVariantId\": \"64a1f2e3b4c5d6e7f8a9b0c1\",\n  \"descriptionHtml\": \"Sample text here\",\n  \"tabs\": [\n    {\n      \"label\": \"\",\n      \"contentHtml\": \"\"\n    }\n  ],\n  \"specifications\": [\n    {\n      \"name\": \"Sample Name\",\n      \"value\": \"\"\n    }\n  ],\n  \"breadcrumbs\": [\n    {\n      \"label\": \"\",\n      \"url\": {}\n    }\n  ],\n  \"badge\": \"\",\n  \"sections\": [\n    \"\"\n  ],\n  \"isActive\": false,\n  \"inventoryStatus\": \"\",\n  \"returnPolicy\": {}\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -4486,7 +4486,7 @@
             "description": "Update one of your own product listings",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/UpdateProductDto\"\n}",
+              "raw": "{\n  \"name\": \"Sample Name\",\n  \"brand\": \"\",\n  \"sku\": \"\",\n  \"sellerId\": \"64a1f2e3b4c5d6e7f8a9b0c1\",\n  \"categoryId\": \"64a1f2e3b4c5d6e7f8a9b0c1\",\n  \"subCategoryId\": \"64a1f2e3b4c5d6e7f8a9b0c1\",\n  \"priceAmount\": 100000,\n  \"originalPriceAmount\": 100000,\n  \"discountPercent\": 0,\n  \"thumbnailUrl\": \"https://example.com/image.jpg\",\n  \"gallery\": [\n    {\n      \"id\": \"64a1f2e3b4c5d6e7f8a9b0c1\",\n      \"url\": \"https://example.com/image.jpg\",\n      \"alt\": \"\"\n    }\n  ],\n  \"variantAxes\": [\n    {\n      \"name\": \"Sample Name\",\n      \"displayName\": \"Sample Name\",\n      \"options\": [\n        {\n          \"id\": \"64a1f2e3b4c5d6e7f8a9b0c1\",\n          \"label\": \"\",\n          \"swatchHex\": null\n        }\n      ]\n    }\n  ],\n  \"variants\": [\n    {\n      \"id\": \"64a1f2e3b4c5d6e7f8a9b0c1\",\n      \"sku\": \"\",\n      \"attributes\": {},\n      \"priceAmount\": 100000,\n      \"stockQty\": 1,\n      \"isInStock\": false,\n      \"images\": [\n        \"\"\n      ]\n    }\n  ],\n  \"defaultVariantId\": \"64a1f2e3b4c5d6e7f8a9b0c1\",\n  \"descriptionHtml\": \"Sample text here\",\n  \"tabs\": [\n    {\n      \"label\": \"\",\n      \"contentHtml\": \"\"\n    }\n  ],\n  \"specifications\": [\n    {\n      \"name\": \"Sample Name\",\n      \"value\": \"\"\n    }\n  ],\n  \"breadcrumbs\": [\n    {\n      \"label\": \"\",\n      \"url\": {}\n    }\n  ],\n  \"badge\": \"\",\n  \"sections\": [\n    \"\"\n  ],\n  \"isActive\": false,\n  \"inventoryStatus\": \"\",\n  \"returnPolicy\": {}\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -4544,7 +4544,7 @@
             "description": "Attach uploaded image URLs to one of your products",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/AttachProductImagesDto\"\n}",
+              "raw": "{\n  \"images\": [\n    {\n      \"url\": \"https://example.com/image.jpg\",\n      \"alt\": {}\n    }\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -4580,7 +4580,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/sellers/:sellerSlug/products?q=&section=&category=&subCategory=&brand=&minPrice=&maxPrice=&inStock=&ratingGte=&sort=&page=&limit=",
+              "raw": "{{baseUrl}}/sellers/:sellerSlug/products",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -4731,7 +4731,7 @@
             "description": "Create your seller profile (one per seller)",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/CreateSellerDto\"\n}",
+              "raw": "{\n  \"name\": \"Sample Name\",\n  \"logoUrl\": \"https://example.com/image.jpg\",\n  \"location\": \"\",\n  \"deliveryTimeRange\": \"\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -4784,7 +4784,7 @@
             "description": "Update your seller profile",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/UpdateSellerDto\"\n}",
+              "raw": "{\n  \"name\": \"Sample Name\",\n  \"logoUrl\": \"https://example.com/image.jpg\",\n  \"location\": \"\",\n  \"deliveryTimeRange\": \"\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -4839,7 +4839,7 @@
             "description": "Submit/update your seller bank/payout details. Required once after seller registration; collected by the FE on the same wizard screen but POSTed here after login (kept off the public registration endpoints).",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/BankingDetailsDto\"\n}",
+              "raw": "{\n  \"bankName\": \"Access Bank\",\n  \"bankAccountNumber\": \"0123456789\",\n  \"bankAccountName\": \"John Doe Enterprises\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -4873,7 +4873,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/SellerAgreementDto\"\n}",
+              "raw": "{}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -4907,7 +4907,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/SellerKycDto\"\n}",
+              "raw": "{}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -4923,7 +4923,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/sellers/me/orders?status=&page=&limit=",
+              "raw": "{{baseUrl}}/sellers/me/orders",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -4982,7 +4982,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/SellerOrderActionDto\"\n}",
+              "raw": "{}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -5018,7 +5018,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/SellerOrderActionDto\"\n}",
+              "raw": "{}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -5073,7 +5073,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/SellerReturnDecisionDto\"\n}",
+              "raw": "{}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -5206,7 +5206,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/CreateBookingDto\"\n}",
+              "raw": "{}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -5343,7 +5343,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/suppliers/me/products?q=&section=&category=&subCategory=&brand=&minPrice=&maxPrice=&inStock=&ratingGte=&sort=&page=&limit=",
+              "raw": "{{baseUrl}}/suppliers/me/products",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -5456,7 +5456,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/StockUpdateDto\"\n}",
+              "raw": "{}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -5472,7 +5472,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/suppliers/me/orders?status=&page=&limit=",
+              "raw": "{{baseUrl}}/suppliers/me/orders",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -5531,7 +5531,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/SupplierOrderActionDto\"\n}",
+              "raw": "{}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -5567,7 +5567,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/SupplierOrderActionDto\"\n}",
+              "raw": "{}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -5624,7 +5624,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/CreateTicketDto\"\n}",
+              "raw": "{}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -5696,7 +5696,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/AddMessageDto\"\n}",
+              "raw": "{}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -5765,7 +5765,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/NotificationPreferencesDto\"\n}",
+              "raw": "{}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -6289,7 +6289,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/admin/deals/campaigns?status=&paymentStatus=&sellerId=&page=&limit=",
+              "raw": "{{baseUrl}}/admin/deals/campaigns",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -6382,7 +6382,7 @@
             "description": "Update a deal campaign",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/AdminUpdateDealCampaignDto\"\n}",
+              "raw": "{\n  \"title\": \"Friday Mega Flash Sales\",\n  \"selectedProductIds\": [\n    \"\"\n  ],\n  \"startsAt\": \"\",\n  \"endsAt\": \"\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -6461,7 +6461,7 @@
             "description": "Moderate a review by approving or hiding it",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/ModerateReviewDto\"\n}",
+              "raw": "{\n  \"action\": \"approve\",\n  \"reason\": \"Sample text here\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -6514,7 +6514,7 @@
             "description": "Create a product from the admin namespace",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/CreateProductDto\"\n}",
+              "raw": "{\n  \"name\": \"Sample Name\",\n  \"brand\": \"\",\n  \"sku\": \"\",\n  \"sellerId\": \"64a1f2e3b4c5d6e7f8a9b0c1\",\n  \"categoryId\": \"64a1f2e3b4c5d6e7f8a9b0c1\",\n  \"subCategoryId\": \"64a1f2e3b4c5d6e7f8a9b0c1\",\n  \"priceAmount\": 100000,\n  \"originalPriceAmount\": 100000,\n  \"discountPercent\": 0,\n  \"thumbnailUrl\": \"https://example.com/image.jpg\",\n  \"gallery\": [\n    {\n      \"id\": \"64a1f2e3b4c5d6e7f8a9b0c1\",\n      \"url\": \"https://example.com/image.jpg\",\n      \"alt\": \"\"\n    }\n  ],\n  \"variantAxes\": [\n    {\n      \"name\": \"Sample Name\",\n      \"displayName\": \"Sample Name\",\n      \"options\": [\n        {\n          \"id\": \"64a1f2e3b4c5d6e7f8a9b0c1\",\n          \"label\": \"\",\n          \"swatchHex\": null\n        }\n      ]\n    }\n  ],\n  \"variants\": [\n    {\n      \"id\": \"64a1f2e3b4c5d6e7f8a9b0c1\",\n      \"sku\": \"\",\n      \"attributes\": {},\n      \"priceAmount\": 100000,\n      \"stockQty\": 1,\n      \"isInStock\": false,\n      \"images\": [\n        \"\"\n      ]\n    }\n  ],\n  \"defaultVariantId\": \"64a1f2e3b4c5d6e7f8a9b0c1\",\n  \"descriptionHtml\": \"Sample text here\",\n  \"tabs\": [\n    {\n      \"label\": \"\",\n      \"contentHtml\": \"\"\n    }\n  ],\n  \"specifications\": [\n    {\n      \"name\": \"Sample Name\",\n      \"value\": \"\"\n    }\n  ],\n  \"breadcrumbs\": [\n    {\n      \"label\": \"\",\n      \"url\": {}\n    }\n  ],\n  \"badge\": \"\",\n  \"sections\": [\n    \"\"\n  ],\n  \"isActive\": false,\n  \"inventoryStatus\": \"\",\n  \"returnPolicy\": {}\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -6549,7 +6549,7 @@
             "description": "Update any product",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/UpdateProductDto\"\n}",
+              "raw": "{\n  \"name\": \"Sample Name\",\n  \"brand\": \"\",\n  \"sku\": \"\",\n  \"sellerId\": \"64a1f2e3b4c5d6e7f8a9b0c1\",\n  \"categoryId\": \"64a1f2e3b4c5d6e7f8a9b0c1\",\n  \"subCategoryId\": \"64a1f2e3b4c5d6e7f8a9b0c1\",\n  \"priceAmount\": 100000,\n  \"originalPriceAmount\": 100000,\n  \"discountPercent\": 0,\n  \"thumbnailUrl\": \"https://example.com/image.jpg\",\n  \"gallery\": [\n    {\n      \"id\": \"64a1f2e3b4c5d6e7f8a9b0c1\",\n      \"url\": \"https://example.com/image.jpg\",\n      \"alt\": \"\"\n    }\n  ],\n  \"variantAxes\": [\n    {\n      \"name\": \"Sample Name\",\n      \"displayName\": \"Sample Name\",\n      \"options\": [\n        {\n          \"id\": \"64a1f2e3b4c5d6e7f8a9b0c1\",\n          \"label\": \"\",\n          \"swatchHex\": null\n        }\n      ]\n    }\n  ],\n  \"variants\": [\n    {\n      \"id\": \"64a1f2e3b4c5d6e7f8a9b0c1\",\n      \"sku\": \"\",\n      \"attributes\": {},\n      \"priceAmount\": 100000,\n      \"stockQty\": 1,\n      \"isInStock\": false,\n      \"images\": [\n        \"\"\n      ]\n    }\n  ],\n  \"defaultVariantId\": \"64a1f2e3b4c5d6e7f8a9b0c1\",\n  \"descriptionHtml\": \"Sample text here\",\n  \"tabs\": [\n    {\n      \"label\": \"\",\n      \"contentHtml\": \"\"\n    }\n  ],\n  \"specifications\": [\n    {\n      \"name\": \"Sample Name\",\n      \"value\": \"\"\n    }\n  ],\n  \"breadcrumbs\": [\n    {\n      \"label\": \"\",\n      \"url\": {}\n    }\n  ],\n  \"badge\": \"\",\n  \"sections\": [\n    \"\"\n  ],\n  \"isActive\": false,\n  \"inventoryStatus\": \"\",\n  \"returnPolicy\": {}\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -6647,7 +6647,7 @@
             "description": "Reject a product listing",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/RejectProductDto\"\n}",
+              "raw": "{\n  \"reason\": \"Sample text here\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -6683,7 +6683,7 @@
             "description": "Feature or unfeature a product in the storefront rail",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/FeatureProductDto\"\n}",
+              "raw": "{\n  \"featured\": false,\n  \"badge\": {}\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -6737,7 +6737,7 @@
             "description": "Update any seller",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/UpdateSellerDto\"\n}",
+              "raw": "{\n  \"name\": \"Sample Name\",\n  \"logoUrl\": \"https://example.com/image.jpg\",\n  \"location\": \"\",\n  \"deliveryTimeRange\": \"\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -6895,7 +6895,7 @@
             "description": "Create a category or sub-category",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/CreateCategoryDto\"\n}",
+              "raw": "{\n  \"name\": \"Sample Name\",\n  \"slug\": \"sample-slug\",\n  \"iconUrl\": \"https://example.com/image.jpg\",\n  \"parentId\": \"64a1f2e3b4c5d6e7f8a9b0c1\",\n  \"order\": 0,\n  \"isActive\": false\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -6930,7 +6930,7 @@
             "description": "Update a category",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/UpdateCategoryDto\"\n}",
+              "raw": "{\n  \"name\": \"Sample Name\",\n  \"slug\": \"sample-slug\",\n  \"iconUrl\": \"https://example.com/image.jpg\",\n  \"parentId\": \"64a1f2e3b4c5d6e7f8a9b0c1\",\n  \"order\": 0,\n  \"isActive\": false\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -6966,7 +6966,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/admin/users?page=&limit=&sort=&order=&search=&accountType=",
+              "raw": "{{baseUrl}}/admin/users",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -7062,7 +7062,7 @@
             "description": "Update a user by id (admin)",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/UpdateUserDto\"\n}",
+              "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"phoneNumber\": \"+2348012345678\",\n  \"dateOfBirth\": \"1990-01-15\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -7158,7 +7158,7 @@
             "description": "Create a pricing rule",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/CreatePricingRuleDto\"\n}",
+              "raw": "{}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -7194,7 +7194,7 @@
             "description": "Update a pricing rule",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/UpdatePricingRuleDto\"\n}",
+              "raw": "{}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -7249,7 +7249,7 @@
             "description": "Update platform fee configuration",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/UpdateFeesDto\"\n}",
+              "raw": "{}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -7284,7 +7284,7 @@
             "description": "Simulate order cost breakdown",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/SimulateDto\"\n}",
+              "raw": "{}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -7364,7 +7364,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/AdminOrderStatusDto\"\n}",
+              "raw": "{}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -7399,7 +7399,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/AdminOrderInterveneDto\"\n}",
+              "raw": "{}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -7434,7 +7434,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/AdminOrderReassignDto\"\n}",
+              "raw": "{}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -8132,7 +8132,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/CreateSlotTypeDto\"\n}",
+              "raw": "{}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -8167,7 +8167,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/UpdateSlotTypeDto\"\n}",
+              "raw": "{}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -8240,7 +8240,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/CreateDurationTierDto\"\n}",
+              "raw": "{}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -8275,7 +8275,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/UpdateDurationTierDto\"\n}",
+              "raw": "{}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -8367,7 +8367,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/GenerateSlotsDto\"\n}",
+              "raw": "{}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -8430,7 +8430,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/SuspendBookingDto\"\n}",
+              "raw": "{}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -8621,7 +8621,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/BroadcastDto\"\n}",
+              "raw": "{}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -9277,7 +9277,7 @@
             "description": "Subscribe to newsletter",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/SubscribeDto\"\n}",
+              "raw": "{\n  \"email\": \"user@example.com\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -9347,13 +9347,7 @@
           "name": "Upload an image to Cloudinary (Seller or Admin)",
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json",
-                "type": "text"
-              }
-            ],
+            "header": [],
             "url": {
               "raw": "{{baseUrl}}/upload?folder=",
               "host": [
@@ -9371,7 +9365,18 @@
                 }
               ]
             },
-            "description": "Upload an image to Cloudinary (Seller or Admin)"
+            "description": "Upload an image to Cloudinary (Seller or Admin)",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "value": "",
+                  "type": "file",
+                  "description": ""
+                }
+              ]
+            }
           },
           "response": []
         },
@@ -9379,13 +9384,7 @@
           "name": "Upload an image to Cloudinary through the API",
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json",
-                "type": "text"
-              }
-            ],
+            "header": [],
             "url": {
               "raw": "{{baseUrl}}/media/upload",
               "host": [
@@ -9396,7 +9395,18 @@
                 "upload"
               ]
             },
-            "description": "Upload an image to Cloudinary through the API"
+            "description": "Upload an image to Cloudinary through the API",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "value": "",
+                  "type": "file",
+                  "description": ""
+                }
+              ]
+            }
           },
           "response": []
         },
@@ -9425,7 +9435,7 @@
             "description": "Create signed Cloudinary upload parameters for direct client upload. Use the returned media id for DELETE /media/{id} by base64url-encoding the resulting publicId.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"_ref\": \"#/components/schemas/RequestPresignedUploadDto\"\n}",
+              "raw": "{\n  \"folder\": \"products\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
