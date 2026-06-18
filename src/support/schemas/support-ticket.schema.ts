@@ -34,7 +34,7 @@ export class SupportTicket extends BaseSchema {
   @Prop({ type: Types.ObjectId, ref: 'User', default: null, index: true })
   userId!: Types.ObjectId | null;
 
-  @Prop({ default: null })
+  @Prop({ type: String, default: null })
   guestEmail!: string | null;
 
   @Prop({ required: true })
@@ -55,7 +55,7 @@ export class SupportTicket extends BaseSchema {
   @Prop({ type: [Object], default: [] })
   messages!: TicketMessage[];
 
-  @Prop({ default: null })
+  @Prop({ type: String, default: null })
   orderId!: string | null;
 
   @Prop({ type: Date, default: null })

@@ -54,10 +54,10 @@ export class LogisticsBooking extends BaseSchema {
   @Prop({ type: String, enum: BookingStatus, default: BookingStatus.PENDING, index: true })
   status!: BookingStatus;
 
-  @Prop({ default: null })
+  @Prop({ type: String, default: null })
   externalBookingId!: string | null;
 
-  @Prop({ default: null })
+  @Prop({ type: String, default: null })
   trackingUrl!: string | null;
 
   @Prop({ type: Object, default: null })
@@ -89,7 +89,7 @@ export class LogisticsBooking extends BaseSchema {
   @Prop({ default: 0 })
   quotedFeeKobo!: number;
 
-  @Prop({ default: null })
+  @Prop({ type: String, default: null })
   cancelReason!: string | null;
 
   @Prop({ default: 0 })

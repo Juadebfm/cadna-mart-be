@@ -1028,214 +1028,6 @@
         ]
       }
     },
-    "/api/v1/users": {
-      "post": {
-        "operationId": "UsersController_create_v1",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateUserDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Create a new user (Admin only)",
-        "tags": [
-          "Users"
-        ]
-      },
-      "get": {
-        "operationId": "UsersController_findAll_v1",
-        "parameters": [
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "default": 1,
-              "type": "number"
-            }
-          },
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "maximum": 100,
-              "default": 10,
-              "type": "number"
-            }
-          },
-          {
-            "name": "sort",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "default": "createdAt",
-              "type": "string"
-            }
-          },
-          {
-            "name": "order",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "default": "desc",
-              "type": "string",
-              "enum": [
-                "asc",
-                "desc"
-              ]
-            }
-          },
-          {
-            "name": "search",
-            "required": false,
-            "in": "query",
-            "description": "Search by name or email",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "accountType",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "buyer",
-                "seller",
-                "investor",
-                "admin"
-              ]
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get all users with pagination (Admin only)",
-        "tags": [
-          "Users"
-        ]
-      }
-    },
-    "/api/v1/users/{id}": {
-      "get": {
-        "operationId": "UsersController_findOne_v1",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get user by ID",
-        "tags": [
-          "Users"
-        ]
-      },
-      "patch": {
-        "operationId": "UsersController_update_v1",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateUserDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Update user",
-        "tags": [
-          "Users"
-        ]
-      },
-      "delete": {
-        "operationId": "UsersController_remove_v1",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Soft delete user (Admin only)",
-        "tags": [
-          "Users"
-        ]
-      }
-    },
     "/api/v1/users/addresses": {
       "get": {
         "operationId": "AddressesController_list_v1",
@@ -2151,6 +1943,620 @@
         ]
       }
     },
+    "/api/v1/payments/paystack/initialize": {
+      "post": {
+        "operationId": "PaymentsController_initializePayment_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InitializePaymentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payments"
+        ]
+      }
+    },
+    "/api/v1/payments/paystack/verify/{reference}": {
+      "get": {
+        "operationId": "PaymentsController_verifyPayment_v1",
+        "parameters": [
+          {
+            "name": "reference",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payments"
+        ]
+      }
+    },
+    "/api/v1/payments/paystack/charge/authorize": {
+      "post": {
+        "operationId": "PaymentsController_authorizeCharge_v1",
+        "parameters": [],
+        "responses": {
+          "501": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payments"
+        ]
+      }
+    },
+    "/api/v1/payments/paystack/transfer/initialize": {
+      "post": {
+        "operationId": "PaymentsController_initializeTransfer_v1",
+        "parameters": [],
+        "responses": {
+          "501": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payments"
+        ]
+      }
+    },
+    "/api/v1/payments/paystack/transfer/status/{ref}": {
+      "get": {
+        "operationId": "PaymentsController_getTransferStatus_v1",
+        "parameters": [],
+        "responses": {
+          "501": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payments"
+        ]
+      }
+    },
+    "/api/v1/payments/paystack/refund": {
+      "post": {
+        "operationId": "PaymentsController_initializeRefund_v1",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payments"
+        ]
+      }
+    },
+    "/api/v1/payments/stripe/payment-intent": {
+      "post": {
+        "operationId": "StripeController_createPaymentIntent_v1",
+        "parameters": [],
+        "responses": {
+          "501": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payments - Stripe"
+        ]
+      }
+    },
+    "/api/v1/payments/stripe/payment-intent/{id}/confirm": {
+      "post": {
+        "operationId": "StripeController_confirmPaymentIntent_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "501": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payments - Stripe"
+        ]
+      }
+    },
+    "/api/v1/payments/stripe/setup-intent": {
+      "post": {
+        "operationId": "StripeController_createSetupIntent_v1",
+        "parameters": [],
+        "responses": {
+          "501": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payments - Stripe"
+        ]
+      }
+    },
+    "/api/v1/payments/stripe/refund": {
+      "post": {
+        "operationId": "StripeController_issueRefund_v1",
+        "parameters": [],
+        "responses": {
+          "501": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payments - Stripe"
+        ]
+      }
+    },
+    "/api/v1/payments/stripe/payment-methods": {
+      "get": {
+        "operationId": "StripeController_listPaymentMethods_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payments - Stripe"
+        ]
+      }
+    },
+    "/api/v1/payments/stripe/payment-methods/{id}": {
+      "delete": {
+        "operationId": "StripeController_detachPaymentMethod_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payments - Stripe"
+        ]
+      }
+    },
+    "/api/v1/webhooks/stripe": {
+      "post": {
+        "operationId": "StripeWebhookController_handleStripeWebhook_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Webhooks"
+        ]
+      }
+    },
+    "/api/v1/payments/pod/eligibility": {
+      "get": {
+        "operationId": "PodController_checkEligibility_v1",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payments - Pay on Delivery"
+        ]
+      }
+    },
+    "/api/v1/payments/pod/confirm": {
+      "post": {
+        "operationId": "PodController_confirmPod_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payments - Pay on Delivery"
+        ]
+      }
+    },
+    "/api/v1/orders": {
+      "post": {
+        "operationId": "OrdersController_createOrder_v1",
+        "parameters": [],
+        "responses": {
+          "501": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Orders"
+        ]
+      },
+      "get": {
+        "operationId": "OrdersController_findMyOrders_v1",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pending_payment",
+                "confirmed",
+                "processing",
+                "shipped",
+                "delivered",
+                "cancelled",
+                "refund_requested",
+                "refunded"
+              ]
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maximum": 50,
+              "default": 20,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Orders"
+        ]
+      }
+    },
+    "/api/v1/orders/guest/lookup": {
+      "get": {
+        "operationId": "OrdersController_guestLookup_v1",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "phone",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Orders"
+        ]
+      }
+    },
+    "/api/v1/orders/{id}": {
+      "get": {
+        "operationId": "OrdersController_findOne_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Orders"
+        ]
+      }
+    },
+    "/api/v1/orders/{id}/timeline": {
+      "get": {
+        "operationId": "OrdersController_getTimeline_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Orders"
+        ]
+      }
+    },
+    "/api/v1/orders/{id}/tracking": {
+      "get": {
+        "operationId": "OrdersController_getTracking_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Orders"
+        ]
+      }
+    },
+    "/api/v1/orders/{id}/invoice": {
+      "get": {
+        "operationId": "OrdersController_getInvoice_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Orders"
+        ]
+      }
+    },
+    "/api/v1/orders/{id}/pod": {
+      "get": {
+        "operationId": "OrdersController_getPod_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Orders"
+        ]
+      }
+    },
+    "/api/v1/orders/{id}/cancel": {
+      "post": {
+        "operationId": "OrdersController_cancelOrder_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelOrderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Orders"
+        ]
+      }
+    },
     "/api/v1/categories": {
       "get": {
         "operationId": "CategoriesController_findAll_v1",
@@ -2798,7 +3204,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateSellerDto"
+                "$ref": "#/components/schemas/OnboardSellerDto"
               }
             }
           }
@@ -2808,12 +3214,7 @@
             "description": ""
           }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Submit seller onboarding (spec alias of POST /sellers)",
+        "summary": "Public single-step seller registration — creates account, profile, and sends verification email",
         "tags": [
           "Sellers"
         ]
@@ -3480,6 +3881,526 @@
         "summary": "Submit/update your seller bank/payout details. Required once after seller registration; collected by the FE on the same wizard screen but POSTed here after login (kept off the public registration endpoints).",
         "tags": [
           "Sellers"
+        ]
+      }
+    },
+    "/api/v1/sellers/me/agreement": {
+      "post": {
+        "operationId": "SellerPostOrderController_acceptAgreement_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SellerAgreementDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Sellers - Post-Order"
+        ]
+      }
+    },
+    "/api/v1/sellers/me/kyc": {
+      "post": {
+        "operationId": "SellerPostOrderController_submitKyc_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SellerKycDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Sellers - Post-Order"
+        ]
+      }
+    },
+    "/api/v1/sellers/me/orders": {
+      "get": {
+        "operationId": "SellerPostOrderController_getMyOrders_v1",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pending_payment",
+                "confirmed",
+                "processing",
+                "shipped",
+                "delivered",
+                "cancelled",
+                "refund_requested",
+                "refunded"
+              ]
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maximum": 50,
+              "default": 20,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Sellers - Post-Order"
+        ]
+      }
+    },
+    "/api/v1/sellers/me/orders/{id}/acknowledge": {
+      "post": {
+        "operationId": "SellerPostOrderController_acknowledgeOrder_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SellerOrderActionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Sellers - Post-Order"
+        ]
+      }
+    },
+    "/api/v1/sellers/me/orders/{id}/dispatch": {
+      "post": {
+        "operationId": "SellerPostOrderController_dispatchOrder_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SellerOrderActionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Sellers - Post-Order"
+        ]
+      }
+    },
+    "/api/v1/sellers/me/returns": {
+      "get": {
+        "operationId": "SellerPostOrderController_getMyReturns_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Sellers - Post-Order"
+        ]
+      }
+    },
+    "/api/v1/sellers/me/returns/{id}/decision": {
+      "post": {
+        "operationId": "SellerPostOrderController_returnDecision_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SellerReturnDecisionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Sellers - Post-Order"
+        ]
+      }
+    },
+    "/api/v1/sellers/me/payouts": {
+      "get": {
+        "operationId": "SellerPostOrderController_getPayouts_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Sellers - Post-Order"
+        ]
+      }
+    },
+    "/api/v1/sellers/me/fees": {
+      "get": {
+        "operationId": "SellerPostOrderController_getFees_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Sellers - Post-Order"
+        ]
+      }
+    },
+    "/api/v1/returns": {
+      "post": {
+        "operationId": "ReturnsController_createReturn_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReturnDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Returns"
+        ]
+      },
+      "get": {
+        "operationId": "ReturnsController_listReturns_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Returns"
+        ]
+      }
+    },
+    "/api/v1/returns/eligibility/{orderItemId}": {
+      "get": {
+        "operationId": "ReturnsController_checkEligibility_v1",
+        "parameters": [
+          {
+            "name": "orderItemId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Returns"
+        ]
+      }
+    },
+    "/api/v1/returns/{id}": {
+      "get": {
+        "operationId": "ReturnsController_getReturn_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Returns"
+        ]
+      }
+    },
+    "/api/v1/returns/{id}/cancel": {
+      "patch": {
+        "operationId": "ReturnsController_cancelReturn_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Returns"
+        ]
+      }
+    },
+    "/api/v1/returns/{id}/evidence": {
+      "post": {
+        "operationId": "ReturnsController_addEvidence_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddEvidenceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Returns"
+        ]
+      }
+    },
+    "/api/v1/refunds/{returnId}/process": {
+      "post": {
+        "operationId": "RefundsController_processRefund_v1",
+        "parameters": [
+          {
+            "name": "returnId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProcessRefundDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Refunds"
+        ]
+      }
+    },
+    "/api/v1/refunds/{id}": {
+      "get": {
+        "operationId": "RefundsController_getRefundStatus_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Refunds"
         ]
       }
     },
@@ -4653,7 +5574,7 @@
             "bearer": []
           }
         ],
-        "summary": "Upload an image to Cloudinary (legacy route for Seller or Admin)",
+        "summary": "Upload an image to Cloudinary (Seller or Admin)",
         "tags": [
           "Upload"
         ]
@@ -5383,6 +6304,7 @@
               "enum": [
                 "buyer",
                 "seller",
+                "supplier",
                 "investor",
                 "admin"
               ]
@@ -5432,6 +6354,70 @@
         "tags": [
           "Admin — Users"
         ]
+      },
+      "patch": {
+        "operationId": "AdminUsersController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update a user by id (admin)",
+        "tags": [
+          "Admin — Users"
+        ]
+      },
+      "delete": {
+        "operationId": "AdminUsersController_remove_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Soft-delete a user (admin)",
+        "tags": [
+          "Admin — Users"
+        ]
       }
     },
     "/api/v1/admin/users/{id}/suspend": {
@@ -5460,6 +6446,1065 @@
         "summary": "Suspend (deactivate) a user account. Reactivate by sending {\"active\": true} - the body is optional and defaults to suspending.",
         "tags": [
           "Admin — Users"
+        ]
+      }
+    },
+    "/api/v1/admin/pricing/rules": {
+      "get": {
+        "operationId": "AdminPricingController_listRules_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List all pricing rules",
+        "tags": [
+          "Admin — Pricing"
+        ]
+      },
+      "post": {
+        "operationId": "AdminPricingController_createRule_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePricingRuleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a pricing rule",
+        "tags": [
+          "Admin — Pricing"
+        ]
+      }
+    },
+    "/api/v1/admin/pricing/rules/{id}": {
+      "patch": {
+        "operationId": "AdminPricingController_updateRule_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePricingRuleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update a pricing rule",
+        "tags": [
+          "Admin — Pricing"
+        ]
+      }
+    },
+    "/api/v1/admin/pricing/fees": {
+      "get": {
+        "operationId": "AdminPricingController_getFees_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get platform fee configuration",
+        "tags": [
+          "Admin — Pricing"
+        ]
+      },
+      "patch": {
+        "operationId": "AdminPricingController_updateFees_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateFeesDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update platform fee configuration",
+        "tags": [
+          "Admin — Pricing"
+        ]
+      }
+    },
+    "/api/v1/admin/pricing/simulate": {
+      "post": {
+        "operationId": "AdminPricingController_simulate_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SimulateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Simulate order cost breakdown",
+        "tags": [
+          "Admin — Pricing"
+        ]
+      }
+    },
+    "/api/v1/admin/orders": {
+      "get": {
+        "operationId": "AdminOrdersController_listOrders_v1",
+        "parameters": [
+          {
+            "name": "status",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Orders & Ops"
+        ]
+      }
+    },
+    "/api/v1/admin/orders/{id}": {
+      "get": {
+        "operationId": "AdminOrdersController_getOrder_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Orders & Ops"
+        ]
+      }
+    },
+    "/api/v1/admin/orders/{id}/status": {
+      "patch": {
+        "operationId": "AdminOrdersController_updateOrderStatus_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminOrderStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Orders & Ops"
+        ]
+      }
+    },
+    "/api/v1/admin/orders/{id}/intervene": {
+      "post": {
+        "operationId": "AdminOrdersController_intervene_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminOrderInterveneDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Orders & Ops"
+        ]
+      }
+    },
+    "/api/v1/admin/orders/{id}/reassign": {
+      "post": {
+        "operationId": "AdminOrdersController_reassign_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminOrderReassignDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Orders & Ops"
+        ]
+      }
+    },
+    "/api/v1/admin/returns": {
+      "get": {
+        "operationId": "AdminOrdersController_listReturns_v1",
+        "parameters": [
+          {
+            "name": "status",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Orders & Ops"
+        ]
+      }
+    },
+    "/api/v1/admin/returns/{id}/decision": {
+      "post": {
+        "operationId": "AdminOrdersController_returnDecision_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Orders & Ops"
+        ]
+      }
+    },
+    "/api/v1/admin/refunds": {
+      "get": {
+        "operationId": "AdminOrdersController_listRefunds_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Orders & Ops"
+        ]
+      }
+    },
+    "/api/v1/admin/refunds/{id}/approve": {
+      "post": {
+        "operationId": "AdminOrdersController_approveRefund_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Orders & Ops"
+        ]
+      }
+    },
+    "/api/v1/admin/delivery/modes": {
+      "get": {
+        "operationId": "AdminDeliveryController_listModes_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Delivery Config"
+        ]
+      }
+    },
+    "/api/v1/admin/delivery/modes/{id}": {
+      "patch": {
+        "operationId": "AdminDeliveryController_updateMode_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Delivery Config"
+        ]
+      }
+    },
+    "/api/v1/admin/delivery/providers": {
+      "get": {
+        "operationId": "AdminDeliveryController_listProviders_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Delivery Config"
+        ]
+      }
+    },
+    "/api/v1/admin/delivery/providers/order": {
+      "patch": {
+        "operationId": "AdminDeliveryController_updateProviderOrder_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Delivery Config"
+        ]
+      }
+    },
+    "/api/v1/admin/delivery/coverage": {
+      "get": {
+        "operationId": "AdminDeliveryController_getCoverage_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Delivery Config"
+        ]
+      },
+      "patch": {
+        "operationId": "AdminDeliveryController_updateCoverage_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Delivery Config"
+        ]
+      }
+    },
+    "/api/v1/admin/reports/sales": {
+      "get": {
+        "operationId": "AdminReportingController_salesReport_v1",
+        "parameters": [
+          {
+            "name": "from",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Reporting"
+        ]
+      }
+    },
+    "/api/v1/admin/reports/gmv": {
+      "get": {
+        "operationId": "AdminReportingController_gmvReport_v1",
+        "parameters": [
+          {
+            "name": "from",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Reporting"
+        ]
+      }
+    },
+    "/api/v1/admin/reports/orders": {
+      "get": {
+        "operationId": "AdminReportingController_ordersReport_v1",
+        "parameters": [
+          {
+            "name": "from",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Reporting"
+        ]
+      }
+    },
+    "/api/v1/admin/reports/refunds": {
+      "get": {
+        "operationId": "AdminReportingController_refundsReport_v1",
+        "parameters": [
+          {
+            "name": "from",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Reporting"
+        ]
+      }
+    },
+    "/api/v1/admin/reports/sellers": {
+      "get": {
+        "operationId": "AdminReportingController_sellersReport_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Reporting"
+        ]
+      }
+    },
+    "/api/v1/admin/reports/products": {
+      "get": {
+        "operationId": "AdminReportingController_productsReport_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Reporting"
+        ]
+      }
+    },
+    "/api/v1/admin/reports/delivery": {
+      "get": {
+        "operationId": "AdminReportingController_deliveryReport_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Reporting"
+        ]
+      }
+    },
+    "/api/v1/admin/reports/export": {
+      "get": {
+        "operationId": "AdminReportingController_exportReport_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Reporting"
+        ]
+      }
+    },
+    "/api/v1/admin/audit-logs": {
+      "get": {
+        "operationId": "AdminComplianceController_getAuditLogs_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Compliance & RBAC"
+        ]
+      }
+    },
+    "/api/v1/admin/audit-logs/{id}": {
+      "get": {
+        "operationId": "AdminComplianceController_getAuditLog_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Compliance & RBAC"
+        ]
+      }
+    },
+    "/api/v1/admin/compliance/data-requests": {
+      "get": {
+        "operationId": "AdminComplianceController_listDataRequests_v1",
+        "parameters": [
+          {
+            "name": "status",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Compliance & RBAC"
+        ]
+      }
+    },
+    "/api/v1/admin/compliance/data-requests/{id}/process": {
+      "post": {
+        "operationId": "AdminComplianceController_processDataRequest_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Compliance & RBAC"
+        ]
+      }
+    },
+    "/api/v1/admin/compliance/retention": {
+      "get": {
+        "operationId": "AdminComplianceController_getRetentionPolicy_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Compliance & RBAC"
+        ]
+      }
+    },
+    "/api/v1/admin/roles": {
+      "get": {
+        "operationId": "AdminComplianceController_getRoles_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Compliance & RBAC"
+        ]
+      },
+      "post": {
+        "operationId": "AdminComplianceController_createRole_v1",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Compliance & RBAC"
+        ]
+      }
+    },
+    "/api/v1/admin/roles/{id}": {
+      "patch": {
+        "operationId": "AdminComplianceController_updateRole_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Compliance & RBAC"
+        ]
+      }
+    },
+    "/api/v1/admin/users/{id}/roles": {
+      "post": {
+        "operationId": "AdminComplianceController_assignRole_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Compliance & RBAC"
+        ]
+      }
+    },
+    "/api/v1/admin/tax/vat-records": {
+      "get": {
+        "operationId": "AdminComplianceController_getVatRecords_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Compliance & RBAC"
+        ]
+      }
+    },
+    "/api/v1/admin/legal/pages": {
+      "get": {
+        "operationId": "AdminComplianceController_getLegalPages_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Compliance & RBAC"
+        ]
+      }
+    },
+    "/api/v1/admin/legal/pages/{slug}": {
+      "patch": {
+        "operationId": "AdminComplianceController_updateLegalPage_v1",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Compliance & RBAC"
         ]
       }
     },
@@ -5550,6 +7595,3143 @@
         "summary": "List supported delivery cities",
         "tags": [
           "System"
+        ]
+      }
+    },
+    "/api/v1/checkout/session": {
+      "post": {
+        "operationId": "CheckoutController_createSession_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCheckoutSessionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Checkout"
+        ]
+      }
+    },
+    "/api/v1/checkout/{sessionId}": {
+      "get": {
+        "operationId": "CheckoutController_getSession_v1",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Checkout"
+        ]
+      }
+    },
+    "/api/v1/checkout/{sessionId}/address": {
+      "post": {
+        "operationId": "CheckoutController_setAddress_v1",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetCheckoutAddressDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Checkout"
+        ]
+      }
+    },
+    "/api/v1/checkout/{sessionId}/address/validate": {
+      "post": {
+        "operationId": "CheckoutController_validateAddress_v1",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Checkout"
+        ]
+      }
+    },
+    "/api/v1/checkout/{sessionId}/delivery-options": {
+      "get": {
+        "operationId": "CheckoutController_getDeliveryOptions_v1",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Checkout"
+        ]
+      }
+    },
+    "/api/v1/checkout/{sessionId}/delivery": {
+      "post": {
+        "operationId": "CheckoutController_selectDelivery_v1",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SelectDeliveryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Checkout"
+        ]
+      }
+    },
+    "/api/v1/checkout/{sessionId}/pickup-details": {
+      "post": {
+        "operationId": "CheckoutController_setPickupDetails_v1",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PickupDetailsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Checkout"
+        ]
+      }
+    },
+    "/api/v1/checkout/{sessionId}/summary": {
+      "get": {
+        "operationId": "CheckoutController_getSummary_v1",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Checkout"
+        ]
+      }
+    },
+    "/api/v1/checkout/{sessionId}/confirm": {
+      "post": {
+        "operationId": "CheckoutController_confirmSession_v1",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Checkout"
+        ]
+      }
+    },
+    "/api/v1/logistics/quote": {
+      "post": {
+        "operationId": "LogisticsController_getQuote_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LogisticsQuoteDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Logistics"
+        ]
+      }
+    },
+    "/api/v1/logistics/coverage/check": {
+      "post": {
+        "operationId": "LogisticsController_checkCoverage_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CoverageCheckDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Logistics"
+        ]
+      }
+    },
+    "/api/v1/logistics/booking": {
+      "post": {
+        "operationId": "LogisticsController_bookCourier_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BookCourierDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Logistics"
+        ]
+      }
+    },
+    "/api/v1/logistics/booking/{id}": {
+      "get": {
+        "operationId": "LogisticsController_getBooking_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Logistics"
+        ]
+      }
+    },
+    "/api/v1/logistics/booking/{id}/cancel": {
+      "post": {
+        "operationId": "LogisticsController_cancelBooking_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Logistics"
+        ]
+      }
+    },
+    "/api/v1/logistics/booking/{id}/retry": {
+      "post": {
+        "operationId": "LogisticsController_retryBooking_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Logistics"
+        ]
+      }
+    },
+    "/api/v1/logistics/tracking/{bookingId}": {
+      "get": {
+        "operationId": "LogisticsController_getTracking_v1",
+        "parameters": [
+          {
+            "name": "bookingId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Logistics"
+        ]
+      }
+    },
+    "/api/v1/logistics/pod": {
+      "post": {
+        "operationId": "LogisticsController_uploadPod_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PodUploadDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Logistics"
+        ]
+      }
+    },
+    "/api/v1/logistics/pickup/ready": {
+      "post": {
+        "operationId": "LogisticsController_pickupReady_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PickupActionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Logistics"
+        ]
+      }
+    },
+    "/api/v1/logistics/pickup/verify": {
+      "post": {
+        "operationId": "LogisticsController_pickupVerify_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PickupActionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Logistics"
+        ]
+      }
+    },
+    "/api/v1/logistics/pickup/complete": {
+      "post": {
+        "operationId": "LogisticsController_pickupComplete_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PickupActionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Logistics"
+        ]
+      }
+    },
+    "/api/v1/logistics/pickup/fail": {
+      "post": {
+        "operationId": "LogisticsController_pickupFail_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PickupActionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Logistics"
+        ]
+      }
+    },
+    "/api/v1/webhooks/logistics/uber": {
+      "post": {
+        "operationId": "LogisticsWebhooksController_uberWebhook_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Webhooks"
+        ]
+      }
+    },
+    "/api/v1/webhooks/logistics/bolt": {
+      "post": {
+        "operationId": "LogisticsWebhooksController_boltWebhook_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Webhooks"
+        ]
+      }
+    },
+    "/api/v1/promo-slots/available": {
+      "get": {
+        "operationId": "PromoSlotsController_getAvailable_v1",
+        "parameters": [
+          {
+            "name": "slotTypeId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Promo Slots"
+        ]
+      }
+    },
+    "/api/v1/promo-slots/types": {
+      "get": {
+        "operationId": "PromoSlotsController_getTypes_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Promo Slots"
+        ]
+      }
+    },
+    "/api/v1/promo-slots/bookings": {
+      "get": {
+        "operationId": "PromoSlotsController_getMyBookings_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Promo Slots"
+        ]
+      },
+      "post": {
+        "operationId": "PromoSlotsController_createBooking_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateBookingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Promo Slots"
+        ]
+      }
+    },
+    "/api/v1/promo-slots/bookings/{id}": {
+      "get": {
+        "operationId": "PromoSlotsController_getBooking_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Promo Slots"
+        ]
+      }
+    },
+    "/api/v1/promo-slots/bookings/{id}/pay": {
+      "post": {
+        "operationId": "PromoSlotsController_payForBooking_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Promo Slots"
+        ]
+      }
+    },
+    "/api/v1/promo-slots/bookings/{id}/cancel": {
+      "post": {
+        "operationId": "PromoSlotsController_cancelBooking_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Promo Slots"
+        ]
+      }
+    },
+    "/api/v1/promo-slots/bookings/{id}/performance": {
+      "get": {
+        "operationId": "PromoSlotsController_getPerformance_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Promo Slots"
+        ]
+      }
+    },
+    "/api/v1/promo-slots/{slotId}/reserve": {
+      "post": {
+        "operationId": "PromoSlotsController_reserveSlot_v1",
+        "parameters": [
+          {
+            "name": "slotId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Promo Slots"
+        ]
+      }
+    },
+    "/api/v1/promo-slots/{slotId}": {
+      "get": {
+        "operationId": "PromoSlotsController_getSlot_v1",
+        "parameters": [
+          {
+            "name": "slotId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Promo Slots"
+        ]
+      }
+    },
+    "/api/v1/admin/promo-slots/types": {
+      "get": {
+        "operationId": "AdminPromoSlotsController_listTypes_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Promo Slots"
+        ]
+      },
+      "post": {
+        "operationId": "AdminPromoSlotsController_createType_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSlotTypeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Promo Slots"
+        ]
+      }
+    },
+    "/api/v1/admin/promo-slots/types/{id}": {
+      "patch": {
+        "operationId": "AdminPromoSlotsController_updateType_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSlotTypeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Promo Slots"
+        ]
+      },
+      "delete": {
+        "operationId": "AdminPromoSlotsController_deleteType_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Promo Slots"
+        ]
+      }
+    },
+    "/api/v1/admin/promo-slots/duration-tiers": {
+      "get": {
+        "operationId": "AdminPromoSlotsController_listTiers_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Promo Slots"
+        ]
+      },
+      "post": {
+        "operationId": "AdminPromoSlotsController_createTier_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDurationTierDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Promo Slots"
+        ]
+      }
+    },
+    "/api/v1/admin/promo-slots/duration-tiers/{id}": {
+      "patch": {
+        "operationId": "AdminPromoSlotsController_updateTier_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDurationTierDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Promo Slots"
+        ]
+      },
+      "delete": {
+        "operationId": "AdminPromoSlotsController_deleteTier_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Promo Slots"
+        ]
+      }
+    },
+    "/api/v1/admin/promo-slots/capacity": {
+      "get": {
+        "operationId": "AdminPromoSlotsController_getCapacity_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Promo Slots"
+        ]
+      },
+      "patch": {
+        "operationId": "AdminPromoSlotsController_updateCapacity_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Promo Slots"
+        ]
+      }
+    },
+    "/api/v1/admin/promo-slots/generate": {
+      "post": {
+        "operationId": "AdminPromoSlotsController_generateSlots_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateSlotsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Promo Slots"
+        ]
+      }
+    },
+    "/api/v1/admin/promo-slots/bookings": {
+      "get": {
+        "operationId": "AdminPromoSlotsController_listBookings_v1",
+        "parameters": [
+          {
+            "name": "status",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Promo Slots"
+        ]
+      }
+    },
+    "/api/v1/admin/promo-slots/bookings/{id}/suspend": {
+      "post": {
+        "operationId": "AdminPromoSlotsController_suspendBooking_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SuspendBookingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Promo Slots"
+        ]
+      }
+    },
+    "/api/v1/admin/promo-slots/bookings/{id}/refund": {
+      "post": {
+        "operationId": "AdminPromoSlotsController_refundBooking_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Promo Slots"
+        ]
+      }
+    },
+    "/api/v1/admin/promo-slots/reports/revenue": {
+      "get": {
+        "operationId": "AdminPromoSlotsController_getRevenueReport_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Promo Slots"
+        ]
+      }
+    },
+    "/api/v1/admin/promo-slots/reports/utilization": {
+      "get": {
+        "operationId": "AdminPromoSlotsController_getUtilizationReport_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Promo Slots"
+        ]
+      }
+    },
+    "/api/v1/suppliers/me/products": {
+      "get": {
+        "operationId": "SuppliersController_getMyProducts_v1",
+        "parameters": [
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Search query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "section",
+            "required": false,
+            "in": "query",
+            "description": "Section filter (best_deals, recommended, top_sellers, new_arrivals)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "category",
+            "required": false,
+            "in": "query",
+            "description": "Category slug",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "subCategory",
+            "required": false,
+            "in": "query",
+            "description": "Sub-category slug",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "brand",
+            "required": false,
+            "in": "query",
+            "description": "Single brand name (one brand filter at a time)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "minPrice",
+            "required": false,
+            "in": "query",
+            "description": "Minimum price",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "maxPrice",
+            "required": false,
+            "in": "query",
+            "description": "Maximum price",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "inStock",
+            "required": false,
+            "in": "query",
+            "description": "In stock only",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "ratingGte",
+            "required": false,
+            "in": "query",
+            "description": "Minimum rating",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "relevance",
+              "type": "string",
+              "enum": [
+                "relevance",
+                "price_asc",
+                "price_desc",
+                "newest",
+                "popular"
+              ]
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maximum": 100,
+              "default": 10,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Suppliers"
+        ]
+      }
+    },
+    "/api/v1/suppliers/me/products/{id}/stock": {
+      "patch": {
+        "operationId": "SuppliersController_updateStock_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StockUpdateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Suppliers"
+        ]
+      }
+    },
+    "/api/v1/suppliers/me/orders": {
+      "get": {
+        "operationId": "SuppliersController_getMyOrders_v1",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pending_payment",
+                "confirmed",
+                "processing",
+                "shipped",
+                "delivered",
+                "cancelled",
+                "refund_requested",
+                "refunded"
+              ]
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maximum": 50,
+              "default": 20,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Suppliers"
+        ]
+      }
+    },
+    "/api/v1/suppliers/me/orders/{id}/ready": {
+      "post": {
+        "operationId": "SuppliersController_markReady_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SupplierOrderActionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Suppliers"
+        ]
+      }
+    },
+    "/api/v1/suppliers/me/orders/{id}/dispatch": {
+      "post": {
+        "operationId": "SuppliersController_markDispatched_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SupplierOrderActionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Suppliers"
+        ]
+      }
+    },
+    "/api/v1/suppliers/me/policies": {
+      "get": {
+        "operationId": "SuppliersController_getPolicies_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Suppliers"
+        ]
+      }
+    },
+    "/api/v1/support/tickets": {
+      "post": {
+        "operationId": "SupportController_createTicket_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTicketDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Support"
+        ]
+      },
+      "get": {
+        "operationId": "SupportController_listTickets_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Support"
+        ]
+      }
+    },
+    "/api/v1/support/tickets/{id}": {
+      "get": {
+        "operationId": "SupportController_getTicket_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Support"
+        ]
+      }
+    },
+    "/api/v1/support/tickets/{id}/messages": {
+      "post": {
+        "operationId": "SupportController_addMessage_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddMessageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Support"
+        ]
+      }
+    },
+    "/api/v1/admin/support/tickets": {
+      "get": {
+        "operationId": "AdminSupportController_listAll_v1",
+        "parameters": [
+          {
+            "name": "status",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "assignedTo",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Support"
+        ]
+      }
+    },
+    "/api/v1/admin/support/tickets/{id}/assign": {
+      "post": {
+        "operationId": "AdminSupportController_assign_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Support"
+        ]
+      }
+    },
+    "/api/v1/admin/support/tickets/{id}/escalate": {
+      "post": {
+        "operationId": "AdminSupportController_escalate_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Support"
+        ]
+      }
+    },
+    "/api/v1/admin/support/tickets/{id}/close": {
+      "post": {
+        "operationId": "AdminSupportController_close_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Support"
+        ]
+      }
+    },
+    "/api/v1/webhooks/support/whatsapp/inbound": {
+      "post": {
+        "operationId": "SupportWebhooksController_handleWhatsappInbound_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Webhooks"
+        ]
+      }
+    },
+    "/api/v1/notifications": {
+      "get": {
+        "operationId": "NotificationsController_list_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/api/v1/notifications/{id}/read": {
+      "patch": {
+        "operationId": "NotificationsController_markRead_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/api/v1/notifications/preferences": {
+      "post": {
+        "operationId": "NotificationsController_updatePreferences_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NotificationPreferencesDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/api/v1/admin/notifications/broadcast": {
+      "post": {
+        "operationId": "AdminNotificationsController_broadcast_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BroadcastDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Notifications"
+        ]
+      }
+    },
+    "/api/v1/webhooks/sms/delivery": {
+      "post": {
+        "operationId": "NotificationWebhooksController_handleSmsDelivery_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Webhooks"
+        ]
+      }
+    },
+    "/api/v1/webhooks/whatsapp/delivery": {
+      "post": {
+        "operationId": "NotificationWebhooksController_handleWhatsappDelivery_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Webhooks"
+        ]
+      }
+    },
+    "/api/v1/wallet": {
+      "get": {
+        "operationId": "WalletController_getWallet_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Wallet"
+        ]
+      }
+    },
+    "/api/v1/wallet/transactions": {
+      "get": {
+        "operationId": "WalletController_getTransactions_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Wallet"
+        ]
+      }
+    },
+    "/api/v1/wallet/topup/initialize": {
+      "post": {
+        "operationId": "WalletController_topupInitialize_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Wallet"
+        ]
+      }
+    },
+    "/api/v1/wallet/debit": {
+      "post": {
+        "operationId": "WalletController_debit_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Wallet"
+        ]
+      }
+    },
+    "/api/v1/wallet/credit": {
+      "post": {
+        "operationId": "WalletController_credit_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Wallet"
+        ]
+      }
+    },
+    "/api/v1/wallet/transfer": {
+      "post": {
+        "operationId": "WalletController_transfer_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Wallet"
+        ]
+      }
+    },
+    "/api/v1/wallet/holds": {
+      "get": {
+        "operationId": "WalletController_getHolds_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Wallet"
+        ]
+      }
+    },
+    "/api/v1/partners/onboard": {
+      "post": {
+        "operationId": "PartnersController_onboard_v1",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Partners"
+        ]
+      }
+    },
+    "/api/v1/partners/me/kyc": {
+      "post": {
+        "operationId": "PartnersController_submitKyc_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Partners"
+        ]
+      }
+    },
+    "/api/v1/partners/me/agreement": {
+      "post": {
+        "operationId": "PartnersController_acceptAgreement_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Partners"
+        ]
+      }
+    },
+    "/api/v1/partners/me/dashboard": {
+      "get": {
+        "operationId": "PartnersController_getDashboard_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Partners"
+        ]
+      }
+    },
+    "/api/v1/partners/me/eligible-items": {
+      "get": {
+        "operationId": "PartnersController_getEligibleItems_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Partners"
+        ]
+      }
+    },
+    "/api/v1/partners/me/eligible-items/{id}": {
+      "get": {
+        "operationId": "PartnersController_getEligibleItem_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Partners"
+        ]
+      }
+    },
+    "/api/v1/partners/me/commitments": {
+      "post": {
+        "operationId": "PartnersController_createCommitment_v1",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Partners"
+        ]
+      },
+      "get": {
+        "operationId": "PartnersController_listCommitments_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Partners"
+        ]
+      }
+    },
+    "/api/v1/partners/me/commitments/{id}": {
+      "get": {
+        "operationId": "PartnersController_getCommitment_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Partners"
+        ]
+      }
+    },
+    "/api/v1/partners/me/commitments/{id}/status": {
+      "get": {
+        "operationId": "PartnersController_getCommitmentStatus_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Partners"
+        ]
+      }
+    },
+    "/api/v1/partners/me/settlements": {
+      "get": {
+        "operationId": "PartnersController_getSettlements_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Partners"
+        ]
+      }
+    },
+    "/api/v1/partners/me/disputes": {
+      "post": {
+        "operationId": "PartnersController_raiseDispute_v1",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Partners"
+        ]
+      }
+    },
+    "/api/v1/admin/partners": {
+      "get": {
+        "operationId": "AdminPartnersController_listPartners_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Partners"
+        ]
+      }
+    },
+    "/api/v1/admin/partners/{id}/approve": {
+      "post": {
+        "operationId": "AdminPartnersController_approvePartner_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Partners"
+        ]
+      }
+    },
+    "/api/v1/admin/partners/eligibility-rules": {
+      "get": {
+        "operationId": "AdminPartnersController_getEligibilityRules_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Partners"
+        ]
+      },
+      "post": {
+        "operationId": "AdminPartnersController_updateEligibilityRules_v1",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Partners"
+        ]
+      }
+    },
+    "/api/v1/admin/partners/commitments": {
+      "get": {
+        "operationId": "AdminPartnersController_listAllCommitments_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Partners"
+        ]
+      }
+    },
+    "/api/v1/admin/partners/commitments/{id}/approve": {
+      "post": {
+        "operationId": "AdminPartnersController_approveCommitment_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Partners"
+        ]
+      }
+    },
+    "/api/v1/admin/partners/disputes/{id}/resolve": {
+      "post": {
+        "operationId": "AdminPartnersController_resolveDispute_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Partners"
+        ]
+      }
+    },
+    "/api/v1/admin/partners/funding-caps": {
+      "get": {
+        "operationId": "AdminPartnersController_getFundingCaps_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Partners"
+        ]
+      },
+      "post": {
+        "operationId": "AdminPartnersController_updateFundingCaps_v1",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Partners"
+        ]
+      }
+    },
+    "/api/v1/rewards/program": {
+      "get": {
+        "operationId": "RewardsController_getPublicProgram_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Rewards"
+        ]
+      }
+    },
+    "/api/v1/rewards/me": {
+      "get": {
+        "operationId": "RewardsController_getMyRewards_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Rewards"
+        ]
+      }
+    },
+    "/api/v1/rewards/me/cashback": {
+      "get": {
+        "operationId": "RewardsController_getCashback_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Rewards"
+        ]
+      }
+    },
+    "/api/v1/rewards/me/transactions": {
+      "get": {
+        "operationId": "RewardsController_getTransactions_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Rewards"
+        ]
+      }
+    },
+    "/api/v1/rewards/cashback/redeem": {
+      "post": {
+        "operationId": "RewardsController_redeemCashback_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Rewards"
+        ]
+      }
+    },
+    "/api/v1/rewards/tiers": {
+      "get": {
+        "operationId": "RewardsController_getTiers_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Rewards"
+        ]
+      }
+    },
+    "/api/v1/rewards/campaigns": {
+      "get": {
+        "operationId": "RewardsController_getActiveCampaigns_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Rewards"
+        ]
+      }
+    },
+    "/api/v1/rewards/affiliates/enroll": {
+      "post": {
+        "operationId": "RewardsController_enrollAffiliate_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Rewards"
+        ]
+      }
+    },
+    "/api/v1/rewards/affiliates/me": {
+      "get": {
+        "operationId": "RewardsController_getAffiliateProfile_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Rewards"
+        ]
+      }
+    },
+    "/api/v1/rewards/affiliates/me/earnings": {
+      "get": {
+        "operationId": "RewardsController_getAffiliateEarnings_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Rewards"
+        ]
+      }
+    },
+    "/api/v1/rewards/affiliates/me/payout": {
+      "post": {
+        "operationId": "RewardsController_requestPayout_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Rewards"
+        ]
+      }
+    },
+    "/api/v1/rewards/affiliates/me/referrals": {
+      "get": {
+        "operationId": "RewardsController_getReferrals_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Rewards"
+        ]
+      }
+    },
+    "/api/v1/rewards/sellers/me/rewards": {
+      "get": {
+        "operationId": "RewardsController_getSellerRewards_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Rewards"
+        ]
+      }
+    },
+    "/api/v1/rewards/financiers/me/rewards": {
+      "get": {
+        "operationId": "RewardsController_getFinancierRewards_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Rewards"
+        ]
+      }
+    },
+    "/api/v1/admin/rewards/program": {
+      "get": {
+        "operationId": "AdminRewardsController_getProgram_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Rewards"
+        ]
+      },
+      "post": {
+        "operationId": "AdminRewardsController_createProgram_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Rewards"
+        ]
+      },
+      "patch": {
+        "operationId": "AdminRewardsController_updateProgram_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Rewards"
+        ]
+      }
+    },
+    "/api/v1/admin/rewards/config": {
+      "get": {
+        "operationId": "AdminRewardsController_getConfig_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Rewards"
+        ]
+      },
+      "patch": {
+        "operationId": "AdminRewardsController_updateConfig_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Rewards"
+        ]
+      }
+    },
+    "/api/v1/admin/rewards/tiers": {
+      "get": {
+        "operationId": "AdminRewardsController_listTiers_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Rewards"
+        ]
+      },
+      "post": {
+        "operationId": "AdminRewardsController_createTier_v1",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Rewards"
+        ]
+      }
+    },
+    "/api/v1/admin/rewards/tiers/{id}": {
+      "patch": {
+        "operationId": "AdminRewardsController_updateTier_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Rewards"
+        ]
+      },
+      "delete": {
+        "operationId": "AdminRewardsController_deleteTier_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Rewards"
+        ]
+      }
+    },
+    "/api/v1/admin/rewards/campaigns": {
+      "get": {
+        "operationId": "AdminRewardsController_listCampaigns_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Rewards"
+        ]
+      },
+      "post": {
+        "operationId": "AdminRewardsController_createCampaign_v1",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Rewards"
+        ]
+      }
+    },
+    "/api/v1/admin/rewards/campaigns/{id}": {
+      "patch": {
+        "operationId": "AdminRewardsController_updateCampaign_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Rewards"
+        ]
+      },
+      "delete": {
+        "operationId": "AdminRewardsController_deleteCampaign_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Rewards"
+        ]
+      }
+    },
+    "/api/v1/admin/rewards/fraud-alerts": {
+      "get": {
+        "operationId": "AdminRewardsController_getFraudAlerts_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin - Rewards"
         ]
       }
     }
@@ -6157,78 +11339,6 @@
           }
         }
       },
-      "CreateUserDto": {
-        "type": "object",
-        "properties": {
-          "firstName": {
-            "type": "string",
-            "example": "John"
-          },
-          "lastName": {
-            "type": "string",
-            "example": "Doe"
-          },
-          "email": {
-            "type": "string",
-            "example": "john.doe@example.com"
-          },
-          "password": {
-            "type": "string",
-            "example": "StrongP@ssw0rd",
-            "minLength": 8
-          },
-          "accountType": {
-            "type": "string",
-            "enum": [
-              "buyer",
-              "seller",
-              "investor",
-              "admin"
-            ],
-            "example": "buyer"
-          },
-          "phoneNumber": {
-            "type": "string",
-            "example": "+2348012345678"
-          },
-          "dateOfBirth": {
-            "type": "string",
-            "example": "1990-01-15"
-          },
-          "termsAccepted": {
-            "type": "boolean",
-            "example": true
-          }
-        },
-        "required": [
-          "firstName",
-          "lastName",
-          "email",
-          "password",
-          "accountType"
-        ]
-      },
-      "UpdateUserDto": {
-        "type": "object",
-        "properties": {
-          "firstName": {
-            "type": "string",
-            "example": "John"
-          },
-          "lastName": {
-            "type": "string",
-            "example": "Doe"
-          },
-          "phoneNumber": {
-            "type": "string",
-            "example": "+2348012345678"
-          },
-          "dateOfBirth": {
-            "type": "string",
-            "example": "1990-01-15"
-          }
-        }
-      },
       "CreateAddressDto": {
         "type": "object",
         "properties": {
@@ -6404,6 +11514,18 @@
           "endsAt": {
             "type": "string",
             "description": "Optional campaign end datetime (ISO-8601)"
+          }
+        }
+      },
+      "InitializePaymentDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CancelOrderDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string"
           }
         }
       },
@@ -6753,25 +11875,51 @@
           }
         }
       },
-      "CreateSellerDto": {
+      "OnboardSellerDto": {
         "type": "object",
         "properties": {
-          "name": {
+          "email": {
             "type": "string"
           },
-          "logoUrl": {
+          "password": {
             "type": "string"
           },
-          "location": {
+          "firstName": {
             "type": "string"
           },
-          "deliveryTimeRange": {
+          "lastName": {
+            "type": "string"
+          },
+          "businessName": {
+            "type": "string"
+          },
+          "businessAddress": {
+            "type": "string"
+          },
+          "businessType": {
             "type": "string",
-            "description": "Estimated delivery time range, e.g. \"25-40 min\""
+            "example": "sole_proprietorship"
+          },
+          "phoneNumber": {
+            "type": "string"
+          },
+          "businessRegistrationNumber": {
+            "type": "string"
+          },
+          "termsAccepted": {
+            "type": "boolean",
+            "default": true
           }
         },
         "required": [
-          "name"
+          "email",
+          "password",
+          "firstName",
+          "lastName",
+          "businessName",
+          "businessAddress",
+          "businessType",
+          "termsAccepted"
         ]
       },
       "UpdateSellerDto": {
@@ -6922,6 +12070,27 @@
           "images"
         ]
       },
+      "CreateSellerDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "logoUrl": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "deliveryTimeRange": {
+            "type": "string",
+            "description": "Estimated delivery time range, e.g. \"25-40 min\""
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
       "BankingDetailsDto": {
         "type": "object",
         "properties": {
@@ -6944,6 +12113,34 @@
           "bankAccountNumber",
           "bankAccountName"
         ]
+      },
+      "SellerAgreementDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "SellerKycDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "SellerOrderActionDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "SellerReturnDecisionDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateReturnDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "AddEvidenceDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "ProcessRefundDto": {
+        "type": "object",
+        "properties": {}
       },
       "CreateReviewDto": {
         "type": "object",
@@ -7146,6 +12343,143 @@
             "type": "boolean"
           }
         }
+      },
+      "UpdateUserDto": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "example": "John"
+          },
+          "lastName": {
+            "type": "string",
+            "example": "Doe"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "example": "+2348012345678"
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "example": "1990-01-15"
+          }
+        }
+      },
+      "CreatePricingRuleDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdatePricingRuleDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateFeesDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "SimulateDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "AdminOrderStatusDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "AdminOrderInterveneDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "AdminOrderReassignDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateCheckoutSessionDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "SetCheckoutAddressDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "SelectDeliveryDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "PickupDetailsDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "LogisticsQuoteDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CoverageCheckDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "BookCourierDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "PodUploadDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "PickupActionDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateBookingDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateSlotTypeDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateSlotTypeDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateDurationTierDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateDurationTierDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "GenerateSlotsDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "SuspendBookingDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "StockUpdateDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "SupplierOrderActionDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateTicketDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "AddMessageDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "NotificationPreferencesDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "BroadcastDto": {
+        "type": "object",
+        "properties": {}
       }
     }
   }

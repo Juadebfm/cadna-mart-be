@@ -24,7 +24,7 @@ export class Notification extends BaseSchema {
   @Prop({ required: true })
   body!: string;
 
-  @Prop({ default: null })
+  @Prop({ type: String, default: null })
   actionUrl!: string | null;
 
   @Prop({ default: false, index: true })

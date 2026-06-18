@@ -43,10 +43,10 @@ export class SlotBooking extends BaseSchema {
   @Prop({ type: String, enum: BookingPaymentStatus, default: BookingPaymentStatus.UNPAID })
   paymentStatus!: BookingPaymentStatus;
 
-  @Prop({ default: null })
+  @Prop({ type: String, default: null })
   paystackReference!: string | null;
 
-  @Prop({ default: null })
+  @Prop({ type: String, default: null })
   paystackAuthUrl!: string | null;
 
   @Prop({ type: Date, default: null })
@@ -55,7 +55,7 @@ export class SlotBooking extends BaseSchema {
   @Prop({ type: Date, default: null })
   expiresAt!: Date | null;
 
-  @Prop({ default: null })
+  @Prop({ type: String, default: null })
   suspendReason!: string | null;
 
   @Prop({ type: Types.ObjectId, ref: 'User', default: null })

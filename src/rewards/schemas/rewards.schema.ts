@@ -11,10 +11,10 @@ export class RewardsProgram extends BaseSchema {
   @Prop({ required: true })
   name!: string;
 
-  @Prop({ default: null })
+  @Prop({ type: String, default: null })
   tagline!: string | null;
 
-  @Prop({ default: null })
+  @Prop({ type: String, default: null })
   logoUrl!: string | null;
 }
 
@@ -29,7 +29,7 @@ export class RewardsTier extends BaseSchema {
   @Prop({ required: true, min: 0 })
   minPoints!: number;
 
-  @Prop({ default: null })
+  @Prop({ type: Number, default: null })
   maxPoints!: number | null;
 
   @Prop({ required: true, min: 0, max: 1 })
@@ -77,10 +77,10 @@ export class RewardsAccount extends BaseSchema {
   @Prop({ default: false })
   isAffiliate!: boolean;
 
-  @Prop({ default: null })
+  @Prop({ type: String, default: null })
   affiliateCode!: string | null;
 
-  @Prop({ default: null })
+  @Prop({ type: String, default: null })
   referredBy!: string | null;
 }
 
@@ -111,7 +111,7 @@ export class RewardsTransaction extends BaseSchema {
   @Prop({ required: true })
   description!: string;
 
-  @Prop({ default: null })
+  @Prop({ type: String, default: null })
   orderId!: string | null;
 }
 
