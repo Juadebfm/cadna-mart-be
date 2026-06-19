@@ -23,6 +23,7 @@
     "seed:products": "NODE_OPTIONS=--max-old-space-size=512 ts-node --transpile-only -r tsconfig-paths/register src/scripts/seed-products.ts",
     "swagger:export": "npm run build && NODE_ENV=dev SWAGGER_EXPORT=true node dist/main.js",
     "postman:gen": "npm run swagger:export && node scripts/gen-postman.js",
+    "docs:gen": "npm run swagger:export && node scripts/gen-postman.js && node scripts/gen-handoff.js",
     "docker:dev": "docker compose -f docker/docker-compose.yml up --build",
     "docker:dev:down": "docker compose -f docker/docker-compose.yml down -v",
     "prepare": "husky"
