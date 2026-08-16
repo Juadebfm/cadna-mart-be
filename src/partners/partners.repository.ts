@@ -20,7 +20,7 @@ export class PartnersRepository {
     const existing = (await this.profileModel
       .findOne({ userId: new Types.ObjectId(userId), deletedAt: null })
       .lean()
-      .exec()) as PartnerProfile | null;
+      .exec()) as unknown as PartnerProfile | null;
     if (existing) return existing;
     return this.profileModel.create({ userId: new Types.ObjectId(userId) });
   }
@@ -29,7 +29,7 @@ export class PartnersRepository {
     return this.profileModel
       .findOne({ userId: new Types.ObjectId(userId), deletedAt: null })
       .lean()
-      .exec() as Promise<PartnerProfile | null>;
+      .exec() as unknown as Promise<PartnerProfile | null>;
   }
 
   async updateProfile(userId: string, update: Partial<PartnerProfile>): Promise<PartnerProfile> {
@@ -39,7 +39,7 @@ export class PartnersRepository {
         upsert: true,
       })
       .lean()
-      .exec()) as PartnerProfile;
+      .exec()) as unknown as PartnerProfile;
     return doc;
   }
 
@@ -55,7 +55,7 @@ export class PartnersRepository {
         .skip((page - 1) * limit)
         .limit(limit)
         .lean()
-        .exec() as Promise<PartnerProfile[]>,
+        .exec() as unknown as Promise<PartnerProfile[]>,
       this.profileModel.countDocuments(filter).exec(),
     ]);
     return { items, totalItems };
@@ -73,7 +73,7 @@ export class PartnersRepository {
         { new: true },
       )
       .lean()
-      .exec()) as PartnerProfile | null;
+      .exec()) as unknown as PartnerProfile | null;
     if (!doc) throw new NotFoundException('Partner not found');
     return doc;
   }
@@ -103,14 +103,17 @@ export class PartnersRepository {
         .skip((page - 1) * limit)
         .limit(limit)
         .lean()
-        .exec() as Promise<PartnerCommitment[]>,
+        .exec() as unknown as Promise<PartnerCommitment[]>,
       this.commitmentModel.countDocuments(filter).exec(),
     ]);
     return { items, totalItems };
   }
 
   async findCommitmentById(id: string): Promise<PartnerCommitment | null> {
-    return this.commitmentModel.findById(id).lean().exec() as Promise<PartnerCommitment | null>;
+    return this.commitmentModel
+      .findById(id)
+      .lean()
+      .exec() as unknown as Promise<PartnerCommitment | null>;
   }
 
   async approveCommitment(id: string, adminId: string): Promise<PartnerCommitment> {
@@ -121,7 +124,7 @@ export class PartnersRepository {
         { new: true },
       )
       .lean()
-      .exec()) as PartnerCommitment | null;
+      .exec()) as unknown as PartnerCommitment | null;
     if (!doc) throw new NotFoundException('Commitment not found');
     return doc;
   }
@@ -138,7 +141,7 @@ export class PartnersRepository {
         .skip((page - 1) * limit)
         .limit(limit)
         .lean()
-        .exec() as Promise<PartnerCommitment[]>,
+        .exec() as unknown as Promise<PartnerCommitment[]>,
       this.commitmentModel.countDocuments(filter).exec(),
     ]);
     return { items, totalItems };
@@ -164,7 +167,7 @@ export class PartnersRepository {
         { new: true },
       )
       .lean()
-      .exec()) as PartnerDispute | null;
+      .exec()) as unknown as PartnerDispute | null;
     if (!doc) throw new NotFoundException('Dispute not found');
     return doc;
   }

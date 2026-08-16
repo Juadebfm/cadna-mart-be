@@ -29,10 +29,10 @@ export class WalletTransaction extends BaseSchema {
   @Prop({ required: true })
   runningBalanceKobo!: number;
 
-  @Prop({ default: null })
+  @Prop({ type: String, default: null })
   reference!: string | null;
 
-  @Prop({ default: null })
+  @Prop({ type: String, default: null })
   orderId!: string | null;
 
   @Prop({ required: true })

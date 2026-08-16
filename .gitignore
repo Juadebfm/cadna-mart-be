@@ -4,12 +4,18 @@ node_modules/
 # Build
 dist/
 
-# Environment files (keep .env.example tracked)
-.env
-.env.dev
-.env.staging
-.env.prod
-.env.local
+# Environment files and local secrets
+.env*
+env.*
+
+# Local AI coding-agent configuration
+.agents/
+.claude/
+.codex/
+.cursor/
+.aider/
+.continue/
+skills-lock.json
 
 zikel-backup-codes.txt
 # IDE

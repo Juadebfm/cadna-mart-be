@@ -24,7 +24,7 @@ export class RewardsRepository {
     return this.programModel
       .findOne({ slug: 'default', deletedAt: null })
       .lean()
-      .exec() as Promise<RewardsProgram | null>;
+      .exec() as unknown as Promise<RewardsProgram | null>;
   }
 
   async upsertProgram(data: Partial<RewardsProgram>): Promise<RewardsProgram> {
@@ -35,14 +35,16 @@ export class RewardsRepository {
         { new: true, upsert: true },
       )
       .lean()
-      .exec() as Promise<RewardsProgram>;
+      .exec() as unknown as Promise<RewardsProgram>;
   }
 
   // Tiers
   async findTiers(): Promise<RewardsTier[]> {
-    return this.tierModel.find({ deletedAt: null }).sort({ minPoints: 1 }).lean().exec() as Promise<
-      RewardsTier[]
-    >;
+    return this.tierModel
+      .find({ deletedAt: null })
+      .sort({ minPoints: 1 })
+      .lean()
+      .exec() as unknown as Promise<RewardsTier[]>;
   }
 
   async createTier(data: Partial<RewardsTier>): Promise<RewardsTier> {
@@ -53,7 +55,7 @@ export class RewardsRepository {
     const doc = (await this.tierModel
       .findByIdAndUpdate(id, data, { new: true })
       .lean()
-      .exec()) as RewardsTier | null;
+      .exec()) as unknown as RewardsTier | null;
     if (!doc) throw new NotFoundException('Tier not found');
     return doc;
   }
@@ -68,7 +70,7 @@ export class RewardsRepository {
     return this.campaignModel
       .find({ isActive: true, startsAt: { $lte: now }, endsAt: { $gte: now }, deletedAt: null })
       .lean()
-      .exec() as Promise<RewardsCampaign[]>;
+      .exec() as unknown as Promise<RewardsCampaign[]>;
   }
 
   async findAllCampaigns(): Promise<RewardsCampaign[]> {
@@ -76,7 +78,7 @@ export class RewardsRepository {
       .find({ deletedAt: null })
       .sort({ createdAt: -1 })
       .lean()
-      .exec() as Promise<RewardsCampaign[]>;
+      .exec() as unknown as Promise<RewardsCampaign[]>;
   }
 
   async createCampaign(data: Partial<RewardsCampaign>): Promise<RewardsCampaign> {
@@ -87,7 +89,7 @@ export class RewardsRepository {
     const doc = (await this.campaignModel
       .findByIdAndUpdate(id, data, { new: true })
       .lean()
-      .exec()) as RewardsCampaign | null;
+      .exec()) as unknown as RewardsCampaign | null;
     if (!doc) throw new NotFoundException('Campaign not found');
     return doc;
   }
@@ -101,7 +103,7 @@ export class RewardsRepository {
     const existing = (await this.accountModel
       .findOne({ userId: new Types.ObjectId(userId), deletedAt: null })
       .lean()
-      .exec()) as RewardsAccount | null;
+      .exec()) as unknown as RewardsAccount | null;
     if (existing) return existing;
     return this.accountModel.create({ userId: new Types.ObjectId(userId) });
   }
@@ -113,7 +115,7 @@ export class RewardsRepository {
         upsert: true,
       })
       .lean()
-      .exec() as Promise<RewardsAccount>;
+      .exec() as unknown as Promise<RewardsAccount>;
   }
 
   // Transactions
@@ -130,7 +132,7 @@ export class RewardsRepository {
         .skip((page - 1) * limit)
         .limit(limit)
         .lean()
-        .exec() as Promise<RewardsTransaction[]>,
+        .exec() as unknown as Promise<RewardsTransaction[]>,
       this.txModel.countDocuments(filter).exec(),
     ]);
     return { items, totalItems };

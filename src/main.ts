@@ -60,7 +60,7 @@ async function bootstrap(): Promise<void> {
     return false;
   };
   const corsOrigin: CorsOptions['origin'] = configService.isDev
-    ? (requestOrigin: string, callback: Parameters<CustomOrigin>[1]) => {
+    ? (requestOrigin: string | undefined, callback: Parameters<CustomOrigin>[1]) => {
         // Browserless requests (curl/Postman/server-to-server) may omit Origin.
         if (!requestOrigin) {
           callback(null, true);

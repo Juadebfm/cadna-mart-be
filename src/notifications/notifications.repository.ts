@@ -20,7 +20,7 @@ export class NotificationsRepository {
         .skip((page - 1) * limit)
         .limit(limit)
         .lean()
-        .exec() as Promise<Notification[]>,
+        .exec() as unknown as Promise<Notification[]>,
       this.model.countDocuments(filter).exec(),
     ]);
     return { items, totalItems };
@@ -34,7 +34,7 @@ export class NotificationsRepository {
         { new: true },
       )
       .lean()
-      .exec() as Promise<Notification | null>;
+      .exec() as unknown as Promise<Notification | null>;
   }
 
   async create(data: Partial<Notification>): Promise<Notification> {

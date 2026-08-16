@@ -20,21 +20,23 @@ export class PromoSlotsRepository {
   }
 
   async findAllSlotTypes(): Promise<SlotType[]> {
-    return this.slotTypeModel.find({ deletedAt: null }).lean().exec() as Promise<SlotType[]>;
+    return this.slotTypeModel.find({ deletedAt: null }).lean().exec() as unknown as Promise<
+      SlotType[]
+    >;
   }
 
   async findSlotTypeById(id: string): Promise<SlotType | null> {
     return this.slotTypeModel
       .findOne({ _id: new Types.ObjectId(id), deletedAt: null })
       .lean()
-      .exec() as Promise<SlotType | null>;
+      .exec() as unknown as Promise<SlotType | null>;
   }
 
   async updateSlotType(id: string, data: Partial<SlotType>): Promise<SlotType | null> {
     return this.slotTypeModel
       .findByIdAndUpdate(id, data, { new: true })
       .lean()
-      .exec() as Promise<SlotType | null>;
+      .exec() as unknown as Promise<SlotType | null>;
   }
 
   async softDeleteSlotType(id: string): Promise<void> {
@@ -48,21 +50,21 @@ export class PromoSlotsRepository {
   async findAllTiers(slotTypeId?: string): Promise<DurationTier[]> {
     const filter: Record<string, unknown> = { deletedAt: null };
     if (slotTypeId) filter['slotTypeId'] = new Types.ObjectId(slotTypeId);
-    return this.tierModel.find(filter).lean().exec() as Promise<DurationTier[]>;
+    return this.tierModel.find(filter).lean().exec() as unknown as Promise<DurationTier[]>;
   }
 
   async findTierById(id: string): Promise<DurationTier | null> {
     return this.tierModel
       .findOne({ _id: new Types.ObjectId(id), deletedAt: null })
       .lean()
-      .exec() as Promise<DurationTier | null>;
+      .exec() as unknown as Promise<DurationTier | null>;
   }
 
   async updateTier(id: string, data: Partial<DurationTier>): Promise<DurationTier | null> {
     return this.tierModel
       .findByIdAndUpdate(id, data, { new: true })
       .lean()
-      .exec() as Promise<DurationTier | null>;
+      .exec() as unknown as Promise<DurationTier | null>;
   }
 
   async softDeleteTier(id: string): Promise<void> {
@@ -75,14 +77,16 @@ export class PromoSlotsRepository {
       status: { $ne: PromoSlotStatus.FULL },
     };
     if (slotTypeId) filter['slotTypeId'] = new Types.ObjectId(slotTypeId);
-    return this.slotModel.find(filter).sort({ startsAt: 1 }).lean().exec() as Promise<PromoSlot[]>;
+    return this.slotModel.find(filter).sort({ startsAt: 1 }).lean().exec() as unknown as Promise<
+      PromoSlot[]
+    >;
   }
 
   async findSlotById(id: string): Promise<PromoSlot | null> {
     return this.slotModel
       .findOne({ _id: new Types.ObjectId(id), deletedAt: null })
       .lean()
-      .exec() as Promise<PromoSlot | null>;
+      .exec() as unknown as Promise<PromoSlot | null>;
   }
 
   async createSlot(data: Partial<PromoSlot>): Promise<PromoSlot> {
@@ -108,7 +112,7 @@ export class PromoSlotsRepository {
     return this.bookingModel
       .findOne({ _id: new Types.ObjectId(id), deletedAt: null })
       .lean()
-      .exec() as Promise<SlotBooking | null>;
+      .exec() as unknown as Promise<SlotBooking | null>;
   }
 
   async findBookingsBySeller(
@@ -124,7 +128,7 @@ export class PromoSlotsRepository {
         .skip((page - 1) * limit)
         .limit(limit)
         .lean()
-        .exec() as Promise<SlotBooking[]>,
+        .exec() as unknown as Promise<SlotBooking[]>,
       this.bookingModel.countDocuments(filter).exec(),
     ]);
     return { items, totalItems };
@@ -144,7 +148,7 @@ export class PromoSlotsRepository {
         .skip((page - 1) * limit)
         .limit(limit)
         .lean()
-        .exec() as Promise<SlotBooking[]>,
+        .exec() as unknown as Promise<SlotBooking[]>,
       this.bookingModel.countDocuments(filter).exec(),
     ]);
     return { items, totalItems };
@@ -154,6 +158,6 @@ export class PromoSlotsRepository {
     return this.bookingModel
       .findByIdAndUpdate(id, data, { new: true })
       .lean()
-      .exec() as Promise<SlotBooking | null>;
+      .exec() as unknown as Promise<SlotBooking | null>;
   }
 }

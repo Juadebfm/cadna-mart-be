@@ -183,9 +183,10 @@ export class PromoSlotsService {
     };
   }
 
-  async findBookingById(id: string): Promise<object> {
+  async findBookingById(id: string, sellerId: string): Promise<object> {
     const b = await this.repo.findBookingById(id);
     if (!b) throw new NotFoundException('Booking not found');
+    if (b.sellerId.toString() !== sellerId) throw new NotFoundException('Booking not found');
     return this.bookingDto(b);
   }
 

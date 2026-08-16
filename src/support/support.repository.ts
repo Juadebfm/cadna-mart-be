@@ -15,7 +15,7 @@ export class SupportRepository {
     return this.model
       .findOne({ _id: new Types.ObjectId(id), deletedAt: null })
       .lean()
-      .exec() as Promise<SupportTicket | null>;
+      .exec() as unknown as Promise<SupportTicket | null>;
   }
 
   async findByUser(
@@ -34,7 +34,7 @@ export class SupportRepository {
         .skip((page - 1) * limit)
         .limit(limit)
         .lean()
-        .exec() as Promise<SupportTicket[]>,
+        .exec() as unknown as Promise<SupportTicket[]>,
       this.model.countDocuments(filter).exec(),
     ]);
     return { items, totalItems };
@@ -56,7 +56,7 @@ export class SupportRepository {
         .skip((page - 1) * limit)
         .limit(limit)
         .lean()
-        .exec() as Promise<SupportTicket[]>,
+        .exec() as unknown as Promise<SupportTicket[]>,
       this.model.countDocuments(filter).exec(),
     ]);
     return { items, totalItems };
@@ -66,7 +66,7 @@ export class SupportRepository {
     return this.model
       .findByIdAndUpdate(id, data, { new: true })
       .lean()
-      .exec() as Promise<SupportTicket | null>;
+      .exec() as unknown as Promise<SupportTicket | null>;
   }
 
   async pushMessage(id: string, message: SupportTicket['messages'][0]): Promise<void> {

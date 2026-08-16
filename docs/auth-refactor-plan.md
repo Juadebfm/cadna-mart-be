@@ -47,13 +47,17 @@ Remove account type selection from signup flow. Buyer registration is simplified
   - firstName, lastName, phoneNumber
   - businessName, businessRegistrationNumber (optional)
   - businessAddress, businessType
-  - bankName, bankAccountNumber, bankAccountName
   - termsAccepted
+- [x] Move seller bank details collection to authenticated seller endpoints after login
+  - `POST /sellers/me/banking`
+  - `GET /sellers/me/banking`
+- [x] Add seller onboarding status endpoint for FE progress tracking
+  - `GET /sellers/me/status`
 - [x] Create `RegisterSellerPasswordDto` (sessionId, password, confirmPassword + business details)
 - [x] Create seller registration session handling (reuses existing session)
 - [x] Add endpoints in `AuthController`:
   - `POST /auth/register/seller/email` — start seller registration
-  - `POST /auth/register/seller/details` — personal + business details
+  - `POST /auth/register/seller/profile` — personal + business details
   - `POST /auth/register/seller/password` — create User (SELLER) + SellerProfile, send OTP
   - `POST /auth/register/seller/verify` — OTP verification (reuses existing verify endpoint)
 - [x] Add service methods in `AuthService` for seller registration
@@ -65,6 +69,10 @@ Remove account type selection from signup flow. Buyer registration is simplified
 - [x] Add `PATCH /admin/sellers/:id/approve` endpoint
   - Sets `isApproved: true`, `approvedAt: new Date()`, `approvedBy: adminUserId`
 - [x] Add `PATCH /admin/sellers/:id/reject` endpoint (sets isApproved: false)
+- [x] Add seller-application endpoints that work before storefront creation
+  - `GET /admin/sellers/applications`
+  - `PATCH /admin/sellers/applications/:userId/approve`
+  - `PATCH /admin/sellers/applications/:userId/reject`
 - [x] Update product creation in `ProductsService.createProduct()`:
   - Look up SellerProfile by userId
   - If `isApproved !== true`, throw `ForbiddenException('Your seller account is pending approval')`
@@ -117,13 +125,19 @@ Remove account type selection from signup flow. Buyer registration is simplified
 | Method | Route | Auth |
 |--------|-------|------|
 | POST | `/auth/register/seller/email` | Public |
-| POST | `/auth/register/seller/details` | Public |
+| POST | `/auth/register/seller/profile` | Public |
 | POST | `/auth/register/seller/password` | Public |
 | POST | `/auth/register/seller/verify` | Public |
+| GET | `/sellers/me/status` | Seller |
+| GET | `/sellers/me/banking` | Seller |
+| POST | `/sellers/me/banking` | Seller |
 
 ### Admin — Seller Management
 | Method | Route | Auth |
 |--------|-------|------|
+| GET | `/admin/sellers/applications` | Admin |
+| PATCH | `/admin/sellers/applications/:userId/approve` | Admin |
+| PATCH | `/admin/sellers/applications/:userId/reject` | Admin |
 | PATCH | `/admin/sellers/:id/approve` | Admin |
 | PATCH | `/admin/sellers/:id/reject` | Admin |
 

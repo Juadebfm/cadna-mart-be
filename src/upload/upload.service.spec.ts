@@ -18,7 +18,7 @@ describe('UploadService', () => {
     expect(result.cloudName).toBe('test-cloud');
     expect(result.apiKey).toBe('test-key');
     expect(result.folder).toBe('cadna-mart/products/user-abc123');
-    expect(result.uploadUrl).toBe('https://api.cloudinary.com/v1_1/demo-cloud/image/upload');
+    expect(result.uploadUrl).toBe('https://api.cloudinary.com/v1_1/test-cloud/image/upload');
     expect(typeof result.signature).toBe('string');
     expect(result.signature.length).toBeGreaterThan(0);
   });

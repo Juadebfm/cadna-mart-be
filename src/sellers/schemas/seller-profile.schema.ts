@@ -51,5 +51,3 @@ export class SellerProfile extends BaseSchema {
 }
 
 export const SellerProfileSchema = SchemaFactory.createForClass(SellerProfile);
-
-SellerProfileSchema.index({ user: 1 });

@@ -15,7 +15,7 @@ export class WalletRepository {
     const existing = (await this.walletModel
       .findOne({ userId: new Types.ObjectId(userId), deletedAt: null })
       .lean()
-      .exec()) as Wallet | null;
+      .exec()) as unknown as Wallet | null;
     if (existing) return existing;
     return this.walletModel.create({ userId: new Types.ObjectId(userId) });
   }
@@ -24,7 +24,7 @@ export class WalletRepository {
     return this.walletModel
       .findOne({ userId: new Types.ObjectId(userId), deletedAt: null })
       .lean()
-      .exec() as Promise<Wallet | null>;
+      .exec() as unknown as Promise<Wallet | null>;
   }
 
   async credit(
@@ -38,7 +38,7 @@ export class WalletRepository {
     const wallet = (await this.walletModel
       .findByIdAndUpdate(walletId, { $inc: { balanceKobo: amountKobo } }, { new: true })
       .lean()
-      .exec()) as Wallet;
+      .exec()) as unknown as Wallet;
 
     const tx = await this.txModel.create({
       walletId: new Types.ObjectId(walletId),
@@ -65,7 +65,7 @@ export class WalletRepository {
     const wallet = (await this.walletModel
       .findByIdAndUpdate(walletId, { $inc: { balanceKobo: -amountKobo } }, { new: true })
       .lean()
-      .exec()) as Wallet;
+      .exec()) as unknown as Wallet;
 
     const tx = await this.txModel.create({
       walletId: new Types.ObjectId(walletId),
@@ -94,7 +94,7 @@ export class WalletRepository {
         .skip((page - 1) * limit)
         .limit(limit)
         .lean()
-        .exec() as Promise<WalletTransaction[]>,
+        .exec() as unknown as Promise<WalletTransaction[]>,
       this.txModel.countDocuments(filter).exec(),
     ]);
     return { items, totalItems };

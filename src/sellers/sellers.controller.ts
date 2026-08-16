@@ -55,6 +55,17 @@ export class SellersController {
 
   @ApiBearerAuth()
   @AccountTypes(AccountType.SELLER)
+  @Get('me/status')
+  @ApiOperation({
+    summary:
+      'Get your seller onboarding status (recommended FE endpoint: email verification, banking completion, approval, and storefront readiness)',
+  })
+  async getMeStatus(@CurrentUser('userId') userId: string) {
+    return this.sellersService.getMyOnboardingStatus(userId);
+  }
+
+  @ApiBearerAuth()
+  @AccountTypes(AccountType.SELLER)
   @Patch('me')
   @ApiOperation({ summary: 'Update your seller profile (spec alias of PATCH /sellers/my)' })
   async updateMeSeller(
@@ -172,6 +183,17 @@ export class SellersController {
 
   @ApiBearerAuth()
   @AccountTypes(AccountType.SELLER)
+  @Get('my/status')
+  @ApiOperation({
+    summary:
+      'Get your seller onboarding status (backward-compatible alias of GET /sellers/me/status)',
+  })
+  async getMyStatus(@CurrentUser('userId') userId: string) {
+    return this.sellersService.getMyOnboardingStatus(userId);
+  }
+
+  @ApiBearerAuth()
+  @AccountTypes(AccountType.SELLER)
   @Patch('my')
   @ApiOperation({ summary: 'Update your seller profile' })
   async updateMySeller(
@@ -185,9 +207,21 @@ export class SellersController {
   @AccountTypes(AccountType.SELLER)
   @Get('my/banking')
   @ApiOperation({
-    summary: 'Get your seller bank/payout details. Returns nulls if not yet submitted.',
+    summary:
+      'Get your seller bank/payout details. Returns nulls if not yet submitted. Backward-compatible alias of GET /sellers/me/banking.',
   })
   async getMyBanking(@CurrentUser('userId') userId: string) {
+    return this.sellersService.getMyBankingDetails(userId);
+  }
+
+  @ApiBearerAuth()
+  @AccountTypes(AccountType.SELLER)
+  @Get('me/banking')
+  @ApiOperation({
+    summary:
+      'Get your seller bank/payout details. Returns nulls if not yet submitted. Recommended FE endpoint.',
+  })
+  async getMeBanking(@CurrentUser('userId') userId: string) {
     return this.sellersService.getMyBankingDetails(userId);
   }
 
@@ -196,9 +230,20 @@ export class SellersController {
   @Post('my/banking')
   @ApiOperation({
     summary:
-      'Submit/update your seller bank/payout details. Required once after seller registration; collected by the FE on the same wizard screen but POSTed here after login (kept off the public registration endpoints).',
+      'Submit/update your seller bank/payout details. Required once after seller registration; collected by the FE on the same wizard screen but POSTed here after login (kept off the public registration endpoints). Backward-compatible alias of POST /sellers/me/banking.',
   })
   async setMyBanking(@CurrentUser('userId') userId: string, @Body() dto: BankingDetailsDto) {
+    return this.sellersService.setMyBankingDetails(userId, dto);
+  }
+
+  @ApiBearerAuth()
+  @AccountTypes(AccountType.SELLER)
+  @Post('me/banking')
+  @ApiOperation({
+    summary:
+      'Submit/update your seller bank/payout details. Required once after seller registration; collected by the FE on the same wizard screen but POSTed here after login. Recommended FE endpoint.',
+  })
+  async setMeBanking(@CurrentUser('userId') userId: string, @Body() dto: BankingDetailsDto) {
     return this.sellersService.setMyBankingDetails(userId, dto);
   }
 }

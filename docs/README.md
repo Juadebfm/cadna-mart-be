@@ -90,7 +90,7 @@ Errors come from the global exception filter:
 ```
 Always log `correlationId` — it lets backend trace the request in Winston logs.
 
-## Seller registration flow — bank info moved + step 2 renamed (BREAKING for FE)
+## Seller registration flow — profile split + post-login banking + onboarding status
 
 > **Path change:** Step 2 of seller registration was previously at `POST /auth/register/seller/details` — it is now at **`POST /auth/register/seller/profile`**. The body shape is identical; only the URL changed. Reason: Render's edge WAF reputation-flagged the old path after we'd hammered it with bank-account-shaped data in early testing, causing requests to be silently dropped. The new path is clean.
 
@@ -126,13 +126,18 @@ POST /api/v1/auth/register/seller/password
 POST /api/v1/auth/register/seller/verify
 { "email": "...", "code": "123456" }
 
+# Safe retry behavior:
+# if the seller already verified successfully and the FE needs to retry the
+# follow-up login/banking call, this endpoint now returns success instead of
+# failing on a consumed OTP.
+
 # 2d. Log the new seller in (or have them log in)
-POST /api/v1/auth/login
+POST /api/v1/auth/login/password
 { "email": "...", "password": "..." }
   ↳ store accessToken
 
 # 2e. NOW submit the bank info you've been holding in FE state since step 2
-POST /api/v1/sellers/my/banking            Authorization: Bearer <accessToken>
+POST /api/v1/sellers/me/banking            Authorization: Bearer <accessToken>
 {
   "bankName": "Access Bank",
   "bankAccountNumber": "0123456789",
@@ -140,9 +145,64 @@ POST /api/v1/sellers/my/banking            Authorization: Bearer <accessToken>
 }
 ```
 
-`POST /sellers/my/banking` validates that `bankAccountNumber` is exactly 10 digits (Nigerian NUBAN format). The endpoint also auto-stamps `bankDetailsCompletedAt` on the seller profile so admin onboarding can gate approval on it.
+`POST /sellers/me/banking` validates that `bankAccountNumber` is exactly 10 digits (Nigerian NUBAN format). The endpoint also auto-stamps `bankDetailsCompletedAt` on the seller profile so admin onboarding can gate approval on it. `POST /sellers/my/banking` remains available as a backward-compatible alias.
 
-You can read the current banking state any time with `GET /sellers/my/banking`. Returns `nulls` if not yet submitted.
+You can read the current banking state any time with `GET /sellers/me/banking`. Returns `nulls` if not yet submitted. `GET /sellers/my/banking` remains available as a backward-compatible alias.
+
+### Seller onboarding status after login
+
+Once the seller has verified their email and logged in, the FE should use `GET /api/v1/sellers/me/status` as the source of truth for the rest of the onboarding journey. `GET /api/v1/sellers/my/status` remains available as a backward-compatible alias.
+
+Example response shape:
+
+```json
+{
+  "account": {
+    "email": "seller@example.com",
+    "accountType": "seller",
+    "isEmailVerified": true
+  },
+  "profile": {
+    "businessName": "John Doe Enterprises",
+    "businessRegistrationNumber": "RC-123456",
+    "businessAddress": "12 Admiralty Way, Lagos",
+    "businessType": "sole_proprietor"
+  },
+  "banking": {
+    "isSubmitted": true,
+    "completedAt": "2026-06-28T09:00:00.000Z",
+    "bankName": "Access Bank",
+    "bankAccountName": "John Doe Enterprises",
+    "bankAccountNumberMasked": "******6789"
+  },
+  "approval": {
+    "isApproved": false,
+    "approvedAt": null
+  },
+  "storefront": {
+    "exists": false,
+    "id": null,
+    "name": null,
+    "slug": null
+  },
+  "nextStep": "await_approval"
+}
+```
+
+`nextStep` can currently return:
+- `verify_email`
+- `submit_banking`
+- `await_approval`
+- `create_storefront`
+- `ready`
+
+For the current seller FE phase, the expected happy path after login is:
+1. call `GET /sellers/me/status`
+2. if `nextStep === "submit_banking"`, replay the bank fields with `POST /sellers/me/banking`
+3. call `GET /sellers/me/status` again
+4. if `nextStep === "await_approval"`, show the pending-review screen until admin approval is complete
+
+Once admin approval is done, `nextStep` will move to `create_storefront` if the seller still has no storefront record, or `ready` if a storefront already exists.
 
 **Important: do NOT prompt the user twice.** Hold the bank fields in FE state from the wizard screen and replay them as the post-login step. From the user's perspective the flow is unchanged.
 

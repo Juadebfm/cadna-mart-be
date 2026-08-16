@@ -8,13 +8,13 @@ export abstract class BaseRepository<T> {
   async findById(id: string): Promise<T | null> {
     return this.model
       .findOne({ _id: id, deletedAt: null } as FilterQuery<T>)
-      .exec() as Promise<T | null>;
+      .exec() as unknown as Promise<T | null>;
   }
 
   async findOne(filter: FilterQuery<T>): Promise<T | null> {
     return this.model
       .findOne({ ...filter, deletedAt: null } as FilterQuery<T>)
-      .exec() as Promise<T | null>;
+      .exec() as unknown as Promise<T | null>;
   }
 
   async findAll(
@@ -35,7 +35,7 @@ export abstract class BaseRepository<T> {
         .sort({ [sort]: order })
         .skip(skip)
         .limit(limit)
-        .exec() as Promise<T[]>,
+        .exec() as unknown as Promise<T[]>,
       this.model.countDocuments(queryFilter).exec(),
     ]);
 
@@ -63,7 +63,7 @@ export abstract class BaseRepository<T> {
         new: true,
         ...options,
       })
-      .exec() as Promise<T | null>;
+      .exec() as unknown as Promise<T | null>;
   }
 
   async softDelete(id: string): Promise<T | null> {
@@ -73,7 +73,7 @@ export abstract class BaseRepository<T> {
         { deletedAt: new Date() } as UpdateQuery<T>,
         { new: true },
       )
-      .exec() as Promise<T | null>;
+      .exec() as unknown as Promise<T | null>;
   }
 
   async count(filter: FilterQuery<T> = {} as FilterQuery<T>): Promise<number> {

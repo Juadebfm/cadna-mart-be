@@ -25,7 +25,7 @@ export class SlotType extends BaseSchema {
   @Prop({ default: true })
   isActive!: boolean;
 
-  @Prop({ default: null })
+  @Prop({ type: String, default: null })
   description!: string | null;
 }
 

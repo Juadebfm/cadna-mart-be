@@ -87,7 +87,7 @@ export class PartnerDispute extends BaseSchema {
   @Prop({ type: Types.ObjectId, ref: 'User', default: null })
   resolvedBy!: Types.ObjectId | null;
 
-  @Prop({ default: null })
+  @Prop({ type: String, default: null })
   resolution!: string | null;
 }
 

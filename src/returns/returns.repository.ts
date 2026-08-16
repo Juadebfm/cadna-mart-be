@@ -15,7 +15,7 @@ export class ReturnsRepository {
     return this.model
       .findOne({ _id: new Types.ObjectId(id), deletedAt: null })
       .lean()
-      .exec() as Promise<ReturnRequest | null>;
+      .exec() as unknown as Promise<ReturnRequest | null>;
   }
 
   async findByUserId(
@@ -31,7 +31,7 @@ export class ReturnsRepository {
         .skip((page - 1) * limit)
         .limit(limit)
         .lean()
-        .exec() as Promise<ReturnRequest[]>,
+        .exec() as unknown as Promise<ReturnRequest[]>,
       this.model.countDocuments(filter).exec(),
     ]);
     return { items, totalItems };
@@ -51,7 +51,7 @@ export class ReturnsRepository {
         .skip((page - 1) * limit)
         .limit(limit)
         .lean()
-        .exec() as Promise<ReturnRequest[]>,
+        .exec() as unknown as Promise<ReturnRequest[]>,
       this.model.countDocuments(filter).exec(),
     ]);
     return { items, totalItems };
@@ -75,7 +75,7 @@ export class ReturnsRepository {
         .skip((page - 1) * limit)
         .limit(limit)
         .lean()
-        .exec() as Promise<ReturnRequest[]>,
+        .exec() as unknown as Promise<ReturnRequest[]>,
       this.model.countDocuments(filter).exec(),
     ]);
     return { items, totalItems };
@@ -94,7 +94,7 @@ export class ReturnsRepository {
         .skip((page - 1) * limit)
         .limit(limit)
         .lean()
-        .exec() as Promise<ReturnRequest[]>,
+        .exec() as unknown as Promise<ReturnRequest[]>,
       this.model.countDocuments(filter).exec(),
     ]);
     return { items, totalItems };
@@ -104,6 +104,6 @@ export class ReturnsRepository {
     return this.model
       .findByIdAndUpdate(id, data, { new: true })
       .lean()
-      .exec() as Promise<ReturnRequest | null>;
+      .exec() as unknown as Promise<ReturnRequest | null>;
   }
 }

@@ -109,12 +109,16 @@ export class AuthService {
   }
 
   async verifyEmail(email: string, code: string): Promise<{ message: string }> {
-    await this.otpService.verify(email, code, OtpType.EMAIL_VERIFICATION);
-
     const user = await this.usersService.findByEmail(email);
     if (!user) {
       throw new BadRequestException(ERROR_MESSAGES.USER_NOT_FOUND);
     }
+
+    if (user.isVerified) {
+      return { message: 'Email already verified' };
+    }
+
+    await this.otpService.verify(email, code, OtpType.EMAIL_VERIFICATION);
 
     const userId = (user as unknown as { _id: { toString(): string } })._id.toString();
     await this.usersService.verifyUser(userId);

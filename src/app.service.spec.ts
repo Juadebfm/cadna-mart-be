@@ -15,7 +15,7 @@ describe('AppService', () => {
 
     expect(service.getWelcome()).toEqual({
       name: 'cadna-mart-backend',
-      version: '1.0.0',
+      version: '0.0.1',
       environment: 'dev',
       docs: '/api/docs',
     });

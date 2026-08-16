@@ -50,7 +50,7 @@ export class ReturnRequest extends BaseSchema {
   @Prop({ required: true })
   orderItemProductId!: string;
 
-  @Prop({ default: null })
+  @Prop({ type: String, default: null })
   orderItemVariantId!: string | null;
 
   @Prop({ required: true })
@@ -62,7 +62,7 @@ export class ReturnRequest extends BaseSchema {
   @Prop({ type: String, enum: ReturnReason, required: true })
   reason!: ReturnReason;
 
-  @Prop({ default: null })
+  @Prop({ type: String, default: null })
   description!: string | null;
 
   @Prop({ type: [String], default: [] })
@@ -71,16 +71,16 @@ export class ReturnRequest extends BaseSchema {
   @Prop({ type: String, enum: ReturnStatus, default: ReturnStatus.PENDING, index: true })
   status!: ReturnStatus;
 
-  @Prop({ default: null })
+  @Prop({ type: String, default: null })
   sellerDecision!: string | null;
 
-  @Prop({ default: null })
+  @Prop({ type: String, default: null })
   sellerDecisionNote!: string | null;
 
   @Prop({ type: Date, default: null })
   sellerDecidedAt!: Date | null;
 
-  @Prop({ default: null })
+  @Prop({ type: String, default: null })
   adminOverrideNote!: string | null;
 
   @Prop({ type: Types.ObjectId, ref: 'User', default: null })
@@ -92,7 +92,7 @@ export class ReturnRequest extends BaseSchema {
   @Prop({ type: String, enum: RefundMethod, default: null })
   refundMethod!: RefundMethod | null;
 
-  @Prop({ default: null })
+  @Prop({ type: String, default: null })
   refundReference!: string | null;
 
   @Prop({ type: Date, default: null })
@@ -105,5 +105,3 @@ export class ReturnRequest extends BaseSchema {
 export const ReturnRequestSchema = SchemaFactory.createForClass(ReturnRequest);
 
 ReturnRequestSchema.index({ userId: 1, createdAt: -1 });
-ReturnRequestSchema.index({ orderId: 1 });
-ReturnRequestSchema.index({ status: 1 });

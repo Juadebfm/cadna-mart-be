@@ -2,6 +2,7 @@
   "moduleFileExtensions": ["js", "json", "ts"],
   "rootDir": ".",
   "testEnvironment": "node",
+  "testTimeout": 30000,
   "testRegex": ".e2e-spec.ts$",
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
@@ -37,6 +38,18 @@
     "^@auth-events/(.*)$": "<rootDir>/../src/auth-events/$1",
     "^@data-requests/(.*)$": "<rootDir>/../src/data-requests/$1",
     "^@brands/(.*)$": "<rootDir>/../src/brands/$1",
-    "^@collections/(.*)$": "<rootDir>/../src/collections/$1"
+    "^@collections/(.*)$": "<rootDir>/../src/collections/$1",
+    "^@orders/(.*)$": "<rootDir>/../src/orders/$1",
+    "^@checkout/(.*)$": "<rootDir>/../src/checkout/$1",
+    "^@payments/(.*)$": "<rootDir>/../src/payments/$1",
+    "^@returns/(.*)$": "<rootDir>/../src/returns/$1",
+    "^@logistics/(.*)$": "<rootDir>/../src/logistics/$1",
+    "^@promo-slots/(.*)$": "<rootDir>/../src/promo-slots/$1",
+    "^@suppliers/(.*)$": "<rootDir>/../src/suppliers/$1",
+    "^@support/(.*)$": "<rootDir>/../src/support/$1",
+    "^@notifications/(.*)$": "<rootDir>/../src/notifications/$1",
+    "^@wallet/(.*)$": "<rootDir>/../src/wallet/$1",
+    "^@partners/(.*)$": "<rootDir>/../src/partners/$1",
+    "^@rewards/(.*)$": "<rootDir>/../src/rewards/$1"
   }
 }

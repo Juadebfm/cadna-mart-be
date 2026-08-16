@@ -114,6 +114,78 @@ export class SellersService {
     return this.toDto(seller);
   }
 
+  async getMyOnboardingStatus(userId: string): Promise<object> {
+    const [user, profile, storefront] = await Promise.all([
+      this.usersService.findById(userId),
+      this.sellerProfileModel.findOne({ user: userId, deletedAt: null }).lean().exec(),
+      this.sellersRepository.findByOwner(userId),
+    ]);
+
+    if (!profile) {
+      throw new NotFoundException('Seller profile not found');
+    }
+
+    const bankingSubmitted = !!(
+      profile.bankName &&
+      profile.bankAccountName &&
+      profile.bankAccountNumber &&
+      profile.bankDetailsCompletedAt
+    );
+
+    const maskedAccountNumber = profile.bankAccountNumber
+      ? `${'*'.repeat(Math.max(profile.bankAccountNumber.length - 4, 0))}${profile.bankAccountNumber.slice(-4)}`
+      : null;
+
+    const nextStep = !user.isVerified
+      ? 'verify_email'
+      : !bankingSubmitted
+        ? 'submit_banking'
+        : !profile.isApproved
+          ? 'await_approval'
+          : !storefront
+            ? 'create_storefront'
+            : 'ready';
+
+    return {
+      account: {
+        email: user.email,
+        accountType: user.accountType,
+        isEmailVerified: user.isVerified,
+      },
+      profile: {
+        businessName: profile.businessName,
+        businessRegistrationNumber: profile.businessRegistrationNumber,
+        businessAddress: profile.businessAddress,
+        businessType: profile.businessType,
+      },
+      banking: {
+        isSubmitted: bankingSubmitted,
+        completedAt: profile.bankDetailsCompletedAt,
+        bankName: profile.bankName,
+        bankAccountName: profile.bankAccountName,
+        bankAccountNumberMasked: maskedAccountNumber,
+      },
+      approval: {
+        isApproved: profile.isApproved,
+        approvedAt: profile.approvedAt,
+      },
+      storefront: storefront
+        ? {
+            exists: true,
+            id: (storefront as unknown as { _id: { toString(): string } })._id.toString(),
+            name: storefront.name,
+            slug: storefront.slug,
+          }
+        : {
+            exists: false,
+            id: null,
+            name: null,
+            slug: null,
+          },
+      nextStep,
+    };
+  }
+
   async updateMySeller(
     dto: UpdateSellerDto,
     currentUser: { userId: string; accountType: string },

@@ -23,14 +23,14 @@ export class LogisticsRepository {
     return this.model
       .findOne({ _id: new Types.ObjectId(id), deletedAt: null })
       .lean()
-      .exec() as Promise<LogisticsBooking | null>;
+      .exec() as unknown as Promise<LogisticsBooking | null>;
   }
 
   async findByRef(ref: string): Promise<LogisticsBooking | null> {
     return this.model
       .findOne({ bookingRef: ref, deletedAt: null })
       .lean()
-      .exec() as Promise<LogisticsBooking | null>;
+      .exec() as unknown as Promise<LogisticsBooking | null>;
   }
 
   async findByOrderId(orderId: string): Promise<LogisticsBooking | null> {
@@ -38,14 +38,14 @@ export class LogisticsRepository {
       .findOne({ orderId: new Types.ObjectId(orderId), deletedAt: null })
       .sort({ createdAt: -1 })
       .lean()
-      .exec() as Promise<LogisticsBooking | null>;
+      .exec() as unknown as Promise<LogisticsBooking | null>;
   }
 
   async update(id: string, data: Partial<LogisticsBooking>): Promise<LogisticsBooking | null> {
     return this.model
       .findByIdAndUpdate(id, data, { new: true })
       .lean()
-      .exec() as Promise<LogisticsBooking | null>;
+      .exec() as unknown as Promise<LogisticsBooking | null>;
   }
 
   async pushTrackingEvent(id: string, event: LogisticsBooking['trackingEvents'][0]): Promise<void> {

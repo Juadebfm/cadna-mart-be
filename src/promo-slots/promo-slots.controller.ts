@@ -55,10 +55,12 @@ export class PromoSlotsController {
   @AccountTypes(AccountType.SELLER)
   @Get('/bookings/:id')
   async getBooking(
-    @CurrentUser('userId') _userId: string,
+    @CurrentUser('userId') userId: string,
     @Param('id') id: string,
   ): Promise<object> {
-    return this.promoSlotsService.findBookingById(id);
+    const seller = await this.sellersService.getMySeller(userId);
+    const sellerId = (seller as { id?: string }).id!;
+    return this.promoSlotsService.findBookingById(id, sellerId);
   }
 
   @AccountTypes(AccountType.SELLER)
