@@ -2,7 +2,7 @@ import { AccountType } from '@users/enums/account-type.enum';
 
 export interface JwtPayload {
   sub: string;
-  email: string;
+  email?: string;
   accountType: AccountType;
 }
 

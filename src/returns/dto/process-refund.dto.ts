@@ -1,4 +1,4 @@
-import { IsEnum, IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import { IsEnum, IsInt, IsNumber, IsOptional, IsString, Min } from 'class-validator';
 import { RefundMethod } from '../schemas/return-request.schema';
 
 export class ProcessRefundDto {
@@ -6,6 +6,7 @@ export class ProcessRefundDto {
   refundMethod!: RefundMethod;
 
   @IsNumber()
+  @IsInt()
   @Min(0)
   refundAmount!: number;
 

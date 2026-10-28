@@ -1,11 +1,21 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Notification } from './schemas/notification.schema';
+import { NotificationDevice } from './schemas/notification-device.schema';
 
 @Injectable()
-export class NotificationsRepository {
-  constructor(@InjectModel(Notification.name) private readonly model: Model<Notification>) {}
+export class NotificationsRepository implements OnModuleInit {
+  constructor(
+    @InjectModel(Notification.name) private readonly model: Model<Notification>,
+    @InjectModel(NotificationDevice.name) private readonly deviceModel: Model<NotificationDevice>,
+  ) {}
+
+  async onModuleInit(): Promise<void> {
+    // Production disables Mongoose autoIndex. The unique index prevents one
+    // Firebase installation ID from being attached to two buyer accounts.
+    await this.deviceModel.createIndexes();
+  }
 
   async findByUser(
     userId: string,
@@ -39,5 +49,39 @@ export class NotificationsRepository {
 
   async create(data: Partial<Notification>): Promise<Notification> {
     return this.model.create(data);
+  }
+
+  async registerDevice(userId: string, fid: string): Promise<void> {
+    try {
+      await this.deviceModel
+        .updateOne(
+          { fid, userId: new Types.ObjectId(userId) },
+          { $setOnInsert: { userId: new Types.ObjectId(userId), fid } },
+          { upsert: true },
+        )
+        .exec();
+    } catch (error) {
+      if ((error as { code?: number }).code === 11000) {
+        throw new ConflictException('This device is registered to another account.');
+      }
+      throw error;
+    }
+  }
+
+  async removeDevice(userId: string, fid: string): Promise<void> {
+    await this.deviceModel.deleteOne({ userId: new Types.ObjectId(userId), fid }).exec();
+  }
+
+  async findDeviceFids(userId: string): Promise<Array<{ _id: Types.ObjectId; fid: string }>> {
+    return this.deviceModel
+      .find({ userId: new Types.ObjectId(userId) })
+      .select('+fid _id')
+      .lean()
+      .exec() as unknown as Promise<Array<{ _id: Types.ObjectId; fid: string }>>;
+  }
+
+  async removeDevicesByIds(ids: Types.ObjectId[]): Promise<void> {
+    if (ids.length === 0) return;
+    await this.deviceModel.deleteMany({ _id: { $in: ids } }).exec();
   }
 }

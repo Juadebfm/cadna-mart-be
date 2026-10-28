@@ -46,6 +46,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { WalletModule } from './wallet/wallet.module';
 import { PartnersModule } from './partners/partners.module';
 import { RewardsModule } from './rewards/rewards.module';
+import { RecentlyViewedModule } from './recently-viewed/recently-viewed.module';
 import { CorrelationIdMiddleware } from '@common/middleware/correlation-id.middleware';
 import { RequestLoggerMiddleware } from '@common/middleware/request-logger.middleware';
 import { AppController } from './app.controller';
@@ -104,6 +105,7 @@ import { AppService } from './app.service';
     WalletModule,
     PartnersModule,
     RewardsModule,
+    RecentlyViewedModule,
   ],
   controllers: [AppController],
   providers: [

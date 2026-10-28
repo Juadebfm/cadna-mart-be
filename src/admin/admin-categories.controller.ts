@@ -13,7 +13,7 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AccountTypes } from '@auth/decorators/account-types.decorator';
 import { AccountType } from '@users/enums/account-type.enum';
 import { CategoriesService } from '@categories/categories.service';
-import { CategoriesRepository } from '@categories/categories.repository';
+import { CategoriesRepository, CategoryWriteData } from '@categories/categories.repository';
 import { ParseObjectIdPipe } from '@common/pipes/parse-object-id.pipe';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
@@ -46,26 +46,26 @@ export class AdminCategoriesController {
       isActive: dto.isActive ?? true,
       productCount: 0,
       deletedAt: null,
-    } as any);
+    });
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update a category' })
   async update(@Param('id', ParseObjectIdPipe) id: string, @Body() dto: UpdateCategoryDto) {
-    const updates: Record<string, unknown> = {};
+    const updates: CategoryWriteData = {};
     if (dto.name !== undefined) updates.name = dto.name;
     if (dto.slug !== undefined) updates.slug = dto.slug;
     if (dto.iconUrl !== undefined) updates.iconUrl = dto.iconUrl;
     if (dto.parentId !== undefined) updates.parent = dto.parentId;
     if (dto.order !== undefined) updates.order = dto.order;
     if (dto.isActive !== undefined) updates.isActive = dto.isActive;
-    return this.categoriesRepository.update(id, updates as any);
+    return this.categoriesRepository.update(id, updates);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Soft delete a category' })
   async remove(@Param('id', ParseObjectIdPipe) id: string) {
-    await this.categoriesRepository.update(id, { deletedAt: new Date(), isActive: false } as any);
+    await this.categoriesRepository.update(id, { deletedAt: new Date(), isActive: false });
   }
 }

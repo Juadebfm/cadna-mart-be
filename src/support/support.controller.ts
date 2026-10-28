@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Public } from '@auth/decorators/public.decorator';
 import { AccountTypes } from '@auth/decorators/account-types.decorator';
 import { CurrentUser } from '@auth/decorators/current-user.decorator';
@@ -17,34 +17,58 @@ export class SupportController {
   @Post('/')
   async createTicket(
     @Body() dto: CreateTicketDto,
-    @CurrentUser('id') userId?: string,
+    @CurrentUser('userId') userId?: string,
+  ): Promise<object> {
+    return this.supportService.create(dto, userId);
+  }
+
+  @AccountTypes(AccountType.BUYER)
+  @Post('/mine')
+  async createBuyerTicket(
+    @Body() dto: CreateTicketDto,
+    @CurrentUser('userId') userId: string,
   ): Promise<object> {
     return this.supportService.create(dto, userId);
   }
 
   @AccountTypes(AccountType.BUYER, AccountType.SELLER, AccountType.SUPPLIER)
   @Get('/')
+  @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, type: Number, example: 20, maximum: 50 })
   async listTickets(
-    @CurrentUser('id') userId: string,
+    @CurrentUser('userId') userId: string,
     @Query('page') page = '1',
     @Query('limit') limit = '20',
   ): Promise<object> {
-    return this.supportService.findByUser(userId, Number(page), Number(limit));
+    return this.supportService.findByUser(
+      userId,
+      Math.max(1, Number(page) || 1),
+      Math.min(50, Math.max(1, Number(limit) || 20)),
+    );
   }
 
   @AccountTypes(AccountType.BUYER, AccountType.SELLER, AccountType.SUPPLIER)
   @Get('/:id')
-  async getTicket(@Param('id') id: string): Promise<object> {
-    return this.supportService.findById(id);
+  async getTicket(@Param('id') id: string, @CurrentUser('userId') userId: string): Promise<object> {
+    return this.supportService.findByIdForUser(id, userId);
   }
 
   @AccountTypes(AccountType.BUYER, AccountType.SELLER, AccountType.SUPPLIER)
   @Post('/:id/messages')
   async addMessage(
     @Param('id') id: string,
-    @CurrentUser('id') userId: string,
+    @CurrentUser('userId') userId: string,
     @Body() dto: AddMessageDto,
   ): Promise<object> {
-    return this.supportService.addMessage(id, dto, userId, 'user');
+    return this.supportService.addMessageForUser(id, dto, userId);
+  }
+
+  @AccountTypes(AccountType.BUYER)
+  @Post('/:id/close')
+  async closeTicket(
+    @Param('id') id: string,
+    @CurrentUser('userId') userId: string,
+  ): Promise<object> {
+    return this.supportService.closeForUser(id, userId);
   }
 }

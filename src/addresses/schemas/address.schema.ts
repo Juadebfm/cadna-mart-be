@@ -34,6 +34,9 @@ export class Address extends BaseSchema {
   @Prop({ type: String, default: null })
   postalCode!: string | null;
 
+  @Prop({ type: String, default: null, trim: true })
+  notes!: string | null;
+
   @Prop({ default: false })
   isDefault!: boolean;
 }

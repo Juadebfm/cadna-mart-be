@@ -4,9 +4,11 @@ import { UsersModule } from '@users/users.module';
 import { DealsModule } from '../deals/deals.module';
 import { PaymentsModule } from '../payments/payments.module';
 import { PaystackWebhookController } from './paystack-webhook.controller';
+import { NotificationsModule } from '@notifications/notifications.module';
+import { ReturnsModule } from '@returns/returns.module';
 
 @Module({
-  imports: [UsersModule, DealsModule, PaymentsModule],
+  imports: [UsersModule, DealsModule, PaymentsModule, NotificationsModule, ReturnsModule],
   controllers: [ClerkWebhookController, PaystackWebhookController],
 })
 export class WebhooksModule {}

@@ -3,9 +3,11 @@ node_modules/
 
 # Build
 dist/
+src/generated/prisma/
 
 # Environment files and local secrets
 .env*
+!.env.example
 env.*
 
 # Local AI coding-agent configuration

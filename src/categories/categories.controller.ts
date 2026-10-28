@@ -24,13 +24,12 @@ export class CategoriesController {
     if (!category) {
       throw new NotFoundException('Category not found');
     }
-    const id = (category as unknown as { _id: { toString(): string } })._id.toString();
     return {
-      id,
+      id: category.id,
       name: category.name,
       slug: category.slug,
       iconUrl: category.iconUrl,
-      parent: category.parent?.toString() ?? null,
+      parent: category.parentId,
       productCount: category.productCount,
     };
   }

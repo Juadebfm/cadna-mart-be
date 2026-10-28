@@ -19,7 +19,14 @@ import { AccountType } from '@users/enums/account-type.enum';
 import { UploadFolder, UploadService } from './upload.service';
 import { RequestPresignedUploadDto } from './dto/request-presigned-upload.dto';
 
-const ALLOWED_FOLDERS: UploadFolder[] = ['products', 'stores', 'categories', 'general'];
+const ALLOWED_FOLDERS: UploadFolder[] = [
+  'products',
+  'stores',
+  'categories',
+  'profiles',
+  'support',
+  'general',
+];
 
 @ApiTags('Media')
 @ApiBearerAuth()

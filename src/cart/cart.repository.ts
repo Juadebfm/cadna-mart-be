@@ -1,94 +1,88 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { randomUUID } from 'crypto';
-import { Cart, CartOwnerType } from './schemas/cart.schema';
+import { Prisma } from '../generated/prisma/client';
+import { PrismaService } from '@database/prisma.service';
+import { createPublicId } from '@database/id.util';
+import { CartOwnerType } from './schemas/cart.schema';
+
+const cartInclude = { items: { include: { product: true } } } satisfies Prisma.CartInclude;
+export type CartRow = Prisma.CartGetPayload<{ include: typeof cartInclude }>;
 
 const GUEST_CART_TTL_DAYS = 30;
 
 @Injectable()
 export class CartRepository {
-  constructor(@InjectModel(Cart.name) public readonly cartModel: Model<Cart>) {}
+  constructor(private readonly prisma: PrismaService) {}
 
-  // ─── Lookup ────────────────────────────────────────────────
-
-  async findByUser(userId: string): Promise<Cart | null> {
-    return this.cartModel
-      .findOne({ user: userId })
-      .populate('items.product', 'name slug thumbnailUrl price variants inventoryStatus isActive')
-      .lean()
-      .exec() as unknown as Promise<Cart | null>;
-  }
-
-  async findByPublicId(publicCartId: string): Promise<Cart | null> {
-    return this.cartModel
-      .findOne({ publicCartId })
-      .populate('items.product', 'name slug thumbnailUrl price variants inventoryStatus isActive')
-      .lean()
-      .exec() as unknown as Promise<Cart | null>;
-  }
-
-  async findByPublicIdWithGuestHash(publicCartId: string): Promise<Cart | null> {
-    return this.cartModel
-      .findOne({ publicCartId })
-      .select('+guestTokenHash')
-      .exec() as unknown as Promise<Cart | null>;
-  }
-
-  // ─── Creation ──────────────────────────────────────────────
-
-  async findOrCreateForUser(userId: string): Promise<Cart> {
-    let cart = await this.cartModel.findOne({ user: userId }).exec();
-    if (!cart) {
-      cart = new this.cartModel({
-        user: userId,
-        ownerType: CartOwnerType.USER,
-        publicCartId: randomUUID(),
-        items: [],
-      });
-      await cart.save();
-    } else if (!cart.publicCartId) {
-      cart.publicCartId = randomUUID();
-      cart.ownerType = CartOwnerType.USER;
-      await cart.save();
-    }
-    return cart;
-  }
-
-  async createGuest(guestTokenHash: string): Promise<Cart> {
-    const expiresAt = new Date(Date.now() + GUEST_CART_TTL_DAYS * 24 * 60 * 60 * 1000);
-    const cart = new this.cartModel({
-      user: null,
-      ownerType: CartOwnerType.GUEST,
-      publicCartId: randomUUID(),
-      guestTokenHash,
-      expiresAt,
-      items: [],
+  async findByUser(userId: string): Promise<CartRow | null> {
+    return this.prisma.cart.findFirst({
+      where: { userId, deletedAt: null },
+      include: cartInclude,
     });
-    await cart.save();
-    return cart;
   }
 
-  // ─── Mutations by cartId ───────────────────────────────────
+  async findByPublicId(publicCartId: string): Promise<CartRow | null> {
+    return this.prisma.cart.findFirst({
+      where: { publicCartId, deletedAt: null },
+      include: cartInclude,
+    });
+  }
+
+  async findByPublicIdWithGuestHash(publicCartId: string): Promise<CartRow | null> {
+    return this.findByPublicId(publicCartId);
+  }
+
+  async findOrCreateForUser(userId: string): Promise<CartRow> {
+    const existing = await this.findByUser(userId);
+    if (existing) return existing;
+    return this.prisma.cart.create({
+      data: {
+        id: createPublicId(),
+        userId,
+        ownerType: CartOwnerType.USER,
+        publicCartId: createPublicId(),
+      },
+      include: cartInclude,
+    });
+  }
+
+  async createGuest(guestTokenHash: string): Promise<CartRow> {
+    const expiresAt = new Date(Date.now() + GUEST_CART_TTL_DAYS * 24 * 60 * 60 * 1000);
+    return this.prisma.cart.create({
+      data: {
+        id: createPublicId(),
+        ownerType: CartOwnerType.GUEST,
+        publicCartId: createPublicId(),
+        guestTokenHash,
+        expiresAt,
+      },
+      include: cartInclude,
+    });
+  }
 
   async addItemByCartId(
     cartId: string,
     productId: string,
     variantId: string | null,
     quantity: number,
-  ): Promise<Cart | null> {
-    const cart = await this.cartModel.findOne({ publicCartId: cartId }).exec();
+  ): Promise<CartRow | null> {
+    const cart = await this.prisma.cart.findFirst({
+      where: { publicCartId: cartId, deletedAt: null },
+    });
     if (!cart) return null;
 
-    const existing = cart.items.find(
-      (item) => item.product.toString() === productId && item.variantId === variantId,
-    );
+    const existing = await this.prisma.cartItem.findFirst({
+      where: { cartId: cart.id, productId, variantId },
+    });
     if (existing) {
-      existing.quantity += quantity;
+      await this.prisma.cartItem.update({
+        where: { id: existing.id },
+        data: { quantity: { increment: quantity } },
+      });
     } else {
-      cart.items.push({ product: productId, variantId, quantity } as never);
+      await this.prisma.cartItem.create({
+        data: { id: createPublicId(), cartId: cart.id, productId, variantId, quantity },
+      });
     }
-    await cart.save();
     return this.findByPublicId(cartId);
   }
 
@@ -96,98 +90,101 @@ export class CartRepository {
     cartId: string,
     itemId: string,
     quantity: number,
-  ): Promise<Cart | null> {
-    const result = await this.cartModel.updateOne(
-      { publicCartId: cartId, 'items._id': itemId },
-      { $set: { 'items.$.quantity': quantity } },
-    );
-    if (result.matchedCount === 0) return null;
+  ): Promise<CartRow | null> {
+    const cart = await this.prisma.cart.findFirst({
+      where: { publicCartId: cartId, deletedAt: null },
+    });
+    if (!cart) return null;
+    const result = await this.prisma.cartItem.updateMany({
+      where: { id: itemId, cartId: cart.id },
+      data: { quantity },
+    });
+    if (result.count === 0) return null;
     return this.findByPublicId(cartId);
   }
 
-  async removeItemByCartId(cartId: string, itemId: string): Promise<Cart | null> {
-    const result = await this.cartModel.updateOne(
-      { publicCartId: cartId },
-      { $pull: { items: { _id: itemId } } },
-    );
-    if (result.matchedCount === 0) return null;
+  async removeItemByCartId(cartId: string, itemId: string): Promise<CartRow | null> {
+    const cart = await this.prisma.cart.findFirst({
+      where: { publicCartId: cartId, deletedAt: null },
+    });
+    if (!cart) return null;
+    const result = await this.prisma.cartItem.deleteMany({
+      where: { id: itemId, cartId: cart.id },
+    });
+    if (result.count === 0) return null;
     return this.findByPublicId(cartId);
   }
 
-  async clearItemsByCartId(cartId: string): Promise<Cart | null> {
-    const result = await this.cartModel.updateOne(
-      { publicCartId: cartId },
-      { $set: { items: [] } },
-    );
-    if (result.matchedCount === 0) return null;
+  async clearItemsByCartId(cartId: string): Promise<CartRow | null> {
+    const cart = await this.prisma.cart.findFirst({
+      where: { publicCartId: cartId, deletedAt: null },
+    });
+    if (!cart) return null;
+    await this.prisma.cartItem.deleteMany({ where: { cartId: cart.id } });
     return this.findByPublicId(cartId);
   }
 
   async deleteByPublicId(publicCartId: string): Promise<void> {
-    await this.cartModel.deleteOne({ publicCartId }).exec();
+    await this.prisma.cart.deleteMany({ where: { publicCartId } });
   }
-
-  // ─── Legacy user-scoped mutations (kept for back-compat) ──
 
   async addItem(
     userId: string,
     productId: string,
     variantId: string | null,
     quantity: number,
-  ): Promise<Cart> {
+  ): Promise<CartRow> {
     const cart = await this.findOrCreateForUser(userId);
-    const existingItem = cart.items.find(
-      (item) => item.product.toString() === productId && item.variantId === variantId,
-    );
-    if (existingItem) {
-      existingItem.quantity += quantity;
-    } else {
-      cart.items.push({ product: productId, variantId, quantity } as never);
-    }
-    await cart.save();
-    return this.cartModel
-      .findById(cart._id)
-      .populate('items.product', 'name slug thumbnailUrl price variants inventoryStatus isActive')
-      .lean()
-      .exec() as unknown as Promise<Cart>;
+    const updated = await this.addItemByCartId(cart.publicCartId, productId, variantId, quantity);
+    if (!updated) throw new Error('Cart disappeared while adding an item');
+    return updated;
   }
 
-  async updateItemQuantity(userId: string, itemId: string, quantity: number): Promise<Cart | null> {
-    await this.cartModel.updateOne(
-      { user: userId, 'items._id': itemId },
-      { $set: { 'items.$.quantity': quantity } },
-    );
-    return this.findByUser(userId);
+  async updateItemQuantity(
+    userId: string,
+    itemId: string,
+    quantity: number,
+  ): Promise<CartRow | null> {
+    const cart = await this.findByUser(userId);
+    return cart ? this.updateItemQuantityByCartId(cart.publicCartId, itemId, quantity) : null;
   }
 
-  async removeItem(userId: string, itemId: string): Promise<Cart | null> {
-    await this.cartModel.updateOne({ user: userId }, { $pull: { items: { _id: itemId } } });
-    return this.findByUser(userId);
+  async removeItem(userId: string, itemId: string): Promise<CartRow | null> {
+    const cart = await this.findByUser(userId);
+    return cart ? this.removeItemByCartId(cart.publicCartId, itemId) : null;
   }
 
-  // ─── Merge ─────────────────────────────────────────────────
-
-  async claimGuestForUser(guestPublicId: string, userId: string): Promise<Cart | null> {
-    const userCart = await this.findOrCreateForUser(userId);
-    const guestCart = await this.cartModel.findOne({ publicCartId: guestPublicId }).exec();
+  async claimGuestForUser(guestPublicId: string, userId: string): Promise<CartRow | null> {
+    const [userCart, guestCart] = await Promise.all([
+      this.findOrCreateForUser(userId),
+      this.findByPublicId(guestPublicId),
+    ]);
     if (!guestCart || guestCart.ownerType !== CartOwnerType.GUEST) return null;
 
-    for (const item of guestCart.items) {
-      const existing = userCart.items.find(
-        (i) => i.product.toString() === item.product.toString() && i.variantId === item.variantId,
-      );
-      if (existing) {
-        existing.quantity += item.quantity;
-      } else {
-        userCart.items.push({
-          product: item.product,
-          variantId: item.variantId,
-          quantity: item.quantity,
-        } as never);
+    await this.prisma.$transaction(async (tx) => {
+      for (const item of guestCart.items) {
+        const existing = await tx.cartItem.findFirst({
+          where: { cartId: userCart.id, productId: item.productId, variantId: item.variantId },
+        });
+        if (existing) {
+          await tx.cartItem.update({
+            where: { id: existing.id },
+            data: { quantity: { increment: item.quantity } },
+          });
+        } else {
+          await tx.cartItem.create({
+            data: {
+              id: createPublicId(),
+              cartId: userCart.id,
+              productId: item.productId,
+              variantId: item.variantId,
+              quantity: item.quantity,
+            },
+          });
+        }
       }
-    }
-    await userCart.save();
-    await this.cartModel.deleteOne({ _id: guestCart._id }).exec();
+      await tx.cart.delete({ where: { id: guestCart.id } });
+    });
     return this.findByUser(userId);
   }
 }

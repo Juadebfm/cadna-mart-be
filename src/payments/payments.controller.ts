@@ -2,8 +2,6 @@ import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post } from '@nestj
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Public } from '@auth/decorators/public.decorator';
 import { CurrentUser } from '@auth/decorators/current-user.decorator';
-import { AccountType } from '@users/enums/account-type.enum';
-import { AccountTypes } from '@auth/decorators/account-types.decorator';
 import { PaymentsService } from './payments.service';
 import { InitializePaymentDto } from './dto/initialize-payment.dto';
 
@@ -46,11 +44,5 @@ export class PaymentsController {
   @HttpCode(HttpStatus.NOT_IMPLEMENTED)
   getTransferStatus(): object {
     return { message: 'Bank transfer status not yet implemented' };
-  }
-
-  @AccountTypes(AccountType.ADMIN)
-  @Post('paystack/refund')
-  async initializeRefund(@Body() body: { orderId: string; amount?: number }): Promise<object> {
-    return this.paymentsService.initializeRefund(body.orderId, body.amount);
   }
 }

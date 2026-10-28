@@ -4,7 +4,8 @@ import { ConfigService } from '@config/config.service';
 import { Readable } from 'stream';
 import { AccountType } from '@users/enums/account-type.enum';
 
-export type UploadFolder = 'products' | 'stores' | 'categories' | 'general';
+export type UploadFolder =
+  'products' | 'stores' | 'categories' | 'profiles' | 'support' | 'general';
 
 @Injectable()
 export class UploadService {
@@ -70,6 +71,20 @@ export class UploadService {
     const { cloudName } = this.configService.storage;
     if (!cloudName) return;
     await cloudinary.uploader.destroy(publicId);
+  }
+
+  resolveOwnedImage(publicId: string, folder: UploadFolder, ownerId: string) {
+    const expectedPrefix = `cadna-mart/${folder}/user-${ownerId}/`;
+    if (!publicId.startsWith(expectedPrefix)) {
+      throw new ForbiddenException('You do not own this media asset');
+    }
+    return {
+      publicId,
+      url: cloudinary.url(publicId, {
+        secure: true,
+        transformation: [{ quality: 'auto', fetch_format: 'auto' }],
+      }),
+    };
   }
 
   async deleteOwnedFile(

@@ -10,7 +10,7 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { Public } from '@auth/decorators/public.decorator';
 import { AccountTypes } from '@auth/decorators/account-types.decorator';
 import { CurrentUser } from '@auth/decorators/current-user.decorator';
@@ -145,6 +145,24 @@ export class SellersController {
     @Query() query: ProductQueryDto,
   ) {
     return this.productsService.findBySeller(sellerSlug, query);
+  }
+
+  @ApiBearerAuth()
+  @AccountTypes(AccountType.BUYER)
+  @Get('following')
+  @ApiOperation({ summary: 'List sellers followed by the current buyer with product previews' })
+  @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, type: Number, example: 20, maximum: 50 })
+  async getFollowedSellers(
+    @CurrentUser('userId') userId: string,
+    @Query('page') page = '1',
+    @Query('limit') limit = '20',
+  ) {
+    return this.sellersService.getFollowedSellers(
+      userId,
+      Math.max(1, Number(page) || 1),
+      Math.min(50, Math.max(1, Number(limit) || 20)),
+    );
   }
 
   @ApiBearerAuth()

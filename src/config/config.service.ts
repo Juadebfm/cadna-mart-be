@@ -14,7 +14,19 @@ import {
   PaystackConfig,
   DealsConfig,
   StorageConfig,
+  StackApiConfig,
+  FirebaseConfig,
 } from './config.interface';
+
+const ENVIRONMENT_STATUS_KEYS = [
+  ...new Set([
+    ...Object.keys(envSchema.shape),
+    'APP_VERSION',
+    'ENABLE_SWAGGER',
+    'GOOGLE_APPLICATION_CREDENTIALS',
+    'SWAGGER_EXPORT',
+  ]),
+].sort();
 
 @Injectable()
 export class ConfigService {
@@ -48,6 +60,8 @@ export class ConfigService {
     dotenvConfig({ path: resolve(process.cwd(), envFile), override: false });
     dotenvConfig({ path: resolve(process.cwd(), baseEnvFile), override: false });
 
+    this.logEnvironmentVariableStatus(originalNodeEnv);
+
     const result = envSchema.safeParse(process.env);
     if (!result.success) {
       const formatted = result.error.format();
@@ -68,6 +82,25 @@ export class ConfigService {
 
     this.envConfig = result.data;
     this.logger.log(`Configuration loaded from ${envFile} + ${baseEnvFile} (${nodeEnv})`);
+  }
+
+  private logEnvironmentVariableStatus(originalNodeEnv: string | undefined): void {
+    const statusLines = ENVIRONMENT_STATUS_KEYS.map((key) => {
+      const value = key === 'NODE_ENV' ? originalNodeEnv : process.env[key];
+      const status =
+        value === undefined
+          ? key === 'NODE_ENV'
+            ? 'UNSET (runtime defaults to dev)'
+            : 'UNSET'
+          : value.trim() === ''
+            ? 'EMPTY'
+            : 'SET';
+      return `${key}: ${status}`;
+    });
+
+    // Deliberately log names and presence only. Environment values can contain
+    // credentials, tokens, connection strings, and private file paths.
+    console.info(`Environment variable status (values withheld):\n${statusLines.join('\n')}`);
   }
 
   private normalizeCorsOrigin(origin: string): string {
@@ -164,6 +197,7 @@ export class ConfigService {
     return {
       webhookSecret: this.envConfig.CLERK_WEBHOOK_SECRET,
       secretKey: this.envConfig.CLERK_SECRET_KEY,
+      jwtKey: this.envConfig.CLERK_JWT_KEY.replace(/\\n/g, '\n'),
     };
   }
 
@@ -187,6 +221,22 @@ export class ConfigService {
       resendApiKey: this.envConfig.RESEND_API_KEY,
       fromAddress: this.envConfig.EMAIL_FROM,
       logoUrl: this.envConfig.EMAIL_LOGO_URL,
+    };
+  }
+
+  get stackApi(): StackApiConfig {
+    return {
+      apiKey: this.envConfig.STACKAPI_SECRET_KEY || this.envConfig.STACKAPI_API_KEY,
+      publicKey: this.envConfig.STACKAPI_PUBLIC_KEY,
+    };
+  }
+
+  get firebase(): FirebaseConfig {
+    return {
+      projectId: this.envConfig.FCM_PROJECT_ID,
+      // Firebase Admin uses Application Default Credentials. The deployment can
+      // provide a credentials file path or a workload identity without another key.
+      credentialsConfigured: Boolean(this.envConfig.FCM_PROJECT_ID),
     };
   }
 

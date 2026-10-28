@@ -13,12 +13,14 @@ import { BankingDetailsDto } from './dto/banking-details.dto';
 import { OnboardSellerDto } from './dto/onboard-seller.dto';
 import { AccountType } from '@users/enums/account-type.enum';
 import { Product } from '@products/schemas/product.schema';
+import { Seller } from './schemas/seller.schema';
 import { SellerProfile } from './schemas/seller-profile.schema';
 import { UsersService } from '@users/users.service';
 import { OtpService } from '@otp/otp.service';
 import { OtpType } from '@otp/enums/otp-type.enum';
 import { EmailService } from '@email/email.service';
 import { ConfigService } from '@config/config.service';
+import { ProductsService } from '@products/products.service';
 
 @Injectable()
 export class SellersService {
@@ -30,6 +32,7 @@ export class SellersService {
     private readonly otpService: OtpService,
     private readonly emailService: EmailService,
     private readonly configService: ConfigService,
+    private readonly productsService: ProductsService,
   ) {}
 
   async onboardPublic(dto: OnboardSellerDto): Promise<{ message: string }> {
@@ -334,5 +337,37 @@ export class SellersService {
 
     const removed = await this.sellersRepository.unfollow(userId, sellerId);
     if (!removed) throw new NotFoundException('You are not following this seller');
+  }
+
+  async getFollowedSellers(userId: string, page = 1, limit = 20): Promise<object> {
+    const { items, totalItems } = await this.sellersRepository.findFollowedByUser(
+      userId,
+      page,
+      limit,
+    );
+    const sellers = await Promise.all(
+      items.map(async (entry) => {
+        const seller = entry.seller as unknown as Seller;
+        if (!seller || seller.deletedAt) return null;
+        const id = (seller as unknown as { _id: { toString(): string } })._id.toString();
+        const products = await this.productModel
+          .find({ seller: id, deletedAt: null, isActive: true })
+          .sort({ createdAt: -1 })
+          .limit(4)
+          .lean()
+          .exec();
+        return {
+          ...(await this.getSummary(id)),
+          products: products.map((product) =>
+            this.productsService.toCard(product as unknown as Product),
+          ),
+        };
+      }),
+    );
+    const visible = sellers.filter((seller) => seller !== null);
+    return {
+      items: visible,
+      pagination: { page, limit, totalItems, totalPages: Math.ceil(totalItems / limit) },
+    };
   }
 }

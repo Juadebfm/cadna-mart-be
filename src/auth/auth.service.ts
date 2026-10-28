@@ -5,16 +5,17 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 import { createClerkClient, verifyToken } from '@clerk/backend';
+import { PrismaService } from '@database/prisma.service';
+import { createPublicId } from '@database/id.util';
 import { ConfigService } from '@config/config.service';
 import { UsersService } from '@users/users.service';
+import { User } from '@users/schemas/user.schema';
 import { OtpService } from '@otp/otp.service';
 import { OtpType } from '@otp/enums/otp-type.enum';
 import { EmailService } from '@email/email.service';
 import { RegistrationSessionService } from '@registration-session/registration-session.service';
-import { SellerProfile } from '@sellers/schemas/seller-profile.schema';
+import { PendingBuyerSignupService } from '@registration-session/pending-buyer-signup.service';
 import { JwtPayload, TokenResponse } from './interfaces/jwt-payload.interface';
 import { comparePassword, hashPassword } from '@common/utils/hash.util';
 import { ERROR_MESSAGES } from '@common/constants/error-messages.constants';
@@ -24,6 +25,10 @@ import { AuthProvider } from '@users/enums/auth-provider.enum';
 import { OtpPurpose } from './dto/otp.dto';
 import { AuthEventsService } from '@auth-events/auth-events.service';
 import { AuthEventKind } from '@auth-events/schemas/auth-event.schema';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { NotificationsService } from '@notifications/notifications.service';
+import { NotificationCategory } from '@notifications/schemas/notification.schema';
+import { LoggerService } from '@logger/logger.service';
 
 type OtpVerifyResult =
   | { purpose: OtpPurpose.LOGIN; tokens: TokenResponse; user: object }
@@ -39,8 +44,11 @@ export class AuthService {
     private readonly otpService: OtpService,
     private readonly emailService: EmailService,
     private readonly registrationSessionService: RegistrationSessionService,
+    private readonly pendingBuyerSignupService: PendingBuyerSignupService,
     private readonly authEventsService: AuthEventsService,
-    @InjectModel(SellerProfile.name) private readonly sellerProfileModel: Model<SellerProfile>,
+    private readonly notificationsService: NotificationsService,
+    private readonly logger: LoggerService,
+    private readonly prisma: PrismaService,
   ) {}
 
   // ─── MULTI-STEP REGISTRATION ─────────────────────────────────
@@ -65,6 +73,9 @@ export class AuthService {
       termsAccepted: boolean;
     },
   ): Promise<{ sessionId: string }> {
+    if (details.termsAccepted !== true) {
+      throw new BadRequestException('You must accept the terms and conditions to register');
+    }
     await this.registrationSessionService.setDetails(sessionId, details);
     return { sessionId };
   }
@@ -86,30 +97,102 @@ export class AuthService {
       email: session.email,
     });
 
-    // Create the user (isVerified: false) — usersService.create() handles hashing
-    await this.usersService.create({
-      email: session.email,
-      password,
-      firstName: session.firstName!,
-      lastName: session.lastName!,
-      accountType: AccountType.BUYER,
-      phoneNumber: session.phoneNumber ?? undefined,
-      dateOfBirth: session.dateOfBirth ? session.dateOfBirth.toISOString() : undefined,
-      termsAccepted: session.termsAccepted,
-    });
+    const existingPending = await this.pendingBuyerSignupService.findByEmail(session.email);
+    if (existingPending) {
+      await this.registrationSessionService.completeAndDelete(sessionId);
+      await this.resendVerificationOtp(session.email);
+      return { message: 'Signup is pending verification. A verification code was sent.' };
+    }
 
-    // Send verification OTP
-    const code = await this.otpService.generateAndStore(session.email, OtpType.EMAIL_VERIFICATION);
-    await this.emailService.sendVerificationCode(session.email, code);
+    const passwordHash = await hashPassword(password);
+    try {
+      await this.pendingBuyerSignupService.create({
+        email: session.email,
+        firstName: session.firstName!,
+        lastName: session.lastName!,
+        dateOfBirth: session.dateOfBirth,
+        phoneNumber: session.phoneNumber,
+        passwordHash,
+        termsAccepted: session.termsAccepted,
+      });
+    } catch (error) {
+      // Another request may have completed a signup for this email concurrently.
+      if ((error as { code?: number }).code !== 11000) throw error;
 
-    // Clean up registration session
+      const pending = await this.pendingBuyerSignupService.findByEmail(session.email);
+      if (!pending) {
+        // Mongo's TTL monitor may not have removed an expired row yet.
+        await this.pendingBuyerSignupService.deleteByEmail(session.email);
+        await this.pendingBuyerSignupService.create({
+          email: session.email,
+          firstName: session.firstName!,
+          lastName: session.lastName!,
+          dateOfBirth: session.dateOfBirth,
+          phoneNumber: session.phoneNumber,
+          passwordHash,
+          termsAccepted: session.termsAccepted,
+        });
+      }
+    }
+
+    // Remove the incomplete wizard session once all data is in the expiring pending record.
     await this.registrationSessionService.completeAndDelete(sessionId);
+    await this.sendBuyerVerificationCode(session.email);
 
-    return { message: 'Account created. Please verify your email.' };
+    return { message: 'Signup saved. Please verify your email.' };
   }
 
   async verifyEmail(email: string, code: string): Promise<{ message: string }> {
-    const user = await this.usersService.findByEmail(email);
+    const normalizedEmail = email.trim().toLowerCase();
+    const pending = await this.pendingBuyerSignupService.findByEmail(normalizedEmail);
+
+    if (pending) {
+      const existingUser = await this.usersService.findByEmail(normalizedEmail);
+      if (existingUser && existingUser.accountType !== AccountType.BUYER) {
+        throw new ConflictException(ERROR_MESSAGES.USER_ALREADY_EXISTS);
+      }
+
+      if (existingUser?.isVerified) {
+        await this.pendingBuyerSignupService.deleteByEmail(normalizedEmail);
+        return { message: 'Email already verified' };
+      }
+
+      await this.otpService.verify(normalizedEmail, code, OtpType.EMAIL_VERIFICATION);
+      if (existingUser) {
+        // A legacy unverified user can exist from before pending signups were introduced.
+        const userId = (existingUser as unknown as { _id: { toString(): string } })._id.toString();
+        await this.usersService.verifyUser(userId);
+        await this.pendingBuyerSignupService.deleteByEmail(normalizedEmail);
+        await this.authEventsService.log(userId, AuthEventKind.REGISTER);
+        return { message: 'Email verified successfully' };
+      }
+
+      let user;
+      try {
+        user = await this.usersService.createVerifiedBuyerFromPendingSignup(pending);
+      } catch (error) {
+        const isDuplicateEmail = (error as { code?: number }).code === 11000;
+        if (!(error instanceof ConflictException) && !isDuplicateEmail) throw error;
+        // A concurrent verification may have created the account first.
+        const concurrentlyCreated = await this.usersService.findByEmail(normalizedEmail);
+        if (!concurrentlyCreated) throw error;
+        if (
+          concurrentlyCreated.accountType !== AccountType.BUYER ||
+          !concurrentlyCreated.isVerified
+        ) {
+          throw new ConflictException(ERROR_MESSAGES.USER_ALREADY_EXISTS);
+        }
+        await this.pendingBuyerSignupService.deleteByEmail(normalizedEmail);
+        return { message: 'Email already verified' };
+      }
+
+      const userId = (user as unknown as { _id: { toString(): string } })._id.toString();
+      await this.pendingBuyerSignupService.deleteByEmail(normalizedEmail);
+      await this.authEventsService.log(userId, AuthEventKind.REGISTER);
+      return { message: 'Email verified successfully' };
+    }
+
+    const user = await this.usersService.findByEmail(normalizedEmail);
     if (!user) {
       throw new BadRequestException(ERROR_MESSAGES.USER_NOT_FOUND);
     }
@@ -118,7 +201,7 @@ export class AuthService {
       return { message: 'Email already verified' };
     }
 
-    await this.otpService.verify(email, code, OtpType.EMAIL_VERIFICATION);
+    await this.otpService.verify(normalizedEmail, code, OtpType.EMAIL_VERIFICATION);
 
     const userId = (user as unknown as { _id: { toString(): string } })._id.toString();
     await this.usersService.verifyUser(userId);
@@ -128,7 +211,14 @@ export class AuthService {
   }
 
   async resendVerificationOtp(email: string): Promise<{ message: string }> {
-    const user = await this.usersService.findByEmail(email);
+    const normalizedEmail = email.trim().toLowerCase();
+    const pending = await this.pendingBuyerSignupService.findByEmail(normalizedEmail);
+    if (pending) {
+      await this.sendBuyerVerificationCode(normalizedEmail);
+      return { message: 'Verification code sent' };
+    }
+
+    const user = await this.usersService.findByEmail(normalizedEmail);
     if (!user) {
       throw new BadRequestException(ERROR_MESSAGES.USER_NOT_FOUND);
     }
@@ -136,8 +226,7 @@ export class AuthService {
       throw new BadRequestException('Email is already verified');
     }
 
-    const code = await this.otpService.generateAndStore(email, OtpType.EMAIL_VERIFICATION);
-    await this.emailService.sendVerificationCode(email, code);
+    await this.sendBuyerVerificationCode(normalizedEmail);
 
     return { message: 'Verification code sent' };
   }
@@ -147,6 +236,11 @@ export class AuthService {
   async registerSellerEmail(email: string): Promise<{ sessionId: string }> {
     const existing = await this.usersService.findByEmail(email);
     if (existing) {
+      throw new ConflictException(ERROR_MESSAGES.USER_ALREADY_EXISTS);
+    }
+
+    const pendingBuyerSignup = await this.pendingBuyerSignupService.findByEmail(email);
+    if (pendingBuyerSignup) {
       throw new ConflictException(ERROR_MESSAGES.USER_ALREADY_EXISTS);
     }
 
@@ -168,6 +262,9 @@ export class AuthService {
       termsAccepted: boolean;
     },
   ): Promise<{ sessionId: string }> {
+    if (details.termsAccepted !== true) {
+      throw new BadRequestException('You must accept the terms and conditions to register');
+    }
     await this.registrationSessionService.setDetails(sessionId, {
       firstName: details.firstName,
       lastName: details.lastName,
@@ -230,17 +327,20 @@ export class AuthService {
     // Create SellerProfile. Bank fields stay null until the seller submits them
     // via POST /sellers/me/banking after login (avoids accepting bank PII on
     // unauthenticated endpoints).
-    await this.sellerProfileModel.create({
-      user: userId,
-      businessName: businessDetails.businessName,
-      businessRegistrationNumber: businessDetails.businessRegistrationNumber ?? null,
-      businessAddress: businessDetails.businessAddress,
-      businessType: businessDetails.businessType,
-      bankName: null,
-      bankAccountNumber: null,
-      bankAccountName: null,
-      bankDetailsCompletedAt: null,
-      isApproved: false,
+    await this.prisma.sellerProfile.create({
+      data: {
+        id: createPublicId(),
+        userId,
+        businessName: businessDetails.businessName,
+        businessRegistrationNumber: businessDetails.businessRegistrationNumber ?? null,
+        businessAddress: businessDetails.businessAddress,
+        businessType: businessDetails.businessType,
+        bankName: null,
+        bankAccountNumber: null,
+        bankAccountName: null,
+        bankDetailsCompletedAt: null,
+        isApproved: false,
+      },
     });
 
     // Send verification OTP
@@ -260,7 +360,7 @@ export class AuthService {
     password: string,
   ): Promise<{ userId: string; email: string; accountType: string } | null> {
     const user = await this.usersService.findByEmailWithPassword(email);
-    if (!user || !user.isActive) {
+    if (!user || !user.isActive || !user.email) {
       return null;
     }
 
@@ -434,7 +534,25 @@ export class AuthService {
     password: string;
     confirmPassword: string;
   }): Promise<{ message: string; email: string }> {
-    const { sessionId } = await this.registerEmail(dto.email);
+    if (dto.termsAccepted !== true) {
+      throw new BadRequestException('You must accept the terms and conditions to register');
+    }
+    const email = dto.email.trim().toLowerCase();
+    const existingUser = await this.usersService.findByEmail(email);
+    if (existingUser) {
+      throw new ConflictException(ERROR_MESSAGES.USER_ALREADY_EXISTS);
+    }
+
+    const pending = await this.pendingBuyerSignupService.findByEmail(email);
+    if (pending) {
+      await this.resendVerificationOtp(email);
+      return {
+        message: 'Signup is pending verification. A verification code was sent.',
+        email,
+      };
+    }
+
+    const { sessionId } = await this.registerEmail(email);
     await this.registerDetails(sessionId, {
       firstName: dto.firstName,
       lastName: dto.lastName,
@@ -443,7 +561,16 @@ export class AuthService {
       termsAccepted: dto.termsAccepted,
     });
     const { message } = await this.registerPassword(sessionId, dto.password, dto.confirmPassword);
-    return { message, email: dto.email };
+    return { message, email };
+  }
+
+  private async sendBuyerVerificationCode(email: string): Promise<void> {
+    const normalizedEmail = email.trim().toLowerCase();
+    const code = await this.otpService.generateAndStore(
+      normalizedEmail,
+      OtpType.EMAIL_VERIFICATION,
+    );
+    await this.emailService.sendVerificationCode(normalizedEmail, code);
   }
 
   // ─── FORGOT PASSWORD ────────────────────────────────────────
@@ -510,13 +637,14 @@ export class AuthService {
     validatePasswordStrength(password, {
       firstName: user.firstName,
       lastName: user.lastName,
-      email: user.email,
+      ...(user.email ? { email: user.email } : {}),
     });
 
     const hashedPassword = await hashPassword(password);
     const userId = (user as unknown as { _id: { toString(): string } })._id.toString();
     await this.usersService.updatePassword(userId, hashedPassword);
     await this.authEventsService.log(userId, AuthEventKind.PASSWORD_RESET);
+    await this.notifySecurityChange(userId, 'Password reset');
 
     return { message: 'Password reset successfully' };
   }
@@ -525,9 +653,16 @@ export class AuthService {
 
   async initiate2faEnable(userId: string): Promise<{ message: string }> {
     const user = await this.usersService.findById(userId);
+    if (user.authProvider !== AuthProvider.LOCAL) {
+      throw new BadRequestException(
+        'Manage two-factor authentication through your sign-in provider',
+      );
+    }
     if (user.isTwoFactorEnabled) {
       throw new BadRequestException(ERROR_MESSAGES.TWO_FACTOR_ALREADY_ENABLED);
     }
+    if (!user.email)
+      throw new BadRequestException('Email is required for email-based two-factor authentication');
 
     const code = await this.otpService.generateAndStore(user.email, OtpType.LOGIN_2FA, userId);
     await this.emailService.sendLoginOtp(user.email, code);
@@ -537,128 +672,225 @@ export class AuthService {
 
   async confirm2faEnable(userId: string, code: string): Promise<{ message: string }> {
     const user = await this.usersService.findById(userId);
+    if (user.authProvider !== AuthProvider.LOCAL) {
+      throw new BadRequestException(
+        'Manage two-factor authentication through your sign-in provider',
+      );
+    }
+    if (!user.email)
+      throw new BadRequestException('Email is required for email-based two-factor authentication');
     await this.otpService.verify(user.email, code, OtpType.LOGIN_2FA);
     await this.usersService.setTwoFactor(userId, true);
     await this.authEventsService.log(userId, AuthEventKind.TWO_FACTOR_ENABLE);
+    await this.notifySecurityChange(userId, 'Two-factor authentication enabled');
 
     return { message: 'Two-factor authentication enabled' };
   }
 
   async disable2fa(userId: string, code: string): Promise<{ message: string }> {
     const user = await this.usersService.findById(userId);
+    if (user.authProvider !== AuthProvider.LOCAL) {
+      throw new BadRequestException(
+        'Manage two-factor authentication through your sign-in provider',
+      );
+    }
     if (!user.isTwoFactorEnabled) {
       throw new BadRequestException(ERROR_MESSAGES.TWO_FACTOR_NOT_ENABLED);
     }
+    if (!user.email)
+      throw new BadRequestException('Email is required for email-based two-factor authentication');
 
     await this.otpService.verify(user.email, code, OtpType.LOGIN_2FA);
     await this.usersService.setTwoFactor(userId, false);
     await this.authEventsService.log(userId, AuthEventKind.TWO_FACTOR_DISABLE);
+    await this.notifySecurityChange(userId, 'Two-factor authentication disabled');
 
     return { message: 'Two-factor authentication disabled' };
+  }
+
+  async changePassword(userId: string, dto: ChangePasswordDto): Promise<{ message: string }> {
+    if (dto.newPassword !== dto.confirmPassword) {
+      throw new BadRequestException('New password and confirmation do not match');
+    }
+
+    const user = await this.usersService.findByIdWithPassword(userId);
+    if (!user || !user.isActive) throw new UnauthorizedException();
+    if (user.authProvider !== AuthProvider.LOCAL || !user.password) {
+      throw new BadRequestException('Manage your password through your sign-in provider');
+    }
+    if (!(await comparePassword(dto.currentPassword, user.password))) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+
+    validatePasswordStrength(dto.newPassword, {
+      firstName: user.firstName,
+      lastName: user.lastName,
+      ...(user.email ? { email: user.email } : {}),
+    });
+    await this.usersService.updatePassword(userId, await hashPassword(dto.newPassword));
+    await this.notifySecurityChange(userId, 'Password changed');
+    return { message: 'Password updated successfully' };
+  }
+
+  private async notifySecurityChange(userId: string, title: string): Promise<void> {
+    try {
+      await this.notificationsService.createForUser({
+        userId,
+        category: NotificationCategory.SECURITY_ALERTS,
+        title,
+        body: 'A security setting on your CADNA Mart account was changed.',
+      });
+    } catch (error) {
+      this.logger.warn(
+        `Could not create security notification for user ${userId}: ${(error as Error).message}`,
+        'AuthService',
+      );
+    }
   }
 
   // ─── CLERK OAUTH LOGIN ─────────────────────────────────────
 
   async clerkLogin(clerkToken: string): Promise<TokenResponse & { user: object }> {
     const secretKey = this.configService.clerk.secretKey;
-    if (!secretKey) {
-      throw new UnauthorizedException('Clerk secret key is not configured');
+    const clerkUserId = await this.verifyClerkSessionToken(clerkToken);
+
+    // Repeat logins use the local profile keyed by Clerk's stable subject ID.
+    // This avoids a Clerk Backend API request on every social login.
+    const savedUser = await this.usersService.findByClerkId(clerkUserId);
+    if (savedUser) {
+      if (!savedUser.isActive || savedUser.accountType !== AccountType.BUYER) {
+        throw new UnauthorizedException('This buyer account is unavailable');
+      }
+      return this.completeClerkLogin(savedUser);
     }
 
+    // Fetch the profile only for first-time provisioning.
+    if (!secretKey) {
+      throw new UnauthorizedException('Clerk secret key is required to provision a buyer account');
+    }
     const clerkClient = createClerkClient({ secretKey });
-
-    // Verify the Clerk session token
     let clerkUser;
     try {
-      const payload = await verifyToken(clerkToken, {
-        secretKey,
-        authorizedParties: undefined,
-      });
-      clerkUser = await clerkClient.users.getUser(payload.sub);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      console.error('[ClerkLogin] Token verification failed:', message);
-      throw new UnauthorizedException(`Invalid Clerk token: ${message}`);
+      clerkUser = await clerkClient.users.getUser(clerkUserId);
+    } catch {
+      throw new UnauthorizedException('Unable to load the Clerk account profile');
     }
 
-    const email = clerkUser.emailAddresses?.[0]?.emailAddress;
-    if (!email) {
-      throw new UnauthorizedException('No email associated with Clerk account');
+    const emailAddress = clerkUser.emailAddresses?.find(
+      (candidate) => candidate.id === clerkUser.primaryEmailAddressId,
+    );
+    const verifiedEmail =
+      emailAddress?.verification?.status === 'verified'
+        ? emailAddress.emailAddress.trim().toLowerCase()
+        : null;
+    const phoneNumber = clerkUser.phoneNumbers?.find(
+      (candidate) => candidate.id === clerkUser.primaryPhoneNumberId,
+    );
+    const verifiedPhone =
+      phoneNumber?.verification?.status === 'verified' ? phoneNumber.phoneNumber : null;
+
+    if (!verifiedEmail && !verifiedPhone) {
+      throw new UnauthorizedException('Clerk account must have a verified email or phone number');
     }
 
-    // Just-in-time: find or create the user
-    let user = await this.usersService.findByEmail(email);
-
-    if (!user) {
-      // Check if a soft-deleted user exists with this email — reactivate them
-      const deletedUser = await (this.usersService as any).usersRepository.userModel
-        .findOne({ email: email.toLowerCase() })
-        .lean()
-        .exec();
-
-      if (deletedUser) {
-        // Reactivate the soft-deleted user
-        await (this.usersService as any).usersRepository.userModel.updateOne(
-          { _id: deletedUser._id },
-          {
-            $set: {
-              deletedAt: null,
-              isActive: true,
-              isVerified: true,
-              authProvider: AuthProvider.CLERK,
-              clerkId: clerkUser.id,
-              firstName: clerkUser.firstName || deletedUser.firstName,
-              lastName: clerkUser.lastName || deletedUser.lastName,
-            },
-          },
-        );
-        user = await this.usersService.findById(deletedUser._id.toString());
-      } else {
-        // First time — create user on the spot
-        await this.usersService.create({
-          email,
-          firstName: clerkUser.firstName || 'User',
-          lastName: clerkUser.lastName || '',
-          password: 'CLERK_OAUTH_NO_PASSWORD',
-          accountType: AccountType.BUYER,
-        });
-
-        user = await this.usersService.findByEmail(email);
-        if (!user) throw new UnauthorizedException('Failed to create user');
-
-        const userId = (user as any)._id.toString();
-        await this.usersService.verifyUser(userId);
-        await (this.usersService as any).usersRepository.userModel.updateOne(
-          { _id: userId },
-          { authProvider: AuthProvider.CLERK, clerkId: clerkUser.id },
-        );
-
-        user = await this.usersService.findById(userId);
-      }
-    } else if (!user.clerkId) {
-      // Existing email user linking to Clerk for the first time
-      const userId = (user as any)._id.toString();
-      await (this.usersService as any).usersRepository.userModel.updateOne(
-        { _id: userId },
-        { authProvider: AuthProvider.CLERK, clerkId: clerkUser.id },
+    // Email equality is not proof that the buyer owns the existing Cadna
+    // account. The buyer must authenticate to that account and link Clerk.
+    const existingByEmail = verifiedEmail
+      ? await this.usersService.findByEmail(verifiedEmail)
+      : null;
+    const deletedByClerkId = await this.usersService.findDeletedByClerkId(clerkUserId);
+    const deletedByEmail = verifiedEmail
+      ? await this.usersService.findDeletedByEmail(verifiedEmail)
+      : null;
+    const deletedEmailBelongsToAnotherUser =
+      deletedByEmail && deletedByEmail._id.toString() !== deletedByClerkId?._id.toString();
+    if (existingByEmail || deletedEmailBelongsToAnotherUser) {
+      throw new ConflictException(
+        'Sign in to your existing Cadna account first, then link this Clerk account',
       );
-      if (!user.isVerified) {
-        await this.usersService.verifyUser(userId);
+    }
+
+    let user = deletedByClerkId;
+    const identity = {
+      clerkId: clerkUserId,
+      email: verifiedEmail,
+      phoneNumber: verifiedPhone,
+      isPhoneVerified: !!verifiedPhone,
+      firstName: clerkUser.firstName || 'User',
+      lastName: clerkUser.lastName || '',
+    };
+    if (user) {
+      user = await this.usersService.reactivateClerkUser(user._id.toString(), identity);
+    } else {
+      try {
+        user = await this.usersService.createClerkBuyer(identity);
+      } catch (error) {
+        // A user.created webhook may have provisioned this same identity at
+        // the same time. Re-read by Clerk ID before returning an error.
+        if ((error as { code?: number }).code !== 11000) throw error;
+        user = await this.usersService.findByClerkId(clerkUserId);
+        if (!user && verifiedEmail && (await this.usersService.findByEmail(verifiedEmail))) {
+          throw new ConflictException(
+            'Sign in to your existing Cadna account first, then link this Clerk account',
+          );
+        }
+        if (!user) throw error;
       }
     }
 
-    const userId = (user as any)._id.toString();
+    if (!user) throw new UnauthorizedException('Failed to synchronize Clerk account');
+    return this.completeClerkLogin(user);
+  }
+
+  async linkClerkIdentity(userId: string, clerkToken: string): Promise<{ message: string }> {
+    const clerkUserId = await this.verifyClerkSessionToken(clerkToken);
+    await this.usersService.linkClerkIdentity(userId, clerkUserId);
+    return { message: 'Clerk sign-in linked to your Cadna account' };
+  }
+
+  private async verifyClerkSessionToken(clerkToken: string): Promise<string> {
+    const secretKey = this.configService.clerk.secretKey;
+    const jwtKey = this.configService.clerk.jwtKey;
+    if (!secretKey && !jwtKey) {
+      throw new UnauthorizedException('Clerk token verification is not configured');
+    }
+    try {
+      const payload = await verifyToken(clerkToken, {
+        jwtKey: jwtKey || undefined,
+        secretKey: secretKey || undefined,
+        authorizedParties: this.getClerkAuthorizedParties(),
+      });
+      return payload.sub;
+    } catch {
+      this.logger.warn('Clerk session token verification failed', 'AuthService');
+      throw new UnauthorizedException('Invalid Clerk session token');
+    }
+  }
+
+  private getClerkAuthorizedParties(): string[] | undefined {
+    const origin = this.configService.cors.origin;
+    if (Array.isArray(origin)) return origin;
+    if (typeof origin === 'string' && origin !== '*') return [origin];
+    if (this.configService.app.nodeEnv !== 'dev') {
+      throw new UnauthorizedException(
+        'Configure exact CORS_ORIGIN values before enabling Clerk sign-in outside development',
+      );
+    }
+    return undefined;
+  }
+
+  private async completeClerkLogin(user: User): Promise<TokenResponse & { user: object }> {
+    const userId = user._id.toString();
     const tokens = await this.issueTokens({
       userId,
       email: user.email,
       accountType: user.accountType,
     });
 
-    const fullUser = await this.usersService.findById(userId);
     await this.authEventsService.log(userId, AuthEventKind.CLERK_LOGIN);
     return {
       ...tokens,
-      user: this.usersService.toPublicUser(fullUser),
+      user: this.usersService.toPublicUser(user),
     };
   }
 
@@ -692,7 +924,7 @@ export class AuthService {
 
     const newPayload: JwtPayload = {
       sub: (user as unknown as { _id: { toString(): string } })._id.toString(),
-      email: user.email,
+      ...(user.email ? { email: user.email } : {}),
       accountType: user.accountType,
     };
 
@@ -714,12 +946,12 @@ export class AuthService {
 
   private async issueTokens(user: {
     userId: string;
-    email: string;
+    email: string | null;
     accountType: string;
   }): Promise<TokenResponse> {
     const payload: JwtPayload = {
       sub: user.userId,
-      email: user.email,
+      ...(user.email ? { email: user.email } : {}),
       accountType: user.accountType as JwtPayload['accountType'],
     };
 

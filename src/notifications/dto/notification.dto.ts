@@ -1,21 +1,22 @@
-import { IsArray, IsBoolean, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class NotificationPreferencesDto {
   @IsOptional()
   @IsBoolean()
-  inApp?: boolean;
+  orderUpdates?: boolean;
 
   @IsOptional()
   @IsBoolean()
-  email?: boolean;
+  promotions?: boolean;
 
   @IsOptional()
   @IsBoolean()
-  sms?: boolean;
+  newsletter?: boolean;
 
   @IsOptional()
   @IsBoolean()
-  push?: boolean;
+  securityAlerts?: boolean;
 }
 
 export class BroadcastDto {
@@ -33,4 +34,17 @@ export class BroadcastDto {
   @IsOptional()
   @IsString()
   accountType?: string;
+}
+
+export class NotificationDeviceDto {
+  @ApiProperty({
+    description: 'Firebase Installation ID for this signed-in buyer device.',
+    minLength: 10,
+    maxLength: 512,
+    example: 'fcm-installation-id',
+  })
+  @IsString()
+  @MinLength(10)
+  @MaxLength(512)
+  fid!: string;
 }

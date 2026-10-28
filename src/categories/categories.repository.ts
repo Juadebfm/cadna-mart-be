@@ -1,51 +1,73 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { Category } from './schemas/category.schema';
+import { Prisma, Category as PrismaCategory } from '../generated/prisma/client';
+import { PrismaService } from '@database/prisma.service';
+import { createPublicId } from '@database/id.util';
+
+export type CategoryRecord = PrismaCategory;
+
+export interface CategoryWriteData {
+  name?: string;
+  slug?: string;
+  iconUrl?: string | null;
+  parent?: string | null;
+  order?: number;
+  isActive?: boolean;
+  productCount?: number;
+  deletedAt?: Date | null;
+}
 
 @Injectable()
 export class CategoriesRepository {
-  constructor(@InjectModel(Category.name) public readonly categoryModel: Model<Category>) {}
+  constructor(public readonly prisma: PrismaService) {}
 
-  async findAll(includeCounts: boolean): Promise<Category[]> {
-    const query = this.categoryModel
-      .find({ deletedAt: null, isActive: true })
-      .sort({ order: 1, name: 1 });
-
-    if (!includeCounts) {
-      query.select('-productCount');
-    }
-
-    return query.lean().exec() as unknown as Promise<Category[]>;
+  async findAll(includeCounts: boolean): Promise<CategoryRecord[]> {
+    const rows = await this.prisma.category.findMany({
+      where: { deletedAt: null, isActive: true },
+      orderBy: [{ order: 'asc' }, { name: 'asc' }],
+      ...(includeCounts ? {} : { omit: { productCount: true } }),
+    });
+    return rows as CategoryRecord[];
   }
 
-  async findBySlug(slug: string): Promise<Category | null> {
-    return this.categoryModel
-      .findOne({ slug, deletedAt: null })
-      .lean()
-      .exec() as unknown as Promise<Category | null>;
+  findBySlug(slug: string): Promise<CategoryRecord | null> {
+    return this.prisma.category.findFirst({ where: { slug, deletedAt: null } });
   }
 
-  async findById(id: string): Promise<Category | null> {
-    return this.categoryModel
-      .findOne({ _id: id, deletedAt: null })
-      .lean()
-      .exec() as unknown as Promise<Category | null>;
+  findById(id: string): Promise<CategoryRecord | null> {
+    return this.prisma.category.findFirst({ where: { id, deletedAt: null } });
   }
 
-  async create(data: Partial<Category>): Promise<Category> {
-    const category = new this.categoryModel(data);
-    return category.save();
+  create(data: CategoryWriteData): Promise<CategoryRecord> {
+    const { parent, ...fields } = data;
+    const createData: Prisma.CategoryUncheckedCreateInput = {
+      id: createPublicId(),
+      name: fields.name?.trim() ?? '',
+      slug: fields.slug?.trim().toLowerCase() ?? '',
+      iconUrl: fields.iconUrl ?? null,
+      parentId: parent ?? null,
+      order: fields.order ?? 0,
+      isActive: fields.isActive ?? true,
+      productCount: fields.productCount ?? 0,
+      deletedAt: fields.deletedAt ?? null,
+    };
+    return this.prisma.category.create({ data: createData });
   }
 
-  async update(id: string, data: Partial<Category>): Promise<Category | null> {
-    return this.categoryModel
-      .findByIdAndUpdate(id, data, { new: true })
-      .lean()
-      .exec() as unknown as Promise<Category | null>;
+  update(id: string, data: CategoryWriteData): Promise<CategoryRecord> {
+    const { parent, slug, name, ...fields } = data;
+    const updateData: Prisma.CategoryUncheckedUpdateInput = {
+      ...fields,
+      ...(parent !== undefined ? { parentId: parent } : {}),
+      ...(slug !== undefined ? { slug: slug.trim().toLowerCase() } : {}),
+      ...(name !== undefined ? { name: name.trim() } : {}),
+    };
+    return this.prisma.category.update({ where: { id }, data: updateData });
   }
 
   async incrementProductCount(categoryId: string, amount: number): Promise<void> {
-    await this.categoryModel.updateOne({ _id: categoryId }, { $inc: { productCount: amount } });
+    await this.prisma.category.update({
+      where: { id: categoryId },
+      data: { productCount: { increment: amount } },
+    });
   }
 }

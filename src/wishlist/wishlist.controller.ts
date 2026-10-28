@@ -1,5 +1,5 @@
-import { Controller, Get, Post, Delete, Param, HttpCode, HttpStatus } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { Controller, Get, Post, Delete, Param, HttpCode, HttpStatus, Query } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { CurrentUser } from '@auth/decorators/current-user.decorator';
 import { WishlistService } from './wishlist.service';
 
@@ -11,8 +11,18 @@ export class WishlistController {
 
   @Get()
   @ApiOperation({ summary: 'Get wishlist items' })
-  async getWishlist(@CurrentUser('userId') userId: string) {
-    return this.wishlistService.getWishlist(userId);
+  @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, type: Number, example: 20, maximum: 50 })
+  async getWishlist(
+    @CurrentUser('userId') userId: string,
+    @Query('page') page = '1',
+    @Query('limit') limit = '20',
+  ) {
+    return this.wishlistService.getWishlist(
+      userId,
+      Math.max(1, Number(page) || 1),
+      Math.min(50, Math.max(1, Number(limit) || 20)),
+    );
   }
 
   @Post(':productId')

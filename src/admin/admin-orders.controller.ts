@@ -16,6 +16,8 @@ import { AccountType } from '@users/enums/account-type.enum';
 import { OrdersService } from '@orders/orders.service';
 import { ReturnsService } from '@returns/returns.service';
 import { ReturnStatus } from '@returns/schemas/return-request.schema';
+import { AdminApproveRefundDto } from '@returns/dto/admin-approve-refund.dto';
+import { AdminReturnDecisionDto } from '@returns/dto/admin-return-decision.dto';
 import {
   AdminOrderStatusDto,
   AdminOrderInterveneDto,
@@ -105,16 +107,14 @@ export class AdminOrdersController {
   async returnDecision(
     @Param('id') id: string,
     @CurrentUser('id') adminId: string,
-    @Body('decision') decision: 'approve' | 'reject',
-    @Body('note') note?: string,
+    @Body() dto: AdminReturnDecisionDto,
   ): Promise<object> {
-    return this.returnsService.adminDecision(id, decision, note, adminId);
+    return this.returnsService.adminDecision(id, dto.decision, dto.note, adminId);
   }
 
   @Get('/refunds')
   async listRefunds(@Query('page') page = '1', @Query('limit') limit = '20'): Promise<object> {
-    const result = await this.returnsService.findAll(Number(page), Number(limit));
-    return result;
+    return this.returnsService.findRefunds(Number(page), Number(limit));
   }
 
   @Post('/refunds/:id/approve')
@@ -122,16 +122,15 @@ export class AdminOrdersController {
   async approveRefund(
     @Param('id') id: string,
     @CurrentUser('id') adminId: string,
-    @Body('amount') amount: number,
-    @Body('note') note?: string,
+    @Body() dto: AdminApproveRefundDto,
   ): Promise<object> {
     return this.returnsService.processRefund(
       id,
       {
         refundMethod:
           'original_payment' as import('@returns/schemas/return-request.schema').RefundMethod,
-        refundAmount: amount ?? 0,
-        note,
+        refundAmount: dto.amount,
+        note: dto.note,
       },
       adminId,
     );

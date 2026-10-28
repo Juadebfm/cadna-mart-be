@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { CategoriesRepository } from './categories.repository';
-import { Category } from './schemas/category.schema';
+import { CategoriesRepository, CategoryRecord } from './categories.repository';
 
 export interface CategoryTreeNode {
   id: string;
@@ -17,36 +16,28 @@ export class CategoriesService {
 
   async findAll(tree: boolean, includeCounts: boolean): Promise<{ items: CategoryTreeNode[] }> {
     const categories = await this.categoriesRepository.findAll(includeCounts);
+    const mapped = categories.map((category) => this.toDto(category, includeCounts));
 
-    const mapped = categories.map((cat) => this.toDto(cat, includeCounts));
-
-    if (!tree) {
-      return { items: mapped.map((c) => ({ ...c, children: [] })) };
-    }
-
+    if (!tree) return { items: mapped.map((category) => ({ ...category, children: [] })) };
     return { items: this.buildTree(categories, includeCounts) };
   }
 
-  async findBySlug(slug: string): Promise<Category | null> {
+  findBySlug(slug: string): Promise<CategoryRecord | null> {
     return this.categoriesRepository.findBySlug(slug);
   }
 
-  private buildTree(categories: Category[], includeCounts: boolean): CategoryTreeNode[] {
+  private buildTree(categories: CategoryRecord[], includeCounts: boolean): CategoryTreeNode[] {
     const map = new Map<string, CategoryTreeNode>();
     const roots: CategoryTreeNode[] = [];
 
-    for (const cat of categories) {
-      const id = (cat as unknown as { _id: { toString(): string } })._id.toString();
-      map.set(id, { ...this.toDto(cat, includeCounts), children: [] });
+    for (const category of categories) {
+      map.set(category.id, { ...this.toDto(category, includeCounts), children: [] });
     }
 
-    for (const cat of categories) {
-      const id = (cat as unknown as { _id: { toString(): string } })._id.toString();
-      const node = map.get(id)!;
-      const parentId = cat.parent?.toString() ?? null;
-
-      if (parentId && map.has(parentId)) {
-        map.get(parentId)!.children.push(node);
+    for (const category of categories) {
+      const node = map.get(category.id)!;
+      if (category.parentId && map.has(category.parentId)) {
+        map.get(category.parentId)!.children.push(node);
       } else {
         roots.push(node);
       }
@@ -55,18 +46,15 @@ export class CategoriesService {
     return roots;
   }
 
-  private toDto(cat: Category, includeCounts: boolean): CategoryTreeNode {
-    const id = (cat as unknown as { _id: { toString(): string } })._id.toString();
+  private toDto(category: CategoryRecord, includeCounts: boolean): CategoryTreeNode {
     const dto: CategoryTreeNode = {
-      id,
-      name: cat.name,
-      slug: cat.slug,
-      iconUrl: cat.iconUrl,
+      id: category.id,
+      name: category.name,
+      slug: category.slug,
+      iconUrl: category.iconUrl,
       children: [],
     };
-    if (includeCounts) {
-      dto.productCount = cat.productCount;
-    }
+    if (includeCounts) dto.productCount = category.productCount;
     return dto;
   }
 }

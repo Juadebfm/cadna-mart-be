@@ -35,8 +35,16 @@ export const envSchema = z.object({
     .url()
     .default('https://res.cloudinary.com/dwrhjddpn/image/upload/v1779286047/cadna_logo_you5ek.png'),
 
+  STACKAPI_SECRET_KEY: z.string().default(''),
+  // Backward compatibility for deployments configured before StackAPI's
+  // documented STACKAPI_SECRET_KEY name was adopted.
+  STACKAPI_API_KEY: z.string().default(''),
+  STACKAPI_PUBLIC_KEY: z.string().default(''),
+  FCM_PROJECT_ID: z.string().default(''),
+
   CLERK_WEBHOOK_SECRET: z.string().default(''),
   CLERK_SECRET_KEY: z.string().default(''),
+  CLERK_JWT_KEY: z.string().default(''),
 
   PAYSTACK_SECRET_KEY: z.string().default(''),
   PAYSTACK_WEBHOOK_SECRET: z.string().default(''),

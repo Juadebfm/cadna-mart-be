@@ -1,29 +1,29 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
-import { DataRequest, DataRequestKind, DataRequestStatus } from './schemas/data-request.schema';
+import { DataRequest as PrismaDataRequest } from '../generated/prisma/client';
+import { PrismaService } from '@database/prisma.service';
+import { createPublicId } from '@database/id.util';
+import { DataRequestKind, DataRequestStatus } from './schemas/data-request.schema';
+
+export type DataRequestRecord = PrismaDataRequest & { _id: string };
 
 @Injectable()
 export class DataRequestsService {
-  constructor(@InjectModel(DataRequest.name) private readonly model: Model<DataRequest>) {}
+  constructor(private readonly prisma: PrismaService) {}
 
-  async create(userId: string, kind: DataRequestKind, notes?: string): Promise<DataRequest> {
-    const existing = await this.model
-      .findOne({
-        userId: new Types.ObjectId(userId),
-        kind,
-        status: DataRequestStatus.PENDING,
-      })
-      .lean()
-      .exec();
-    if (existing) {
-      return existing as unknown as DataRequest;
-    }
-    const created = await this.model.create({
-      userId: new Types.ObjectId(userId),
-      kind,
-      notes: notes ?? null,
+  async create(userId: string, kind: DataRequestKind, notes?: string): Promise<DataRequestRecord> {
+    const existing = await this.prisma.dataRequest.findFirst({
+      where: { userId, kind, status: DataRequestStatus.PENDING },
     });
-    return created.toObject() as DataRequest;
+    if (existing) return { ...existing, _id: existing.id };
+
+    const created = await this.prisma.dataRequest.create({
+      data: {
+        id: createPublicId(),
+        userId,
+        kind,
+        notes: notes ?? null,
+      },
+    });
+    return { ...created, _id: created.id };
   }
 }

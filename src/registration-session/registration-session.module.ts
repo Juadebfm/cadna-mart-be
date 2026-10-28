@@ -1,19 +1,18 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
-import {
-  RegistrationSession,
-  RegistrationSessionSchema,
-} from './schemas/registration-session.schema';
+import { PrismaModule } from '@database/prisma.module';
 import { RegistrationSessionRepository } from './registration-session.repository';
 import { RegistrationSessionService } from './registration-session.service';
+import { PendingBuyerSignupRepository } from './pending-buyer-signup.repository';
+import { PendingBuyerSignupService } from './pending-buyer-signup.service';
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([
-      { name: RegistrationSession.name, schema: RegistrationSessionSchema },
-    ]),
+  imports: [PrismaModule],
+  providers: [
+    RegistrationSessionRepository,
+    RegistrationSessionService,
+    PendingBuyerSignupRepository,
+    PendingBuyerSignupService,
   ],
-  providers: [RegistrationSessionRepository, RegistrationSessionService],
-  exports: [RegistrationSessionService],
+  exports: [RegistrationSessionService, PendingBuyerSignupService],
 })
 export class RegistrationSessionModule {}
