@@ -14,7 +14,7 @@ import { AccountTypes } from '@auth/decorators/account-types.decorator';
 import { AccountType } from '@users/enums/account-type.enum';
 import { CategoriesService } from '@categories/categories.service';
 import { CategoriesRepository, CategoryWriteData } from '@categories/categories.repository';
-import { ParseObjectIdPipe } from '@common/pipes/parse-object-id.pipe';
+import { ParsePublicIdPipe } from '@common/pipes/parse-public-id.pipe';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 
@@ -51,7 +51,7 @@ export class AdminCategoriesController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update a category' })
-  async update(@Param('id', ParseObjectIdPipe) id: string, @Body() dto: UpdateCategoryDto) {
+  async update(@Param('id', ParsePublicIdPipe) id: string, @Body() dto: UpdateCategoryDto) {
     const updates: CategoryWriteData = {};
     if (dto.name !== undefined) updates.name = dto.name;
     if (dto.slug !== undefined) updates.slug = dto.slug;
@@ -65,7 +65,7 @@ export class AdminCategoriesController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Soft delete a category' })
-  async remove(@Param('id', ParseObjectIdPipe) id: string) {
+  async remove(@Param('id', ParsePublicIdPipe) id: string) {
     await this.categoriesRepository.update(id, { deletedAt: new Date(), isActive: false });
   }
 }

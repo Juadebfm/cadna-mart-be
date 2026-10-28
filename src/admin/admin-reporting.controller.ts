@@ -2,211 +2,150 @@ import { Controller, Get, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AccountTypes } from '@auth/decorators/account-types.decorator';
 import { AccountType } from '@users/enums/account-type.enum';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { Order } from '@orders/schemas/order.schema';
+import { PrismaService } from '@database/prisma.service';
 
 @ApiTags('Admin - Reporting')
 @ApiBearerAuth()
 @AccountTypes(AccountType.ADMIN)
 @Controller('admin/reports')
 export class AdminReportingController {
-  constructor(@InjectModel(Order.name) private readonly orderModel: Model<Order>) {}
+  constructor(private readonly prisma: PrismaService) {}
+
+  private async orders(from?: string, to?: string, extra: Record<string, unknown> = {}) {
+    return this.prisma.order.findMany({
+      where: {
+        deletedAt: null,
+        ...extra,
+        ...(from || to
+          ? {
+              createdAt: {
+                ...(from ? { gte: new Date(from) } : {}),
+                ...(to ? { lte: new Date(to) } : {}),
+              },
+            }
+          : {}),
+      },
+      select: {
+        id: true,
+        status: true,
+        paymentStatus: true,
+        deliveryMode: true,
+        items: true,
+        pricing: true,
+      },
+    });
+  }
+
+  private amount(value: unknown, key: string): number {
+    if (!value || typeof value !== 'object') return 0;
+    const result = (value as Record<string, unknown>)[key];
+    if (typeof result === 'number') return result;
+    if (result && typeof result === 'object') {
+      const amount = (result as Record<string, unknown>).amount;
+      return typeof amount === 'number' ? amount : 0;
+    }
+    return 0;
+  }
+
+  private money(amount: number) {
+    return { amount, currency: 'NGN', formatted: '₦' + Math.round(amount).toLocaleString('en-NG') };
+  }
 
   @Get('/sales')
   async salesReport(@Query('from') from?: string, @Query('to') to?: string): Promise<object> {
-    const match: Record<string, unknown> = { deletedAt: null };
-    if (from || to) {
-      match['createdAt'] = {
-        ...(from ? { $gte: new Date(from) } : {}),
-        ...(to ? { $lte: new Date(to) } : {}),
-      };
-    }
-    const [result] = await this.orderModel
-      .aggregate([
-        { $match: match },
-        {
-          $group: {
-            _id: null,
-            totalOrders: { $sum: 1 },
-            totalRevenueKobo: { $sum: '$pricing.total.amount' },
-          },
-        },
-      ])
-      .exec();
-
+    const orders = await this.orders(from, to);
+    const totalRevenue = orders.reduce(
+      (sum, order) => sum + this.amount(order.pricing, 'total'),
+      0,
+    );
     return {
       period: { from: from ?? null, to: to ?? null },
-      totalOrders: result?.totalOrders ?? 0,
-      totalRevenue: {
-        amount: result?.totalRevenueKobo ?? 0,
-        currency: 'NGN',
-        formatted: '₦' + Math.round(result?.totalRevenueKobo ?? 0).toLocaleString('en-NG'),
-      },
+      totalOrders: orders.length,
+      totalRevenue: this.money(totalRevenue),
     };
   }
 
   @Get('/gmv')
   async gmvReport(@Query('from') from?: string, @Query('to') to?: string): Promise<object> {
-    const match: Record<string, unknown> = { deletedAt: null };
-    if (from || to) {
-      match['createdAt'] = {
-        ...(from ? { $gte: new Date(from) } : {}),
-        ...(to ? { $lte: new Date(to) } : {}),
-      };
-    }
-    const [result] = await this.orderModel
-      .aggregate([
-        { $match: match },
-        { $group: { _id: null, gmv: { $sum: '$pricing.subtotal.amount' } } },
-      ])
-      .exec();
-
-    return {
-      period: { from: from ?? null, to: to ?? null },
-      gmv: {
-        amount: result?.gmv ?? 0,
-        currency: 'NGN',
-        formatted: '₦' + Math.round(result?.gmv ?? 0).toLocaleString('en-NG'),
-      },
-    };
+    const orders = await this.orders(from, to);
+    const gmv = orders.reduce((sum, order) => sum + this.amount(order.pricing, 'subtotal'), 0);
+    return { period: { from: from ?? null, to: to ?? null }, gmv: this.money(gmv) };
   }
 
   @Get('/orders')
   async ordersReport(@Query('from') from?: string, @Query('to') to?: string): Promise<object> {
-    const match: Record<string, unknown> = { deletedAt: null };
-    if (from || to) {
-      match['createdAt'] = {
-        ...(from ? { $gte: new Date(from) } : {}),
-        ...(to ? { $lte: new Date(to) } : {}),
-      };
-    }
-    const breakdown = await this.orderModel
-      .aggregate([
-        { $match: match },
-        { $group: { _id: '$status', count: { $sum: 1 } } },
-        { $sort: { count: -1 } },
-      ])
-      .exec();
-
+    const orders = await this.orders(from, to);
+    const counts = new Map<string, number>();
+    for (const order of orders) counts.set(order.status, (counts.get(order.status) ?? 0) + 1);
     return {
       period: { from: from ?? null, to: to ?? null },
-      byStatus: breakdown.map((b: { _id: string; count: number }) => ({
-        status: b._id,
-        count: b.count,
-      })),
+      byStatus: [...counts]
+        .map(([status, count]) => ({ status, count }))
+        .sort((a, b) => b.count - a.count),
     };
   }
 
   @Get('/refunds')
   async refundsReport(@Query('from') from?: string, @Query('to') to?: string): Promise<object> {
-    const match: Record<string, unknown> = { deletedAt: null, paymentStatus: 'refunded' };
-    if (from || to) {
-      match['createdAt'] = {
-        ...(from ? { $gte: new Date(from) } : {}),
-        ...(to ? { $lte: new Date(to) } : {}),
-      };
-    }
-    const [result] = await this.orderModel
-      .aggregate([
-        { $match: match },
-        {
-          $group: { _id: null, count: { $sum: 1 }, totalAmount: { $sum: '$pricing.total.amount' } },
-        },
-      ])
-      .exec();
-
+    const orders = await this.orders(from, to, { paymentStatus: 'refunded' });
+    const total = orders.reduce((sum, order) => sum + this.amount(order.pricing, 'total'), 0);
     return {
       period: { from: from ?? null, to: to ?? null },
-      refundCount: result?.count ?? 0,
-      totalRefunded: {
-        amount: result?.totalAmount ?? 0,
-        currency: 'NGN',
-        formatted: '₦' + Math.round(result?.totalAmount ?? 0).toLocaleString('en-NG'),
-      },
+      refundCount: orders.length,
+      totalRefunded: this.money(total),
     };
   }
 
   @Get('/sellers')
   async sellersReport(): Promise<object> {
-    const breakdown = await this.orderModel
-      .aggregate([
-        { $match: { deletedAt: null } },
-        { $unwind: '$items' },
-        {
-          $group: {
-            _id: '$items.sellerId',
-            orderCount: { $sum: 1 },
-            revenue: { $sum: '$items.lineTotal.amount' },
-          },
-        },
-        { $sort: { revenue: -1 } },
-        { $limit: 50 },
-      ])
-      .exec();
-
-    return {
-      topSellers: breakdown.map((b: { _id: string; orderCount: number; revenue: number }) => ({
-        sellerId: b._id,
-        orderCount: b.orderCount,
-        revenue: {
-          amount: b.revenue,
-          currency: 'NGN',
-          formatted: '₦' + Math.round(b.revenue).toLocaleString('en-NG'),
-        },
-      })),
-    };
+    const orders = await this.orders();
+    const rows = new Map<string, { count: number; revenue: number }>();
+    for (const order of orders)
+      for (const item of Array.isArray(order.items) ? (order.items as any[]) : []) {
+        if (!item.sellerId) continue;
+        const row = rows.get(item.sellerId) ?? { count: 0, revenue: 0 };
+        row.count += 1;
+        row.revenue += this.amount(item.lineTotal, 'amount');
+        rows.set(item.sellerId, row);
+      }
+    const topSellers = [...rows]
+      .sort((a, b) => b[1].revenue - a[1].revenue)
+      .slice(0, 50)
+      .map(([sellerId, value]) => ({
+        sellerId,
+        orderCount: value.count,
+        revenue: this.money(value.revenue),
+      }));
+    return { topSellers };
   }
 
   @Get('/products')
   async productsReport(): Promise<object> {
-    const breakdown = await this.orderModel
-      .aggregate([
-        { $match: { deletedAt: null } },
-        { $unwind: '$items' },
-        {
-          $group: {
-            _id: '$items.productId',
-            name: { $first: '$items.name' },
-            unitsSold: { $sum: '$items.quantity' },
-            revenue: { $sum: '$items.lineTotal.amount' },
-          },
-        },
-        { $sort: { unitsSold: -1 } },
-        { $limit: 50 },
-      ])
-      .exec();
-
-    return {
-      topProducts: breakdown.map(
-        (b: { _id: string; name: string; unitsSold: number; revenue: number }) => ({
-          productId: b._id,
-          name: b.name,
-          unitsSold: b.unitsSold,
-          revenue: {
-            amount: b.revenue,
-            currency: 'NGN',
-            formatted: '₦' + Math.round(b.revenue).toLocaleString('en-NG'),
-          },
-        }),
-      ),
-    };
+    const orders = await this.orders();
+    const rows = new Map<string, { name: string; unitsSold: number; revenue: number }>();
+    for (const order of orders)
+      for (const item of Array.isArray(order.items) ? (order.items as any[]) : []) {
+        if (!item.productId) continue;
+        const row = rows.get(item.productId) ?? { name: item.name ?? '', unitsSold: 0, revenue: 0 };
+        row.unitsSold += Number(item.quantity) || 0;
+        row.revenue += this.amount(item.lineTotal, 'amount');
+        rows.set(item.productId, row);
+      }
+    const topProducts = [...rows]
+      .sort((a, b) => b[1].unitsSold - a[1].unitsSold)
+      .slice(0, 50)
+      .map(([productId, value]) => ({ productId, ...value, revenue: this.money(value.revenue) }));
+    return { topProducts };
   }
 
   @Get('/delivery')
   async deliveryReport(): Promise<object> {
-    const breakdown = await this.orderModel
-      .aggregate([
-        { $match: { deletedAt: null } },
-        { $group: { _id: '$deliveryMode', count: { $sum: 1 } } },
-      ])
-      .exec();
-
+    const orders = await this.orders();
+    const counts = new Map<string, number>();
+    for (const order of orders)
+      counts.set(order.deliveryMode, (counts.get(order.deliveryMode) ?? 0) + 1);
     return {
-      byMode: breakdown.map((b: { _id: string; count: number }) => ({
-        mode: b._id,
-        count: b.count,
-      })),
+      byMode: [...counts].map(([mode, count]) => ({ mode, count })),
       note: 'Logistics provider performance metrics will populate once provider integrations are live.',
     };
   }

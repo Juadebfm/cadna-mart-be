@@ -12,7 +12,8 @@ import {
 const compression = require('compression');
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
-const MongoStore = require('connect-mongo');
+const PgSessionStore = require('connect-pg-simple')(session);
+import { Pool } from 'pg';
 const passport = require('passport');
 const helmet = require('helmet');
 import { AppModule } from './app.module';
@@ -89,15 +90,19 @@ async function bootstrap(): Promise<void> {
     allowedHeaders: ['Content-Type', 'Authorization', 'x-correlation-id', 'x-guest-token'],
   });
 
-  // Session (dual-layer auth)
+  // Session (dual-layer auth) persisted in PostgreSQL.
+  const sessionPool = new Pool({
+    connectionString: configService.database.pooledUrl ?? configService.database.directUrl,
+  });
   app.use(
     session({
       secret: configService.session.secret,
       resave: false,
       saveUninitialized: false,
-      store: MongoStore.create({
-        mongoUrl: configService.database.uri,
-        collectionName: 'sessions',
+      store: new PgSessionStore({
+        pool: sessionPool,
+        tableName: 'user_sessions',
+        createTableIfMissing: true,
       }),
       cookie: {
         maxAge: configService.session.maxAge,

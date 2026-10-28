@@ -1,15 +1,13 @@
 import { Controller, Get, Patch, Post, Param, Body, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 import { AccountTypes } from '@auth/decorators/account-types.decorator';
 import { CurrentUser } from '@auth/decorators/current-user.decorator';
 import { AccountType } from '@users/enums/account-type.enum';
 import { SellersService } from '@sellers/sellers.service';
 import { SellersRepository } from '@sellers/sellers.repository';
 import { UpdateSellerDto } from '@sellers/dto/update-seller.dto';
-import { SellerProfile } from '@sellers/schemas/seller-profile.schema';
-import { ParseObjectIdPipe } from '@common/pipes/parse-object-id.pipe';
+import { PrismaService } from '@database/prisma.service';
+import { ParsePublicIdPipe } from '@common/pipes/parse-public-id.pipe';
 
 @ApiTags('Admin — Sellers')
 @ApiBearerAuth()
@@ -19,7 +17,7 @@ export class AdminSellersController {
   constructor(
     private readonly sellersService: SellersService,
     private readonly sellersRepository: SellersRepository,
-    @InjectModel(SellerProfile.name) private readonly sellerProfileModel: Model<SellerProfile>,
+    private readonly prisma: PrismaService,
   ) {}
 
   @Get('applications')
@@ -31,43 +29,25 @@ export class AdminSellersController {
     @Query('limit') limit = 20,
     @Query('approval') approval?: 'pending' | 'approved',
   ) {
-    const filter: Record<string, unknown> = { deletedAt: null };
-    if (approval === 'pending') filter.isApproved = false;
-    if (approval === 'approved') filter.isApproved = true;
+    const where: any = { deletedAt: null };
+    if (approval === 'pending') where.isApproved = false;
+    if (approval === 'approved') where.isApproved = true;
 
     const skip = (+page - 1) * +limit;
     const [profiles, totalItems] = await Promise.all([
-      this.sellerProfileModel
-        .find(filter)
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(+limit)
-        .populate('user', 'firstName lastName email accountType isVerified isActive')
-        .lean()
-        .exec(),
-      this.sellerProfileModel.countDocuments(filter),
+      this.prisma.sellerProfile.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: +limit,
+        include: { user: { include: { seller: true } } },
+      }),
+      this.prisma.sellerProfile.count({ where }),
     ]);
 
-    const ownerIds = profiles
-      .map((profile: any) => (profile.user?._id ?? profile.user)?.toString())
-      .filter(Boolean);
-
-    const storefronts = await this.sellersRepository.sellerModel
-      .find({ owner: { $in: ownerIds }, deletedAt: null })
-      .select('owner name slug isVerified isActive')
-      .lean()
-      .exec();
-
-    const storefrontMap = new Map(
-      storefronts.map((storefront: any) => [
-        (storefront.owner?._id ?? storefront.owner)?.toString(),
-        storefront,
-      ]),
-    );
-
     const items = profiles.map((profile: any) => {
-      const ownerId = (profile.user?._id ?? profile.user)?.toString();
-      const storefront = ownerId ? storefrontMap.get(ownerId) : null;
+      const ownerId = profile.user?.id;
+      const storefront = profile.user?.seller;
 
       return {
         user: profile.user
@@ -98,7 +78,7 @@ export class AdminSellersController {
         },
         storefront: storefront
           ? {
-              id: storefront._id?.toString?.() ?? storefront._id,
+              id: storefront.id,
               name: storefront.name,
               slug: storefront.slug,
               isVerified: storefront.isVerified,
@@ -124,31 +104,22 @@ export class AdminSellersController {
   async findAll(@Query('page') page = 1, @Query('limit') limit = 20) {
     const skip = (+page - 1) * +limit;
     const [items, totalItems] = await Promise.all([
-      this.sellersRepository.sellerModel
-        .find({ deletedAt: null })
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(+limit)
-        .populate('owner', 'firstName lastName email accountType isVerified isActive')
-        .lean()
-        .exec(),
-      this.sellersRepository.sellerModel.countDocuments({ deletedAt: null }),
+      this.prisma.seller.findMany({
+        where: { deletedAt: null },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: +limit,
+        include: { owner: { include: { sellerProfile: true } } },
+      }),
+      this.prisma.seller.count({ where: { deletedAt: null } }),
     ]);
 
-    // Attach seller profiles (approval status, business details)
-    const ownerIds = items.map((s: any) => s.owner?._id ?? s.owner);
-    const profiles = await this.sellerProfileModel
-      .find({ user: { $in: ownerIds } })
-      .lean()
-      .exec();
-
-    const profileMap = new Map(profiles.map((p: any) => [p.user.toString(), p]));
-
     const enrichedItems = items.map((seller: any) => {
-      const ownerId = (seller.owner?._id ?? seller.owner)?.toString();
-      const profile = ownerId ? profileMap.get(ownerId) : null;
+      const profile = seller.owner?.sellerProfile;
       return {
         ...seller,
+        _id: seller.id,
+        owner: seller.owner ? { ...seller.owner, _id: seller.owner.id } : null,
         sellerProfile: profile
           ? {
               businessName: profile.businessName,
@@ -177,7 +148,7 @@ export class AdminSellersController {
   @Patch(':id')
   @ApiOperation({ summary: 'Update any seller' })
   async update(
-    @Param('id', ParseObjectIdPipe) id: string,
+    @Param('id', ParsePublicIdPipe) id: string,
     @Body() dto: UpdateSellerDto,
     @CurrentUser() user: { userId: string; accountType: string },
   ) {
@@ -187,7 +158,7 @@ export class AdminSellersController {
   @Patch(':id/verify')
   @ApiOperation({ summary: 'Toggle seller verified status' })
   async toggleVerify(
-    @Param('id', ParseObjectIdPipe) id: string,
+    @Param('id', ParsePublicIdPipe) id: string,
     @Body('isVerified') isVerified: boolean,
   ) {
     return this.sellersRepository.update(id, { isVerified } as any);
@@ -196,7 +167,7 @@ export class AdminSellersController {
   @Patch(':id/approve')
   @ApiOperation({ summary: 'Approve a seller to upload products' })
   async approve(
-    @Param('id', ParseObjectIdPipe) sellerId: string,
+    @Param('id', ParsePublicIdPipe) sellerId: string,
     @CurrentUser('userId') adminUserId: string,
   ) {
     return this.approveSeller(sellerId, adminUserId);
@@ -205,7 +176,7 @@ export class AdminSellersController {
   @Post(':id/approve')
   @ApiOperation({ summary: 'Approve a seller (spec-aligned POST alias of PATCH /:id/approve)' })
   async approvePost(
-    @Param('id', ParseObjectIdPipe) sellerId: string,
+    @Param('id', ParsePublicIdPipe) sellerId: string,
     @CurrentUser('userId') adminUserId: string,
   ) {
     return this.approveSeller(sellerId, adminUserId);
@@ -213,20 +184,20 @@ export class AdminSellersController {
 
   @Patch(':id/reject')
   @ApiOperation({ summary: 'Reject / revoke seller approval' })
-  async reject(@Param('id', ParseObjectIdPipe) sellerId: string) {
+  async reject(@Param('id', ParsePublicIdPipe) sellerId: string) {
     return this.rejectSeller(sellerId);
   }
 
   @Post(':id/reject')
   @ApiOperation({ summary: 'Reject seller (spec-aligned POST alias of PATCH /:id/reject)' })
-  async rejectPost(@Param('id', ParseObjectIdPipe) sellerId: string) {
+  async rejectPost(@Param('id', ParsePublicIdPipe) sellerId: string) {
     return this.rejectSeller(sellerId);
   }
 
   @Patch('applications/:userId/approve')
   @ApiOperation({ summary: 'Approve a seller application by owner user id' })
   async approveApplication(
-    @Param('userId', ParseObjectIdPipe) userId: string,
+    @Param('userId', ParsePublicIdPipe) userId: string,
     @CurrentUser('userId') adminUserId: string,
   ) {
     return this.approveSellerProfile(userId, adminUserId);
@@ -237,7 +208,7 @@ export class AdminSellersController {
     summary: 'Approve a seller application by owner user id (spec-aligned POST alias)',
   })
   async approveApplicationPost(
-    @Param('userId', ParseObjectIdPipe) userId: string,
+    @Param('userId', ParsePublicIdPipe) userId: string,
     @CurrentUser('userId') adminUserId: string,
   ) {
     return this.approveSellerProfile(userId, adminUserId);
@@ -245,7 +216,7 @@ export class AdminSellersController {
 
   @Patch('applications/:userId/reject')
   @ApiOperation({ summary: 'Reject / revoke a seller application by owner user id' })
-  async rejectApplication(@Param('userId', ParseObjectIdPipe) userId: string) {
+  async rejectApplication(@Param('userId', ParsePublicIdPipe) userId: string) {
     return this.rejectSellerProfile(userId);
   }
 
@@ -253,7 +224,7 @@ export class AdminSellersController {
   @ApiOperation({
     summary: 'Reject / revoke a seller application by owner user id (spec-aligned POST alias)',
   })
-  async rejectApplicationPost(@Param('userId', ParseObjectIdPipe) userId: string) {
+  async rejectApplicationPost(@Param('userId', ParsePublicIdPipe) userId: string) {
     return this.rejectSellerProfile(userId);
   }
 
@@ -263,14 +234,15 @@ export class AdminSellersController {
   }
 
   private async approveSellerProfile(userId: string, adminUserId: string) {
-    const profile = await this.sellerProfileModel
-      .findOneAndUpdate(
-        { user: userId, deletedAt: null },
-        { $set: { isApproved: true, approvedAt: new Date(), approvedBy: adminUserId } },
-        { new: true },
-      )
-      .lean()
-      .exec();
+    const existing = await this.prisma.sellerProfile.findFirst({
+      where: { userId, deletedAt: null },
+    });
+    const profile = existing
+      ? await this.prisma.sellerProfile.update({
+          where: { id: existing.id },
+          data: { isApproved: true, approvedAt: new Date(), approvedById: adminUserId },
+        })
+      : null;
 
     if (!profile) {
       return { message: 'Seller profile not found' };
@@ -285,14 +257,15 @@ export class AdminSellersController {
   }
 
   private async rejectSellerProfile(userId: string) {
-    const profile = await this.sellerProfileModel
-      .findOneAndUpdate(
-        { user: userId, deletedAt: null },
-        { $set: { isApproved: false, approvedAt: null, approvedBy: null } },
-        { new: true },
-      )
-      .lean()
-      .exec();
+    const existing = await this.prisma.sellerProfile.findFirst({
+      where: { userId, deletedAt: null },
+    });
+    const profile = existing
+      ? await this.prisma.sellerProfile.update({
+          where: { id: existing.id },
+          data: { isApproved: false, approvedAt: null, approvedById: null },
+        })
+      : null;
 
     if (!profile) {
       return { message: 'Seller profile not found' };
@@ -303,8 +276,7 @@ export class AdminSellersController {
 
   private async resolveSellerProfileUserId(subjectId: string) {
     const seller = await this.sellersRepository.findById(subjectId);
-    const ownerId =
-      (seller as any)?.owner?._id?.toString?.() ?? (seller as any)?.owner?.toString?.();
+    const ownerId = (seller as any)?.owner?.toString?.();
     return ownerId ?? subjectId;
   }
 }

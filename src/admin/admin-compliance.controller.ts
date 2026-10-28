@@ -14,10 +14,9 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AccountTypes } from '@auth/decorators/account-types.decorator';
 import { CurrentUser } from '@auth/decorators/current-user.decorator';
 import { AccountType } from '@users/enums/account-type.enum';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
-import { DataRequest, DataRequestStatus } from '@data-requests/schemas/data-request.schema';
+import { DataRequestStatus } from '@data-requests/schemas/data-request.schema';
 import { SiteConfigService } from '@site-config/site-config.service';
+import { PrismaService } from '@database/prisma.service';
 
 @ApiTags('Admin - Compliance & RBAC')
 @ApiBearerAuth()
@@ -25,7 +24,7 @@ import { SiteConfigService } from '@site-config/site-config.service';
 @Controller('admin')
 export class AdminComplianceController {
   constructor(
-    @InjectModel(DataRequest.name) private readonly dataRequestModel: Model<DataRequest>,
+    private readonly prisma: PrismaService,
     private readonly siteConfigService: SiteConfigService,
   ) {}
 
@@ -49,16 +48,18 @@ export class AdminComplianceController {
     @Query('limit') limit = '20',
     @Query('status') status?: string,
   ): Promise<object> {
-    const filter: Record<string, unknown> = {};
-    if (status) filter['status'] = status;
-
     const p = Number(page);
     const l = Number(limit);
     const skip = (p - 1) * l;
 
     const [items, totalItems] = await Promise.all([
-      this.dataRequestModel.find(filter).sort({ createdAt: -1 }).skip(skip).limit(l).lean().exec(),
-      this.dataRequestModel.countDocuments(filter).exec(),
+      this.prisma.dataRequest.findMany({
+        where: status ? { status } : {},
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: l,
+      }),
+      this.prisma.dataRequest.count({ where: status ? { status } : {} }),
     ]);
 
     return {
@@ -75,16 +76,20 @@ export class AdminComplianceController {
     @Body('decision') decision: 'approve' | 'reject',
     @Body('notes') notes?: string,
   ): Promise<object> {
-    const req = await this.dataRequestModel.findById(id).exec();
+    const req = await this.prisma.dataRequest.findUnique({ where: { id } });
     if (!req) throw new NotFoundException('Data request not found');
 
-    req.status = decision === 'approve' ? DataRequestStatus.PROCESSED : DataRequestStatus.REJECTED;
-    req.processedBy = new Types.ObjectId(adminId) as unknown as typeof req.processedBy;
-    req.processedAt = new Date();
-    if (notes) req.notes = notes;
-    await req.save();
+    const updated = await this.prisma.dataRequest.update({
+      where: { id },
+      data: {
+        status: decision === 'approve' ? DataRequestStatus.PROCESSED : DataRequestStatus.REJECTED,
+        processedById: adminId,
+        processedAt: new Date(),
+        ...(notes ? { notes } : {}),
+      },
+    });
 
-    return { id, status: req.status, processedAt: req.processedAt };
+    return { id, status: updated.status, processedAt: updated.processedAt };
   }
 
   @Get('/compliance/retention')

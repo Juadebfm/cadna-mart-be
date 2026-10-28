@@ -41,6 +41,8 @@ model User {
   sellerProfile            SellerProfile?
   approvedSellerProfiles   SellerProfile[] @relation("SellerApprover")
   orders                   Order[]
+  returnRequests           ReturnRequest[]
+  checkoutSessions        CheckoutSession[]
   carts                    Cart[]
   reviews                  Review[]
   wishlistItems            WishlistItem[]
@@ -48,6 +50,20 @@ model User {
   otpRecords               Otp[]
   dataRequests             DataRequest[] @relation("DataRequestOwner")
   processedDataRequests    DataRequest[] @relation("DataRequestProcessor")
+  notifications            Notification[]
+  notificationDevices      NotificationDevice[]
+  recentlyViewed           RecentlyViewed[]
+  submittedSupportTickets  SupportTicket[] @relation("SupportTicketOwner")
+  assignedSupportTickets   SupportTicket[] @relation("SupportTicketAssignee")
+  wallet                   Wallet?
+  walletTransactions       WalletTransaction[]
+  rewardsAccount           RewardsAccount?
+  rewardsTransactions      RewardsTransaction[]
+  partnerProfile           PartnerProfile?
+  approvedPartnerProfiles  PartnerProfile[] @relation("PartnerApprover")
+  suspendedSlotBookings    SlotBooking[] @relation("SlotBookingSuspender")
+  sellerFollows            SellerFollower[]
+  approvedDealCampaigns    DealCampaign[] @relation("DealCampaignApprover")
 
   @@index([phoneNumber])
   @@index([accountType, isActive])
@@ -98,6 +114,8 @@ model Seller {
   owner               User      @relation(fields: [ownerId], references: [id], onDelete: Restrict)
   products            Product[]
   deals               DealCampaign[]
+  followers           SellerFollower[]
+  slotBookings        SlotBooking[]
 
   @@index([isActive, isVerified])
   @@map("stores")
@@ -170,6 +188,10 @@ model Product {
   cartItems         CartItem[]
   wishlistItems     WishlistItem[]
   reviews           Review[]
+  recentlyViewed    RecentlyViewed[]
+  productPolicy     ProductPolicy?
+  partnerCommitments PartnerCommitment[]
+  slotBookings      SlotBooking[]
 
   @@index([sellerId, isActive])
   @@index([categoryId, isActive])
@@ -232,6 +254,8 @@ model Order {
 
   user                     User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
   returnRequests           ReturnRequest[]
+  checkoutSessions        CheckoutSession[]
+  logisticsBookings       LogisticsBooking[]
 
   @@index([userId, status, createdAt])
   @@index([status, createdAt])
@@ -281,6 +305,7 @@ model Review {
   rating      Int
   title       String?
   comment     String    @default("")
+  reviewerName String  @default("")
   isVerified  Boolean   @default(false)
   helpfulCount Int      @default(0)
   status      String    @default("approved")
@@ -436,29 +461,530 @@ model Banner {
 }
 
 model DealCampaign {
-  id                String   @id @db.VarChar(24)
-  sellerId          String   @db.VarChar(24)
-  title             String
-  data              Json
-  status            String   @default("draft")
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id                       String   @id @db.VarChar(24)
+  sellerId                 String   @db.VarChar(24)
+  title                    String
+  selectedProductIds       String[] @default([])
+  maxProducts              Int      @default(10)
+  feeAmount                Float
+  currency                 String   @default("NGN")
+  status                   String   @default("draft")
+  paymentStatus            String   @default("unpaid")
+  paymentReference         String?  @unique
+  paymentAuthorizationUrl  String?
+  paymentAccessCode        String?
+  paidAt                   DateTime?
+  startsAt                 DateTime?
+  endsAt                   DateTime?
+  approvedById             String?  @db.VarChar(24)
+  approvedAt               DateTime?
+  isActive                 Boolean  @default(true)
+  deletedAt                DateTime?
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
 
-  seller            Seller   @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  seller                   Seller   @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  approvedBy               User?    @relation("DealCampaignApprover", fields: [approvedById], references: [id], onDelete: SetNull)
 
-  @@index([sellerId, status])
+  @@index([sellerId, createdAt])
+  @@index([status, paymentStatus])
+  @@index([selectedProductIds], type: Gin)
   @@map("deal_campaigns")
 }
 
 model ReturnRequest {
+  id                    String   @id @db.VarChar(24)
+  userId                String   @db.VarChar(24)
+  orderId               String   @db.VarChar(24)
+  requestType           String   @default("item_return")
+  previousOrderStatus   String?
+  items                 Json     @default("[]")
+  orderRef              String
+  orderItemProductId    String
+  orderItemVariantId    String?
+  orderItemName         String
+  quantity              Int
+  reason                String
+  description           String?
+  evidenceUrls          String[] @default([])
+  status                String   @default("pending")
+  sellerDecision        String?
+  sellerDecisionNote    String?
+  sellerDecidedAt       DateTime?
+  adminOverrideNote     String?
+  adminOverrideById     String?  @db.VarChar(24)
+  refundStatus          String?
+  refundMethod          String?
+  refundReference       String?
+  refundProviderId      String?
+  refundProcessedAt     DateTime?
+  refundAmount          Float    @default(0)
+  paymentReference      String?
+  refundProviderStatus  String?
+  adjustmentReason      String?
+  deletedAt             DateTime?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  order                 Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([orderId])
+  @@index([status, createdAt])
+  @@index([paymentReference, refundStatus])
+  @@map("return_requests")
+}
+
+model CheckoutSession {
+  id               String   @id @db.VarChar(24)
+  sessionId        String   @unique
+  cartId           String
+  userId           String?  @db.VarChar(24)
+  status           String   @default("initiated")
+  deliveryAddress  Json?
+  addressValidated Boolean  @default(false)
+  deliveryMode     String?
+  pickupDetails    Json?
+  pricingSnapshot  Json?
+  pricingLocked    Boolean  @default(false)
+  orderId          String?  @db.VarChar(24)
+  metadata         Json?
+  expiresAt        DateTime
+  deletedAt        DateTime?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user             User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  order            Order?   @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  @@index([expiresAt])
+  @@index([cartId, status])
+  @@map("checkout_sessions")
+}
+
+model Notification {
   id        String   @id @db.VarChar(24)
-  orderId   String   @db.VarChar(24)
-  data      Json
+  userId    String   @db.VarChar(24)
+  title     String
+  body      String
+  actionUrl String?
+  isRead    Boolean  @default(false)
+  readAt    DateTime?
+  type      String   @default("general")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId, isRead, createdAt])
+  @@map("notifications")
+}
+
+model NotificationDevice {
+  id        String   @id @db.VarChar(24)
+  userId    String   @db.VarChar(24)
+  fid       String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, updatedAt])
+  @@map("notification_devices")
+}
+
+model RecentlyViewed {
+  id        String   @id @db.VarChar(24)
+  userId    String   @db.VarChar(24)
+  productId String   @db.VarChar(24)
+  viewedAt  DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@index([userId, viewedAt])
+  @@map("recently_viewed")
+}
+
+model SiteConfig {
+  id        String   @id @db.VarChar(24)
+  key       String   @unique
+  value     Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("site_configs")
+}
+
+model ProductPolicy {
+  id             String   @id @db.VarChar(24)
+  productId      String   @unique @db.VarChar(24)
+  returnPolicy   Json
+  warrantyPolicy Json
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  product        Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("product_policies")
+}
+
+model SupportTicket {
+  id           String   @id @db.VarChar(24)
+  userId       String?  @db.VarChar(24)
+  guestEmail   String?
+  subject      String
+  body         String
+  category     String   @default("other")
+  status       String   @default("open")
+  assignedToId String?  @db.VarChar(24)
+  messages     Json     @default("[]")
+  orderId      String?
+  attachments  Json     @default("[]")
+  closedAt     DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user         User?    @relation("SupportTicketOwner", fields: [userId], references: [id], onDelete: SetNull)
+  assignedTo   User?    @relation("SupportTicketAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([status, assignedToId])
+  @@map("support_tickets")
+}
+
+model SellerFollower {
+  id        String   @id @db.VarChar(24)
+  userId    String   @db.VarChar(24)
+  sellerId  String   @db.VarChar(24)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  seller    Seller   @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, sellerId])
+  @@index([sellerId])
+  @@map("seller_followers")
+}
+
+model Wallet {
+  id          String   @id @db.VarChar(24)
+  userId      String   @unique @db.VarChar(24)
+  balanceKobo Int      @default(0)
+  tier        String   @default("bronze")
+  holds       Json     @default("[]")
+  deletedAt   DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions WalletTransaction[]
+
+  @@map("wallets")
+}
+
+model WalletTransaction {
+  id                 String   @id @db.VarChar(24)
+  walletId           String   @db.VarChar(24)
+  userId             String   @db.VarChar(24)
+  type               String
+  amountKobo         Int
+  runningBalanceKobo Int
+  reference          String?
+  orderId            String?
+  description        String
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  wallet             Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([walletId, createdAt])
+  @@index([userId, createdAt])
+  @@map("wallet_transactions")
+}
+
+model LogisticsBooking {
+  id                String   @id @db.VarChar(24)
+  bookingRef        String   @unique
+  orderId           String   @db.VarChar(24)
+  orderRef          String
+  provider          String
+  status            String   @default("pending")
+  externalBookingId String?
+  trackingUrl       String?
+  pickupAddress     Json?
+  dropoffAddress    Json?
+  trackingEvents    Json     @default("[]")
+  podArtifacts      Json     @default("[]")
+  quotedFeeKobo     Int      @default(0)
+  cancelReason      String?
+  retryCount        Int      @default(0)
+  deletedAt         DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  order             Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([status, provider])
   @@index([orderId])
-  @@map("return_requests")
+  @@map("logistics_bookings")
+}
+
+model PricingRule {
+  id          String   @id @db.VarChar(24)
+  name        String
+  type        String
+  scope       String   @default("all")
+  scopeValue  String?
+  value       Float
+  valueType   String   @default("percent")
+  isActive    Boolean  @default(true)
+  description String?
+  deletedAt   DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isActive])
+  @@index([deletedAt])
+  @@map("pricing_rules")
+}
+
+model PartnerProfile {
+  id                  String   @id @db.VarChar(24)
+  userId              String   @unique @db.VarChar(24)
+  status              String   @default("pending")
+  kycSubmitted        Boolean  @default(false)
+  agreementAccepted   Boolean  @default(false)
+  agreementAcceptedAt DateTime?
+  fundingCapNGN       Float    @default(0)
+  approvedById        String?  @db.VarChar(24)
+  approvedAt          DateTime?
+  deletedAt           DateTime?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  approvedBy          User?    @relation("PartnerApprover", fields: [approvedById], references: [id], onDelete: SetNull)
+  commitments         PartnerCommitment[]
+  disputes            PartnerDispute[]
+
+  @@index([status])
+  @@map("partner_profiles")
+}
+
+model PartnerCommitment {
+  id           String   @id @db.VarChar(24)
+  partnerId    String   @db.VarChar(24)
+  productId    String   @db.VarChar(24)
+  amountNGN    Float
+  status       String   @default("pending")
+  approvedById String?  @db.VarChar(24)
+  approvedAt   DateTime?
+  deletedAt    DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  partner      PartnerProfile @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  product      Product        @relation(fields: [productId], references: [id], onDelete: Restrict)
+  disputes     PartnerDispute[]
+
+  @@index([partnerId, status])
+  @@map("partner_commitments")
+}
+
+model PartnerDispute {
+  id           String   @id @db.VarChar(24)
+  partnerId    String   @db.VarChar(24)
+  commitmentId String   @db.VarChar(24)
+  reason       String
+  status       String   @default("open")
+  resolvedById String?  @db.VarChar(24)
+  resolution   String?
+  deletedAt    DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  partner      PartnerProfile   @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  commitment   PartnerCommitment @relation(fields: [commitmentId], references: [id], onDelete: Cascade)
+
+  @@index([partnerId, status])
+  @@map("partner_disputes")
+}
+
+model SlotType {
+  id          String   @id @db.VarChar(24)
+  name        String
+  placement   String
+  maxItems    Int
+  isActive    Boolean  @default(true)
+  description String?
+  deletedAt   DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  promoSlots  PromoSlot[]
+  durationTiers DurationTier[]
+
+  @@index([placement])
+  @@map("promo_slot_types")
+}
+
+model DurationTier {
+  id            String   @id @db.VarChar(24)
+  slotTypeId    String   @db.VarChar(24)
+  label         String
+  durationHours Int
+  priceNGN      Float
+  isActive      Boolean  @default(true)
+  deletedAt     DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  slotType      SlotType @relation(fields: [slotTypeId], references: [id], onDelete: Cascade)
+  bookings      SlotBooking[]
+
+  @@index([slotTypeId])
+  @@map("promo_duration_tiers")
+}
+
+model PromoSlot {
+  id          String   @id @db.VarChar(24)
+  slotTypeId  String   @db.VarChar(24)
+  date        String
+  capacity    Int
+  bookedCount Int      @default(0)
+  status      String   @default("available")
+  startsAt    DateTime
+  endsAt      DateTime
+  deletedAt   DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  slotType    SlotType @relation(fields: [slotTypeId], references: [id], onDelete: Cascade)
+  bookings    SlotBooking[]
+
+  @@index([slotTypeId, date])
+  @@index([status, startsAt])
+  @@map("promo_slots")
+}
+
+model SlotBooking {
+  id                String   @id @db.VarChar(24)
+  sellerId          String   @db.VarChar(24)
+  slotId            String   @db.VarChar(24)
+  durationTierId    String   @db.VarChar(24)
+  productId         String   @db.VarChar(24)
+  amountPaidNGN     Float
+  status            String   @default("pending_payment")
+  paymentStatus     String   @default("unpaid")
+  paystackReference String?
+  paystackAuthUrl   String?
+  activatedAt       DateTime?
+  expiresAt         DateTime?
+  suspendReason     String?
+  suspendedById     String?  @db.VarChar(24)
+  impressions       Int      @default(0)
+  clicks            Int      @default(0)
+  orders            Int      @default(0)
+  deletedAt         DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  seller            Seller       @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  slot              PromoSlot    @relation(fields: [slotId], references: [id], onDelete: Cascade)
+  durationTier      DurationTier @relation(fields: [durationTierId], references: [id], onDelete: Restrict)
+  product           Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  suspendedBy       User?        @relation("SlotBookingSuspender", fields: [suspendedById], references: [id], onDelete: SetNull)
+
+  @@index([sellerId, createdAt])
+  @@index([slotId])
+  @@index([status, paymentStatus])
+  @@map("slot_bookings")
+}
+
+model RewardsProgram {
+  id        String   @id @db.VarChar(24)
+  slug      String   @unique
+  name      String
+  tagline   String?
+  logoUrl   String?
+  deletedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("rewards_program")
+}
+
+model RewardsTier {
+  id           String   @id @db.VarChar(24)
+  name         String
+  minPoints    Int
+  maxPoints    Int?
+  cashbackRate Float
+  deletedAt    DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("rewards_tiers")
+}
+
+model RewardsCampaign {
+  id               String   @id @db.VarChar(24)
+  name             String
+  startsAt         DateTime
+  endsAt           DateTime
+  pointsMultiplier Float    @default(1)
+  isActive         Boolean  @default(true)
+  deletedAt        DateTime?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([isActive, startsAt, endsAt])
+  @@map("rewards_campaigns")
+}
+
+model RewardsAccount {
+  id            String   @id @db.VarChar(24)
+  userId        String   @unique @db.VarChar(24)
+  points        Int      @default(0)
+  cashbackKobo  Int      @default(0)
+  tier          String   @default("bronze")
+  isAffiliate   Boolean  @default(false)
+  affiliateCode String?
+  referredBy    String?
+  deletedAt     DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions RewardsTransaction[]
+
+  @@map("rewards_accounts")
+}
+
+model RewardsTransaction {
+  id           String   @id @db.VarChar(24)
+  accountId    String   @db.VarChar(24)
+  userId       String   @db.VarChar(24)
+  type         String
+  points       Int      @default(0)
+  cashbackKobo Int      @default(0)
+  description  String
+  orderId      String?
+  deletedAt    DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  account      RewardsAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([accountId, createdAt])
+  @@index([userId, createdAt])
+  @@map("rewards_transactions")
 }

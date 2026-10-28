@@ -1,21 +1,22 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { Product } from '@products/schemas/product.schema';
+import { PrismaService } from '@database/prisma.service';
 
 @Injectable()
 export class BrandsService {
-  constructor(@InjectModel(Product.name) private readonly productModel: Model<Product>) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async list(): Promise<{ items: Array<{ name: string; productCount: number }> }> {
-    const rows = await this.productModel.aggregate<{ _id: string; count: number }>([
-      { $match: { deletedAt: null, isActive: true, brand: { $nin: [null, ''] } } },
-      { $group: { _id: '$brand', count: { $sum: 1 } } },
-      { $sort: { count: -1, _id: 1 } },
-    ]);
+    const rows = await this.prisma.product.groupBy({
+      by: ['brand'],
+      where: { deletedAt: null, isActive: true, brand: { not: null } },
+      _count: { _all: true },
+      orderBy: [{ _count: { brand: 'desc' } }, { brand: 'asc' }],
+    });
 
     return {
-      items: rows.map((r) => ({ name: r._id, productCount: r.count })),
+      items: rows
+        .filter((row) => row.brand?.trim())
+        .map((row) => ({ name: row.brand!, productCount: row._count._all })),
     };
   }
 }

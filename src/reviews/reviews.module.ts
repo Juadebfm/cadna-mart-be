@@ -1,22 +1,13 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
-import { Review, ReviewSchema } from './schemas/review.schema';
-import { Product, ProductSchema } from '@products/schemas/product.schema';
 import { ReviewsRepository } from './reviews.repository';
 import { ReviewsService } from './reviews.service';
 import { ReviewsController } from './reviews.controller';
 import { UserReviewsController } from './user-reviews.controller';
 import { AdminReviewsController } from './admin-reviews.controller';
-import { Order, OrderSchema } from '@orders/schemas/order.schema';
+import { PrismaModule } from '@database/prisma.module';
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([
-      { name: Review.name, schema: ReviewSchema },
-      { name: Product.name, schema: ProductSchema },
-      { name: Order.name, schema: OrderSchema },
-    ]),
-  ],
+  imports: [PrismaModule],
   controllers: [ReviewsController, UserReviewsController, AdminReviewsController],
   providers: [ReviewsRepository, ReviewsService],
   exports: [ReviewsService],

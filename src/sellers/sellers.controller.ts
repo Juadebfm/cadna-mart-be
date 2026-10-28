@@ -23,7 +23,7 @@ import { BankingDetailsDto } from './dto/banking-details.dto';
 import { ProductsService } from '@products/products.service';
 import { ProductQueryDto } from '@products/dto/product-query.dto';
 import { UpdateProductDto } from '@products/dto/update-product.dto';
-import { ParseObjectIdPipe } from '@common/pipes/parse-object-id.pipe';
+import { ParsePublicIdPipe } from '@common/pipes/parse-public-id.pipe';
 import { CreateMyProductDto } from './dto/create-my-product.dto';
 import { AttachProductImagesDto } from './dto/attach-product-images.dto';
 
@@ -99,7 +99,7 @@ export class SellersController {
   @Patch('me/products/:id')
   @ApiOperation({ summary: 'Update one of your own product listings' })
   async updateMyProduct(
-    @Param('id', ParseObjectIdPipe) id: string,
+    @Param('id', ParsePublicIdPipe) id: string,
     @Body() dto: UpdateProductDto,
     @CurrentUser() user: { userId: string; accountType: string },
   ) {
@@ -112,7 +112,7 @@ export class SellersController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Withdraw one of your own product listings' })
   async removeMyProduct(
-    @Param('id', ParseObjectIdPipe) id: string,
+    @Param('id', ParsePublicIdPipe) id: string,
     @CurrentUser() user: { userId: string; accountType: string },
   ) {
     await this.productsService.removeProduct(id, user);
@@ -123,7 +123,7 @@ export class SellersController {
   @Post('me/products/:id/images')
   @ApiOperation({ summary: 'Attach uploaded image URLs to one of your products' })
   async attachProductImages(
-    @Param('id', ParseObjectIdPipe) id: string,
+    @Param('id', ParsePublicIdPipe) id: string,
     @Body() dto: AttachProductImagesDto,
     @CurrentUser() user: { userId: string; accountType: string },
   ) {

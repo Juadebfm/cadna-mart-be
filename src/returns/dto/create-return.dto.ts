@@ -1,8 +1,8 @@
-import { IsEnum, IsInt, IsMongoId, IsOptional, IsString, Min } from 'class-validator';
+import { IsEnum, IsInt, Matches, IsOptional, IsString, Min } from 'class-validator';
 import { ReturnReason, ReturnRequestType } from '../schemas/return-request.schema';
 
 export class CreateReturnDto {
-  @IsMongoId()
+  @Matches(/^[a-f\d]{24}$/i)
   orderId!: string;
 
   @IsEnum(ReturnRequestType)

@@ -1,13 +1,9 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 import { randomUUID } from 'crypto';
 import { ProductsRepository } from './products.repository';
 import { ProductQueryDto } from './dto/product-query.dto';
 import { CategoriesService } from '@categories/categories.service';
 import { Product } from './schemas/product.schema';
-import { SellerProfile } from '@sellers/schemas/seller-profile.schema';
-import { Seller } from '@sellers/schemas/seller.schema';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { AccountType } from '@users/enums/account-type.enum';
@@ -17,8 +13,6 @@ export class ProductsService {
   constructor(
     private readonly productsRepository: ProductsRepository,
     private readonly categoriesService: CategoriesService,
-    @InjectModel(SellerProfile.name) private readonly sellerProfileModel: Model<SellerProfile>,
-    @InjectModel(Seller.name) private readonly sellerModel: Model<Seller>,
   ) {}
 
   async findAll(query: ProductQueryDto) {
@@ -75,8 +69,8 @@ export class ProductsService {
   }
 
   async findByIdOrSlug(idOrSlug: string, variantId?: string) {
-    const isObjectId = /^[a-f\d]{24}$/i.test(idOrSlug);
-    const product = isObjectId
+    const isPublicId = /^[a-f\d]{24}$/i.test(idOrSlug);
+    const product = isPublicId
       ? await this.productsRepository.findById(idOrSlug)
       : await this.productsRepository.findBySlug(idOrSlug);
     if (!product) {
@@ -86,16 +80,16 @@ export class ProductsService {
   }
 
   async resolveProductId(idOrSlug: string): Promise<string> {
-    const isObjectId = /^[a-f\d]{24}$/i.test(idOrSlug);
-    if (isObjectId) return idOrSlug;
+    const isPublicId = /^[a-f\d]{24}$/i.test(idOrSlug);
+    if (isPublicId) return idOrSlug;
     const product = await this.productsRepository.findBySlug(idOrSlug);
     if (!product) throw new NotFoundException('Product not found');
     return (product as unknown as { _id: { toString(): string } })._id.toString();
   }
 
   async getVariants(idOrSlug: string) {
-    const isObjectId = /^[a-f\d]{24}$/i.test(idOrSlug);
-    const product = isObjectId
+    const isPublicId = /^[a-f\d]{24}$/i.test(idOrSlug);
+    const product = isPublicId
       ? await this.productsRepository.findById(idOrSlug)
       : await this.productsRepository.findBySlug(idOrSlug);
     if (!product) {
@@ -110,8 +104,8 @@ export class ProductsService {
   }
 
   async getAvailability(idOrSlug: string) {
-    const isObjectId = /^[a-f\d]{24}$/i.test(idOrSlug);
-    const product = isObjectId
+    const isPublicId = /^[a-f\d]{24}$/i.test(idOrSlug);
+    const product = isPublicId
       ? await this.productsRepository.findById(idOrSlug)
       : await this.productsRepository.findBySlug(idOrSlug);
     if (!product) {
@@ -146,13 +140,13 @@ export class ProductsService {
   }
 
   async findBySeller(sellerSlug: string, query: ProductQueryDto) {
-    const seller = await this.productsRepository.productModel.db
-      .collection('stores')
-      .findOne({ slug: sellerSlug, deletedAt: null });
+    const seller = await this.productsRepository.prisma.seller.findFirst({
+      where: { slug: sellerSlug, deletedAt: null },
+    });
 
     if (!seller) throw new NotFoundException('Seller not found');
 
-    const sellerId = seller._id.toString();
+    const sellerId = seller.id;
     const { items, totalItems } = await this.productsRepository.findBySellerWithPagination(
       sellerId,
       query,
@@ -199,10 +193,9 @@ export class ProductsService {
   async createProduct(dto: CreateProductDto, currentUser: { userId: string; accountType: string }) {
     // Check seller approval before allowing product creation
     if (currentUser.accountType === AccountType.SELLER) {
-      const profile = await this.sellerProfileModel
-        .findOne({ user: currentUser.userId })
-        .lean()
-        .exec();
+      const profile = await this.productsRepository.prisma.sellerProfile.findUnique({
+        where: { userId: currentUser.userId },
+      });
       if (!profile || !(profile as any).isApproved) {
         throw new ForbiddenException(
           'Your seller account is pending approval. You cannot upload products yet.',
@@ -412,7 +405,7 @@ export class ProductsService {
 
   async findMyProducts(ownerId: string, query: ProductQueryDto) {
     const seller = await this.getSellerByOwner(ownerId);
-    const sellerId = (seller as unknown as { _id: { toString(): string } })._id.toString();
+    const sellerId = seller.id;
     const { items, totalItems } = await this.productsRepository.findBySellerWithPagination(
       sellerId,
       query,
@@ -445,7 +438,7 @@ export class ProductsService {
     currentUser: { userId: string; accountType: string },
   ) {
     const seller = await this.getSellerByOwner(currentUser.userId);
-    const sellerId = (seller as unknown as { _id: { toString(): string } })._id.toString();
+    const sellerId = seller.id;
     const created = (await this.createProduct({ ...dto, sellerId }, currentUser)) as unknown as {
       id?: string;
     };
@@ -557,15 +550,14 @@ export class ProductsService {
   }
 
   private async getSellerByOwner(ownerId: string) {
-    const seller = await this.sellerModel
-      .findOne({ owner: ownerId, deletedAt: null })
-      .lean()
-      .exec();
+    const seller = await this.productsRepository.prisma.seller.findFirst({
+      where: { ownerId, deletedAt: null },
+    });
     if (!seller) {
       throw new NotFoundException('Seller profile not found');
     }
 
-    return seller as unknown as Seller;
+    return seller;
   }
 
   private async getOwnedProduct(

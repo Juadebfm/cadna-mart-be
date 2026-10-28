@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { TerminusModule } from '@nestjs/terminus';
 import { HealthController } from './health.controller';
-import { MongoHealthIndicator } from './indicators/mongo-health.indicator';
+import { PostgresHealthIndicator } from './indicators/postgres-health.indicator';
 
 @Module({
   imports: [TerminusModule],
   controllers: [HealthController],
-  providers: [MongoHealthIndicator],
+  providers: [PostgresHealthIndicator],
 })
 export class HealthModule {}

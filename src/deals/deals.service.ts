@@ -6,8 +6,6 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
 import { ConfigService } from '@config/config.service';
 import { LoggerService } from '@logger/logger.service';
 import { DealCampaignQueryDto } from './dto/deal-campaign-query.dto';
@@ -20,9 +18,6 @@ import {
   DealCampaignStatus,
   DealPaymentStatus,
 } from './schemas/deal-campaign.schema';
-import { Seller } from '@sellers/schemas/seller.schema';
-import { Product } from '@products/schemas/product.schema';
-import { User } from '@users/schemas/user.schema';
 
 interface Actor {
   userId: string;
@@ -45,10 +40,6 @@ export class DealsService {
     private readonly dealsRepository: DealsRepository,
     private readonly configService: ConfigService,
     private readonly logger: LoggerService,
-    @InjectModel(Seller.name) private readonly sellerModel: Model<Seller>,
-    @InjectModel(Product.name) private readonly productModel: Model<Product>,
-    @InjectModel(User.name) private readonly userModel: Model<User>,
-    @InjectModel(DealCampaign.name) private readonly dealCampaignModel: Model<DealCampaign>,
   ) {}
 
   async createMyCampaign(dto: CreateDealCampaignDto, actor: Actor) {
@@ -182,11 +173,10 @@ export class DealsService {
 
     const sellerOwner = (campaign.seller as unknown as { owner?: { toString(): string } }).owner;
     const ownerId = sellerOwner?.toString() ?? actor.userId;
-    const owner = await this.userModel
-      .findOne({ _id: ownerId, deletedAt: null })
-      .select('email')
-      .lean()
-      .exec();
+    const owner = await this.dealsRepository.prisma.user.findFirst({
+      where: { id: ownerId, deletedAt: null },
+      select: { email: true },
+    });
     if (!owner?.email) throw new BadRequestException('Seller owner email is unavailable');
 
     const paystackSecretKey = this.configService.paystack.secretKey;
@@ -475,16 +465,15 @@ export class DealsService {
   private async findSellerByOwner(
     userId: string,
   ): Promise<{ id: string; name: string; slug: string }> {
-    const seller = await this.sellerModel
-      .findOne({ owner: userId, deletedAt: null, isActive: true })
-      .select('_id name slug')
-      .lean()
-      .exec();
-    if (!seller?._id) {
+    const seller = await this.dealsRepository.prisma.seller.findFirst({
+      where: { ownerId: userId, deletedAt: null, isActive: true },
+      select: { id: true, name: true, slug: true },
+    });
+    if (!seller?.id) {
       throw new ForbiddenException('You do not have an active seller profile');
     }
     return {
-      id: seller._id.toString(),
+      id: seller.id,
       name: seller.name,
       slug: seller.slug,
     };
@@ -501,14 +490,11 @@ export class DealsService {
       throw new BadRequestException(`A campaign can contain at most ${maxProducts} products`);
     }
 
-    const objectIds = unique.map((id) => new Types.ObjectId(id));
-    const count = await this.productModel.countDocuments({
-      _id: { $in: objectIds },
-      seller: sellerId,
-      deletedAt: null,
-      isActive: true,
+    const products = await this.dealsRepository.prisma.product.findMany({
+      where: { id: { in: unique }, sellerId, deletedAt: null, isActive: true },
+      select: { id: true },
     });
-    if (count !== unique.length) {
+    if (products.length !== unique.length) {
       throw new BadRequestException(
         'All selected products must exist, be active, and belong to the seller',
       );
@@ -520,41 +506,47 @@ export class DealsService {
   private async syncDealsSectionForProducts(productIds: string[]): Promise<void> {
     const uniqueIds = [...new Set(productIds)].filter(Boolean);
     if (uniqueIds.length === 0) return;
-    const objectIds = uniqueIds.map((id) => new Types.ObjectId(id));
-
-    const liveCampaigns = await this.dealCampaignModel
-      .find({
+    const liveCampaigns = await this.dealsRepository.prisma.dealCampaign.findMany({
+      where: {
         deletedAt: null,
         status: DealCampaignStatus.LIVE,
         paymentStatus: DealPaymentStatus.PAID,
-        selectedProductIds: { $in: objectIds },
-      })
-      .select('selectedProductIds')
-      .lean()
-      .exec();
+        selectedProductIds: { hasSome: uniqueIds },
+      },
+      select: { selectedProductIds: true },
+    });
 
     const liveProductIds = new Set<string>();
     for (const campaign of liveCampaigns) {
       for (const value of campaign.selectedProductIds ?? []) {
-        liveProductIds.add(value.toString());
+        liveProductIds.add(value);
       }
     }
 
     const toAdd = uniqueIds.filter((id) => liveProductIds.has(id));
     const toRemove = uniqueIds.filter((id) => !liveProductIds.has(id));
 
-    if (toAdd.length > 0) {
-      await this.productModel.updateMany(
-        { _id: { $in: toAdd }, deletedAt: null, isActive: true },
-        { $addToSet: { sections: 'best_deals' } },
-      );
+    for (const id of toAdd) {
+      const product = await this.dealsRepository.prisma.product.findUnique({
+        where: { id },
+        select: { sections: true },
+      });
+      if (product && !product.sections.includes('best_deals'))
+        await this.dealsRepository.prisma.product.update({
+          where: { id },
+          data: { sections: [...product.sections, 'best_deals'] },
+        });
     }
-
-    if (toRemove.length > 0) {
-      await this.productModel.updateMany(
-        { _id: { $in: toRemove } },
-        { $pull: { sections: 'best_deals' } },
-      );
+    for (const id of toRemove) {
+      const product = await this.dealsRepository.prisma.product.findUnique({
+        where: { id },
+        select: { sections: true },
+      });
+      if (product)
+        await this.dealsRepository.prisma.product.update({
+          where: { id },
+          data: { sections: product.sections.filter((section) => section !== 'best_deals') },
+        });
     }
   }
 

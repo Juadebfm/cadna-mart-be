@@ -1,7 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { Product } from '@products/schemas/product.schema';
+import { PrismaService } from '@database/prisma.service';
 import { ProductsService } from '@products/products.service';
 import { RecentlyViewedRepository } from './recently-viewed.repository';
 
@@ -10,15 +8,14 @@ export class RecentlyViewedService {
   constructor(
     private readonly repository: RecentlyViewedRepository,
     private readonly productsService: ProductsService,
-    @InjectModel(Product.name) private readonly productModel: Model<Product>,
+    private readonly prisma: PrismaService,
   ) {}
 
   async record(userId: string, productId: string) {
-    const product = await this.productModel
-      .findOne({ _id: productId, deletedAt: null, isActive: true })
-      .select('_id')
-      .lean()
-      .exec();
+    const product = await this.prisma.product.findFirst({
+      where: { id: productId, deletedAt: null, isActive: true },
+      select: { id: true },
+    });
     if (!product) throw new NotFoundException('Product not found');
     await this.repository.record(userId, productId);
     return { recorded: true };
@@ -29,11 +26,18 @@ export class RecentlyViewedService {
     const visible = items
       .filter((item) => item.product)
       .map((item) => {
-        const product = item.product as unknown as Product;
+        const product = item.product;
+        const productForCard = {
+          ...product,
+          _id: { toString: () => product.id },
+          seller: product.seller
+            ? { ...product.seller, _id: { toString: () => product.seller.id } }
+            : null,
+        } as any;
         return {
-          productId: (product as unknown as { _id: { toString(): string } })._id.toString(),
+          productId: product.id,
           viewedAt: item.viewedAt,
-          product: this.productsService.toCard(product),
+          product: this.productsService.toCard(productForCard),
         };
       });
     return {

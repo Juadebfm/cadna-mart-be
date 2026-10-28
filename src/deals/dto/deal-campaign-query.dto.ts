@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsEnum, IsInt, IsMongoId, IsOptional, Max, Min } from 'class-validator';
+import { IsEnum, IsInt, Matches, IsOptional, Max, Min } from 'class-validator';
 import { DealCampaignStatus, DealPaymentStatus } from '../schemas/deal-campaign.schema';
 
 export class DealCampaignQueryDto {
@@ -16,7 +16,7 @@ export class DealCampaignQueryDto {
 
   @ApiPropertyOptional({ description: 'Filter by seller ID (admin only)' })
   @IsOptional()
-  @IsMongoId()
+  @Matches(/^[a-f\d]{24}$/i)
   sellerId?: string;
 
   @ApiPropertyOptional({ default: 1 })

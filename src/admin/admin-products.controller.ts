@@ -18,7 +18,7 @@ import { ProductsService } from '@products/products.service';
 import { ProductsRepository } from '@products/products.repository';
 import { CreateProductDto } from '@products/dto/create-product.dto';
 import { UpdateProductDto } from '@products/dto/update-product.dto';
-import { ParseObjectIdPipe } from '@common/pipes/parse-object-id.pipe';
+import { ParsePublicIdPipe } from '@common/pipes/parse-public-id.pipe';
 import { RejectProductDto } from './dto/reject-product.dto';
 import { FeatureProductDto } from './dto/feature-product.dto';
 
@@ -65,7 +65,7 @@ export class AdminProductsController {
   @Patch(':id')
   @ApiOperation({ summary: 'Update any product' })
   async update(
-    @Param('id', ParseObjectIdPipe) id: string,
+    @Param('id', ParsePublicIdPipe) id: string,
     @Body() dto: UpdateProductDto,
     @CurrentUser() user: { userId: string; accountType: string },
   ) {
@@ -75,7 +75,7 @@ export class AdminProductsController {
   @Patch(':id/status')
   @ApiOperation({ summary: 'Toggle product active/inactive status' })
   async toggleStatus(
-    @Param('id', ParseObjectIdPipe) id: string,
+    @Param('id', ParsePublicIdPipe) id: string,
     @Body('isActive') isActive: boolean,
   ) {
     return this.productsRepository.update(id, { isActive } as any);
@@ -83,19 +83,19 @@ export class AdminProductsController {
 
   @Post(':id/approve')
   @ApiOperation({ summary: 'Approve a product listing' })
-  async approve(@Param('id', ParseObjectIdPipe) id: string) {
+  async approve(@Param('id', ParsePublicIdPipe) id: string) {
     return this.productsService.approveProduct(id);
   }
 
   @Post(':id/reject')
   @ApiOperation({ summary: 'Reject a product listing' })
-  async reject(@Param('id', ParseObjectIdPipe) id: string, @Body() dto: RejectProductDto) {
+  async reject(@Param('id', ParsePublicIdPipe) id: string, @Body() dto: RejectProductDto) {
     return this.productsService.rejectProduct(id, dto.reason);
   }
 
   @Post(':id/feature')
   @ApiOperation({ summary: 'Feature or unfeature a product in the storefront rail' })
-  async feature(@Param('id', ParseObjectIdPipe) id: string, @Body() dto: FeatureProductDto) {
+  async feature(@Param('id', ParsePublicIdPipe) id: string, @Body() dto: FeatureProductDto) {
     return this.productsService.featureProduct(id, dto.featured ?? true, dto.badge);
   }
 
@@ -103,7 +103,7 @@ export class AdminProductsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Force delete any product' })
   async remove(
-    @Param('id', ParseObjectIdPipe) id: string,
+    @Param('id', ParsePublicIdPipe) id: string,
     @CurrentUser() user: { userId: string; accountType: string },
   ) {
     await this.productsService.removeProduct(id, user);

@@ -6,7 +6,6 @@ import {
 } from './schemas/logistics-booking.schema';
 import { LogisticsRepository } from './logistics.repository';
 import { LogisticsQuoteDto, CoverageCheckDto, BookCourierDto, PodUploadDto } from './dto/quote.dto';
-import { Types } from 'mongoose';
 
 @Injectable()
 export class LogisticsService {
@@ -76,7 +75,7 @@ export class LogisticsService {
 
   async bookCourier(dto: BookCourierDto): Promise<object> {
     const booking = await this.repo.create({
-      orderId: new Types.ObjectId(dto.orderId) as unknown as LogisticsBooking['orderId'],
+      orderId: dto.orderId as unknown as LogisticsBooking['orderId'],
       orderRef: dto.orderRef,
       provider: LogisticsProvider.IN_HOUSE,
       status: BookingStatus.PENDING,

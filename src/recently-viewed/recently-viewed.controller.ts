@@ -3,7 +3,7 @@ import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger'
 import { AccountTypes } from '@auth/decorators/account-types.decorator';
 import { CurrentUser } from '@auth/decorators/current-user.decorator';
 import { AccountType } from '@users/enums/account-type.enum';
-import { ParseObjectIdPipe } from '@common/pipes/parse-object-id.pipe';
+import { ParsePublicIdPipe } from '@common/pipes/parse-public-id.pipe';
 import { RecentlyViewedService } from './recently-viewed.service';
 
 @ApiTags('Recently Viewed')
@@ -17,7 +17,7 @@ export class RecentlyViewedController {
   @ApiOperation({ summary: 'Record a product viewed by the current buyer' })
   async record(
     @CurrentUser('userId') userId: string,
-    @Param('productId', ParseObjectIdPipe) productId: string,
+    @Param('productId', ParsePublicIdPipe) productId: string,
   ) {
     return this.service.record(userId, productId);
   }

@@ -4,42 +4,41 @@ import {
   ConflictException,
   ForbiddenException,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { PrismaService } from '@database/prisma.service';
 import { ReviewsRepository, ReviewSortOption } from './reviews.repository';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { ModerateReviewDto } from './dto/moderate-review.dto';
-import { Product } from '@products/schemas/product.schema';
 import { Review } from './schemas/review.schema';
-import { Order, OrderStatus } from '@orders/schemas/order.schema';
+import { OrderStatus } from '@orders/schemas/order.schema';
 
 @Injectable()
 export class ReviewsService {
   constructor(
     private readonly reviewsRepository: ReviewsRepository,
-    @InjectModel(Product.name) private readonly productModel: Model<Product>,
-    @InjectModel(Order.name) private readonly orderModel: Model<Order>,
+    private readonly prisma: PrismaService,
   ) {}
 
   async createReview(productId: string, userId: string, userName: string, dto: CreateReviewDto) {
-    const product = await this.productModel
-      .findOne({ _id: productId, deletedAt: null, isActive: true })
-      .select('_id')
-      .lean()
-      .exec();
+    const product = await this.prisma.product.findFirst({
+      where: { id: productId, deletedAt: null, isActive: true },
+      select: { id: true },
+    });
 
     if (!product) throw new NotFoundException('Product not found');
 
     const existing = await this.reviewsRepository.findByUserAndProduct(userId, productId);
     if (existing) throw new ConflictException('You have already reviewed this product');
 
-    const isVerifiedPurchase = await this.orderModel.exists({
-      userId,
-      status: OrderStatus.DELIVERED,
-      'items.productId': productId,
-      deletedAt: null,
+    const deliveredOrders = await this.prisma.order.findMany({
+      where: { userId, status: OrderStatus.DELIVERED, deletedAt: null },
+      select: { items: true },
     });
+    const isVerifiedPurchase = deliveredOrders.some((order) =>
+      (Array.isArray(order.items) ? (order.items as any[]) : []).some(
+        (item) => item.productId === productId,
+      ),
+    );
     const review = await this.reviewsRepository.create({
       product: productId as any,
       user: userId as any,
@@ -61,12 +60,11 @@ export class ReviewsService {
   }
 
   async findPendingReviews(userId: string, page = 1, limit = 20) {
-    const orders = await this.orderModel
-      .find({ userId, status: OrderStatus.DELIVERED, deletedAt: null })
-      .select('orderRef items timeline createdAt')
-      .sort({ updatedAt: -1 })
-      .lean()
-      .exec();
+    const orders = await this.prisma.order.findMany({
+      where: { userId, status: OrderStatus.DELIVERED, deletedAt: null },
+      select: { orderRef: true, items: true, timeline: true, createdAt: true },
+      orderBy: { updatedAt: 'desc' },
+    });
 
     const candidates = new Map<
       string,
@@ -79,11 +77,12 @@ export class ReviewsService {
       }
     >();
     for (const order of orders) {
+      const timeline = Array.isArray(order.timeline) ? (order.timeline as any[]) : [];
+      const orderItems = Array.isArray(order.items) ? (order.items as any[]) : [];
       const deliveredAt =
-        [...(order.timeline ?? [])]
-          .reverse()
-          .find((entry) => entry.status === OrderStatus.DELIVERED)?.timestamp ?? null;
-      for (const item of order.items ?? []) {
+        [...timeline].reverse().find((entry) => entry.status === OrderStatus.DELIVERED)
+          ?.timestamp ?? null;
+      for (const item of orderItems) {
         if (!item.productId || candidates.has(item.productId)) continue;
         candidates.set(item.productId, {
           productId: item.productId,
@@ -142,14 +141,7 @@ export class ReviewsService {
   }
 
   async markHelpful(reviewId: string) {
-    const review = await this.reviewsRepository.reviewModel
-      .findOneAndUpdate(
-        { _id: reviewId, deletedAt: null },
-        { $inc: { helpfulCount: 1 } },
-        { new: true },
-      )
-      .lean()
-      .exec();
+    const review = await this.reviewsRepository.incrementHelpful(reviewId);
 
     if (!review) throw new NotFoundException('Review not found');
 
@@ -226,15 +218,11 @@ export class ReviewsService {
   }
 
   private async syncProductRating(productId: string): Promise<void> {
-    const stats = await this.reviewsRepository.reviewModel.aggregate([
-      { $match: { product: productId, deletedAt: null } },
-      { $group: { _id: null, avg: { $avg: '$rating' }, count: { $sum: 1 } } },
-    ]);
-
-    const rating = stats.length > 0 ? Math.round(stats[0].avg * 10) / 10 : 0;
-    const reviewCount = stats[0]?.count ?? 0;
-
-    await this.productModel.updateOne({ _id: productId }, { $set: { rating, reviewCount } });
+    const stats = await this.reviewsRepository.getSummary(productId);
+    await this.prisma.product.updateMany({
+      where: { id: productId },
+      data: { rating: stats.averageRating, reviewCount: stats.totalReviews },
+    });
   }
 
   private toDto(review: Review) {

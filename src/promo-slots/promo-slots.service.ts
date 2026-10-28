@@ -1,5 +1,4 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { Types } from 'mongoose';
 import { SlotType } from './schemas/slot-type.schema';
 import { DurationTier } from './schemas/duration-tier.schema';
 import { PromoSlot } from './schemas/promo-slot.schema';
@@ -103,7 +102,7 @@ export class PromoSlotsService {
 
   async createTier(dto: CreateDurationTierDto): Promise<object> {
     const created = await this.repo.createTier({
-      slotTypeId: new Types.ObjectId(dto.slotTypeId) as unknown as DurationTier['slotTypeId'],
+      slotTypeId: dto.slotTypeId as unknown as DurationTier['slotTypeId'],
       label: dto.label,
       durationHours: dto.durationHours,
       priceNGN: dto.priceNGN,
@@ -161,12 +160,10 @@ export class PromoSlotsService {
     if (!tier) throw new NotFoundException('Duration tier not found');
 
     const booking = await this.repo.createBooking({
-      sellerId: new Types.ObjectId(sellerId) as unknown as SlotBooking['sellerId'],
-      slotId: new Types.ObjectId(dto.slotId) as unknown as SlotBooking['slotId'],
-      durationTierId: new Types.ObjectId(
-        dto.durationTierId,
-      ) as unknown as SlotBooking['durationTierId'],
-      productId: new Types.ObjectId(dto.productId) as unknown as SlotBooking['productId'],
+      sellerId: sellerId as unknown as SlotBooking['sellerId'],
+      slotId: dto.slotId as unknown as SlotBooking['slotId'],
+      durationTierId: dto.durationTierId as unknown as SlotBooking['durationTierId'],
+      productId: dto.productId as unknown as SlotBooking['productId'],
       amountPaidNGN: tier.priceNGN,
       status: BookingStatus.PENDING_PAYMENT,
       paymentStatus: BookingPaymentStatus.UNPAID,
@@ -244,7 +241,7 @@ export class PromoSlotsService {
     const updated = await this.repo.updateBooking(id, {
       status: BookingStatus.SUSPENDED,
       suspendReason: dto.reason,
-      suspendedBy: new Types.ObjectId(adminId) as unknown as SlotBooking['suspendedBy'],
+      suspendedBy: adminId as unknown as SlotBooking['suspendedBy'],
     } as Partial<SlotBooking>);
     if (!updated) throw new NotFoundException('Booking not found after update');
     return this.bookingDto(updated);
@@ -275,7 +272,7 @@ export class PromoSlotsService {
       endsAt.setHours(23, 59, 59, 999);
 
       const slot = await this.repo.createSlot({
-        slotTypeId: new Types.ObjectId(dto.slotTypeId) as unknown as PromoSlot['slotTypeId'],
+        slotTypeId: dto.slotTypeId as unknown as PromoSlot['slotTypeId'],
         date,
         capacity: dto.capacity,
         bookedCount: 0,

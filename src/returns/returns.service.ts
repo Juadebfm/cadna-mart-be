@@ -6,7 +6,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Types } from 'mongoose';
+import { createPublicId } from '@database/id.util';
 import {
   RefundMethod,
   RefundStatus,
@@ -123,11 +123,11 @@ export class ReturnsService {
       ];
     });
 
-    const requestId = new Types.ObjectId();
+    const requestId = createPublicId();
     const data: Partial<ReturnRequest> = {
       _id: requestId as unknown as ReturnRequest['_id'],
-      userId: new Types.ObjectId(userId) as unknown as ReturnRequest['userId'],
-      orderId: new Types.ObjectId(dto.orderId) as unknown as ReturnRequest['orderId'],
+      userId: userId as unknown as ReturnRequest['userId'],
+      orderId: dto.orderId as unknown as ReturnRequest['orderId'],
       orderRef: order.orderRef,
       requestType: dto.requestType,
       previousOrderStatus: isCancellation ? order.status : null,
@@ -325,7 +325,7 @@ export class ReturnsService {
       refundAmount: dto.refundAmount,
       adminOverrideNote: dto.note ?? null,
       adjustmentReason: dto.refundAmount !== expectedAmount ? dto.note!.trim() : null,
-      adminOverrideBy: new Types.ObjectId(adminId) as unknown as ReturnRequest['adminOverrideBy'],
+      adminOverrideBy: adminId as unknown as ReturnRequest['adminOverrideBy'],
       refundProcessedAt: new Date(),
     } as Partial<ReturnRequest>);
     if (!updated) {
@@ -421,7 +421,7 @@ export class ReturnsService {
         : status === 'failed'
           ? RefundStatus.FAILED
           : RefundStatus.PROCESSING;
-    const requestId = (request as unknown as { _id: Types.ObjectId })._id.toString();
+    const requestId = (request as unknown as { _id: string })._id.toString();
     const updated =
       status === 'processed' || status === 'failed'
         ? await this.repo.applyFinalProviderStatus(
@@ -604,7 +604,7 @@ export class ReturnsService {
     const updated = await this.repo.decideByAdmin(id, {
       status,
       adminOverrideNote: note ?? null,
-      adminOverrideBy: new Types.ObjectId(adminId) as unknown as ReturnRequest['adminOverrideBy'],
+      adminOverrideBy: adminId as unknown as ReturnRequest['adminOverrideBy'],
     } as Partial<ReturnRequest>);
     if (!updated)
       throw new BadRequestException(

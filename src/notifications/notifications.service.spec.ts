@@ -1,4 +1,3 @@
-import { Types } from 'mongoose';
 import { UsersService } from '@users/users.service';
 import { EmailService } from '@email/email.service';
 import { NotificationCategory } from './schemas/notification.schema';
@@ -7,6 +6,8 @@ import { StackApiSmsService } from './stackapi-sms.service';
 import { FirebasePushService } from './firebase-push.service';
 import { NotificationsService } from './notifications.service';
 import { User } from '@users/schemas/user.schema';
+
+const newId = (): string => Math.random().toString(16).slice(2).padEnd(24, '0').slice(0, 24);
 
 describe('NotificationsService delivery preferences', () => {
   const userId = '507f1f77bcf86cd799439011';
@@ -21,7 +22,7 @@ describe('NotificationsService delivery preferences', () => {
 
   const createUser = (overrides: Partial<User> = {}): User =>
     ({
-      _id: new Types.ObjectId(userId),
+      _id: userId,
       notificationPreferences: {
         orderUpdates: true,
         promotions: false,
@@ -42,7 +43,7 @@ describe('NotificationsService delivery preferences', () => {
       getNotificationPreferences: jest.fn(),
       updateNotificationPreferences: jest.fn(),
     };
-    repo = { create: jest.fn().mockResolvedValue({ _id: new Types.ObjectId() }) };
+    repo = { create: jest.fn().mockResolvedValue({ _id: newId() }) };
     emailService = { sendNotificationEmail: jest.fn().mockResolvedValue(true) };
     smsService = { send: jest.fn().mockResolvedValue(true) };
     pushService = { sendToUser: jest.fn().mockResolvedValue(true) };

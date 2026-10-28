@@ -7,6 +7,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { createClerkClient, verifyToken } from '@clerk/backend';
 import { PrismaService } from '@database/prisma.service';
+import { isPrismaUniqueConstraintError } from '@database/prisma-errors';
 import { createPublicId } from '@database/id.util';
 import { ConfigService } from '@config/config.service';
 import { UsersService } from '@users/users.service';
@@ -117,11 +118,11 @@ export class AuthService {
       });
     } catch (error) {
       // Another request may have completed a signup for this email concurrently.
-      if ((error as { code?: number }).code !== 11000) throw error;
+      if (!isPrismaUniqueConstraintError(error)) throw error;
 
       const pending = await this.pendingBuyerSignupService.findByEmail(session.email);
       if (!pending) {
-        // Mongo's TTL monitor may not have removed an expired row yet.
+        // PostgreSQL session cleanup may not have removed an expired row yet.
         await this.pendingBuyerSignupService.deleteByEmail(session.email);
         await this.pendingBuyerSignupService.create({
           email: session.email,
@@ -171,7 +172,7 @@ export class AuthService {
       try {
         user = await this.usersService.createVerifiedBuyerFromPendingSignup(pending);
       } catch (error) {
-        const isDuplicateEmail = (error as { code?: number }).code === 11000;
+        const isDuplicateEmail = isPrismaUniqueConstraintError(error);
         if (!(error instanceof ConflictException) && !isDuplicateEmail) throw error;
         // A concurrent verification may have created the account first.
         const concurrentlyCreated = await this.usersService.findByEmail(normalizedEmail);
@@ -827,7 +828,7 @@ export class AuthService {
       } catch (error) {
         // A user.created webhook may have provisioned this same identity at
         // the same time. Re-read by Clerk ID before returning an error.
-        if ((error as { code?: number }).code !== 11000) throw error;
+        if (!isPrismaUniqueConstraintError(error)) throw error;
         user = await this.usersService.findByClerkId(clerkUserId);
         if (!user && verifiedEmail && (await this.usersService.findByEmail(verifiedEmail))) {
           throw new ConflictException(

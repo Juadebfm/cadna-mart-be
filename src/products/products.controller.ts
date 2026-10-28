@@ -76,7 +76,7 @@ export class ProductsController {
 
   @Public()
   @Get(':idOrSlug')
-  @ApiOperation({ summary: 'Get product detail by Mongo id or slug' })
+  @ApiOperation({ summary: 'Get product detail by ID or slug' })
   @ApiOkResponse({
     description:
       'Returns the full product detail including variant axes, gallery, breadcrumbs, specs, tabs and seller profile.',

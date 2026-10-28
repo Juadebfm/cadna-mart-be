@@ -16,7 +16,7 @@ function toUser(row: PrismaUser, includePassword = false): User {
     _id: id,
     fullName: `${row.firstName} ${row.lastName}`,
     ...(includePassword ? { password } : {}),
-    // These properties have Mongoose select:false semantics and stay hidden in
+    // These properties have sensitive database-only semantics and stay hidden in
     // ordinary reads. refreshToken is also removed by the existing JSON transform.
     refreshToken: null,
     avatarPublicId: null,

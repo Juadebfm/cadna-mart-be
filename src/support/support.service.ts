@@ -1,5 +1,4 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { Types } from 'mongoose';
 import { SupportTicket, TicketCategory, TicketStatus } from './schemas/support-ticket.schema';
 import { SupportRepository } from './support.repository';
 import { CreateTicketDto, AddMessageDto } from './dto/ticket.dto';
@@ -41,7 +40,7 @@ export class SupportService {
       return media;
     });
     const ticket = await this.repo.create({
-      userId: userId ? (new Types.ObjectId(userId) as unknown as SupportTicket['userId']) : null,
+      userId: userId ? (userId as unknown as SupportTicket['userId']) : null,
       guestEmail: dto.guestEmail ?? null,
       subject: dto.subject,
       body: dto.body,
@@ -126,7 +125,7 @@ export class SupportService {
     const t = await this.repo.findById(id);
     if (!t) throw new NotFoundException('Support ticket not found');
     const updated = await this.repo.update(id, {
-      assignedTo: new Types.ObjectId(agentId) as unknown as SupportTicket['assignedTo'],
+      assignedTo: agentId as unknown as SupportTicket['assignedTo'],
       status: TicketStatus.IN_PROGRESS,
     } as Partial<SupportTicket>);
     if (!updated) throw new NotFoundException('Ticket not found after update');

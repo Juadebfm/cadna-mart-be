@@ -1,9 +1,10 @@
-import { Document } from 'mongoose';
 import { AccountType } from '../enums/account-type.enum';
 import { AuthProvider } from '../enums/auth-provider.enum';
 import { BuyerNotificationPreferences, UserGender } from '../schemas/user.schema';
 
-export interface IUser extends Document {
+export interface IUser {
+  _id: string;
+  id: string;
   firstName: string;
   lastName: string;
   email: string | null;

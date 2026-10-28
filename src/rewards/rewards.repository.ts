@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { PrismaService } from '@database/prisma.service';
+import { createPublicId } from '@database/id.util';
 import {
   RewardsProgram,
   RewardsTier,
@@ -11,134 +11,166 @@ import {
 
 @Injectable()
 export class RewardsRepository {
-  constructor(
-    @InjectModel(RewardsProgram.name) private readonly programModel: Model<RewardsProgram>,
-    @InjectModel(RewardsTier.name) private readonly tierModel: Model<RewardsTier>,
-    @InjectModel(RewardsCampaign.name) private readonly campaignModel: Model<RewardsCampaign>,
-    @InjectModel(RewardsAccount.name) private readonly accountModel: Model<RewardsAccount>,
-    @InjectModel(RewardsTransaction.name) private readonly txModel: Model<RewardsTransaction>,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
+  private legacy(row: any): any {
+    return row ? { ...row, _id: row.id } : null;
+  }
 
-  // Program
   async getProgram(): Promise<RewardsProgram | null> {
-    return this.programModel
-      .findOne({ slug: 'default', deletedAt: null })
-      .lean()
-      .exec() as unknown as Promise<RewardsProgram | null>;
+    return this.legacy(
+      await this.prisma.rewardsProgram.findFirst({ where: { slug: 'default', deletedAt: null } }),
+    );
   }
-
   async upsertProgram(data: Partial<RewardsProgram>): Promise<RewardsProgram> {
-    return this.programModel
-      .findOneAndUpdate(
-        { slug: 'default' },
-        { ...data, slug: 'default' },
-        { new: true, upsert: true },
-      )
-      .lean()
-      .exec() as unknown as Promise<RewardsProgram>;
+    const v = data as any;
+    return this.legacy(
+      await this.prisma.rewardsProgram.upsert({
+        where: { slug: 'default' },
+        create: {
+          id: createPublicId(),
+          slug: 'default',
+          name: v.name ?? 'Rewards',
+          tagline: v.tagline ?? null,
+          logoUrl: v.logoUrl ?? null,
+        },
+        update: {
+          ...(v.name !== undefined ? { name: v.name } : {}),
+          ...(v.tagline !== undefined ? { tagline: v.tagline } : {}),
+          ...(v.logoUrl !== undefined ? { logoUrl: v.logoUrl } : {}),
+        },
+      }),
+    );
   }
-
-  // Tiers
   async findTiers(): Promise<RewardsTier[]> {
-    return this.tierModel
-      .find({ deletedAt: null })
-      .sort({ minPoints: 1 })
-      .lean()
-      .exec() as unknown as Promise<RewardsTier[]>;
+    return (
+      await this.prisma.rewardsTier.findMany({
+        where: { deletedAt: null },
+        orderBy: { minPoints: 'asc' },
+      })
+    ).map((row) => this.legacy(row));
   }
-
   async createTier(data: Partial<RewardsTier>): Promise<RewardsTier> {
-    return this.tierModel.create(data);
+    const v = data as any;
+    return this.legacy(
+      await this.prisma.rewardsTier.create({
+        data: {
+          id: createPublicId(),
+          name: v.name,
+          minPoints: v.minPoints,
+          maxPoints: v.maxPoints ?? null,
+          cashbackRate: v.cashbackRate,
+        },
+      }),
+    );
   }
-
   async updateTier(id: string, data: Partial<RewardsTier>): Promise<RewardsTier> {
-    const doc = (await this.tierModel
-      .findByIdAndUpdate(id, data, { new: true })
-      .lean()
-      .exec()) as unknown as RewardsTier | null;
-    if (!doc) throw new NotFoundException('Tier not found');
-    return doc;
+    try {
+      return this.legacy(
+        await this.prisma.rewardsTier.update({ where: { id }, data: data as any }),
+      );
+    } catch {
+      throw new NotFoundException('Tier not found');
+    }
   }
-
   async deleteTier(id: string): Promise<void> {
-    await this.tierModel.findByIdAndUpdate(id, { deletedAt: new Date() }).exec();
+    await this.prisma.rewardsTier.updateMany({ where: { id }, data: { deletedAt: new Date() } });
   }
-
-  // Campaigns
   async findActiveCampaigns(): Promise<RewardsCampaign[]> {
     const now = new Date();
-    return this.campaignModel
-      .find({ isActive: true, startsAt: { $lte: now }, endsAt: { $gte: now }, deletedAt: null })
-      .lean()
-      .exec() as unknown as Promise<RewardsCampaign[]>;
-  }
-
-  async findAllCampaigns(): Promise<RewardsCampaign[]> {
-    return this.campaignModel
-      .find({ deletedAt: null })
-      .sort({ createdAt: -1 })
-      .lean()
-      .exec() as unknown as Promise<RewardsCampaign[]>;
-  }
-
-  async createCampaign(data: Partial<RewardsCampaign>): Promise<RewardsCampaign> {
-    return this.campaignModel.create(data);
-  }
-
-  async updateCampaign(id: string, data: Partial<RewardsCampaign>): Promise<RewardsCampaign> {
-    const doc = (await this.campaignModel
-      .findByIdAndUpdate(id, data, { new: true })
-      .lean()
-      .exec()) as unknown as RewardsCampaign | null;
-    if (!doc) throw new NotFoundException('Campaign not found');
-    return doc;
-  }
-
-  async deleteCampaign(id: string): Promise<void> {
-    await this.campaignModel.findByIdAndUpdate(id, { deletedAt: new Date() }).exec();
-  }
-
-  // Accounts
-  async findOrCreateAccount(userId: string): Promise<RewardsAccount> {
-    const existing = (await this.accountModel
-      .findOne({ userId: new Types.ObjectId(userId), deletedAt: null })
-      .lean()
-      .exec()) as unknown as RewardsAccount | null;
-    if (existing) return existing;
-    return this.accountModel.create({ userId: new Types.ObjectId(userId) });
-  }
-
-  async updateAccount(userId: string, update: Partial<RewardsAccount>): Promise<RewardsAccount> {
-    return this.accountModel
-      .findOneAndUpdate({ userId: new Types.ObjectId(userId), deletedAt: null }, update, {
-        new: true,
-        upsert: true,
+    return (
+      await this.prisma.rewardsCampaign.findMany({
+        where: { isActive: true, startsAt: { lte: now }, endsAt: { gte: now }, deletedAt: null },
       })
-      .lean()
-      .exec() as unknown as Promise<RewardsAccount>;
+    ).map((row) => this.legacy(row));
   }
-
-  // Transactions
-  async findTransactions(
-    accountId: string,
-    page: number,
-    limit: number,
-  ): Promise<{ items: RewardsTransaction[]; totalItems: number }> {
-    const filter = { accountId: new Types.ObjectId(accountId), deletedAt: null };
-    const [items, totalItems] = await Promise.all([
-      this.txModel
-        .find(filter)
-        .sort({ createdAt: -1 })
-        .skip((page - 1) * limit)
-        .limit(limit)
-        .lean()
-        .exec() as unknown as Promise<RewardsTransaction[]>,
-      this.txModel.countDocuments(filter).exec(),
+  async findAllCampaigns(): Promise<RewardsCampaign[]> {
+    return (
+      await this.prisma.rewardsCampaign.findMany({
+        where: { deletedAt: null },
+        orderBy: { createdAt: 'desc' },
+      })
+    ).map((row) => this.legacy(row));
+  }
+  async createCampaign(data: Partial<RewardsCampaign>): Promise<RewardsCampaign> {
+    const v = data as any;
+    return this.legacy(
+      await this.prisma.rewardsCampaign.create({
+        data: {
+          id: createPublicId(),
+          name: v.name,
+          startsAt: v.startsAt,
+          endsAt: v.endsAt,
+          pointsMultiplier: v.pointsMultiplier ?? 1,
+          isActive: v.isActive ?? true,
+        },
+      }),
+    );
+  }
+  async updateCampaign(id: string, data: Partial<RewardsCampaign>): Promise<RewardsCampaign> {
+    try {
+      return this.legacy(
+        await this.prisma.rewardsCampaign.update({ where: { id }, data: data as any }),
+      );
+    } catch {
+      throw new NotFoundException('Campaign not found');
+    }
+  }
+  async deleteCampaign(id: string): Promise<void> {
+    await this.prisma.rewardsCampaign.updateMany({
+      where: { id },
+      data: { deletedAt: new Date(), isActive: false },
+    });
+  }
+  async findOrCreateAccount(userId: string): Promise<RewardsAccount> {
+    return this.legacy(
+      await this.prisma.rewardsAccount.upsert({
+        where: { userId },
+        create: { id: createPublicId(), userId },
+        update: {},
+      }),
+    );
+  }
+  async updateAccount(userId: string, update: Partial<RewardsAccount>): Promise<RewardsAccount> {
+    const v = { ...(update as any) };
+    delete v.id;
+    delete v._id;
+    delete v.userId;
+    return this.legacy(
+      await this.prisma.rewardsAccount.upsert({
+        where: { userId },
+        create: { id: createPublicId(), userId, ...v },
+        update: v,
+      }),
+    );
+  }
+  async findTransactions(accountId: string, page: number, limit: number) {
+    const where = { accountId, deletedAt: null };
+    const [rows, totalItems] = await Promise.all([
+      this.prisma.rewardsTransaction.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.rewardsTransaction.count({ where }),
     ]);
-    return { items, totalItems };
+    return { items: rows.map((row) => this.legacy(row)), totalItems };
   }
-
   async createTransaction(data: Partial<RewardsTransaction>): Promise<RewardsTransaction> {
-    return this.txModel.create(data);
+    const v = data as any;
+    return this.legacy(
+      await this.prisma.rewardsTransaction.create({
+        data: {
+          id: createPublicId(),
+          accountId: String(v.accountId),
+          userId: String(v.userId),
+          type: v.type,
+          points: v.points ?? 0,
+          cashbackKobo: v.cashbackKobo ?? 0,
+          description: v.description,
+          orderId: v.orderId ?? null,
+        },
+      }),
+    );
   }
 }

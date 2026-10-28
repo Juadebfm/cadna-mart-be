@@ -4,8 +4,8 @@ import {
   ConflictException,
   ForbiddenException,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { createPublicId } from '@database/id.util';
+import { isPrismaUniqueConstraintError } from '@database/prisma-errors';
 import { SellersRepository } from './sellers.repository';
 import { CreateSellerDto } from './dto/create-seller.dto';
 import { UpdateSellerDto } from './dto/update-seller.dto';
@@ -14,7 +14,6 @@ import { OnboardSellerDto } from './dto/onboard-seller.dto';
 import { AccountType } from '@users/enums/account-type.enum';
 import { Product } from '@products/schemas/product.schema';
 import { Seller } from './schemas/seller.schema';
-import { SellerProfile } from './schemas/seller-profile.schema';
 import { UsersService } from '@users/users.service';
 import { OtpService } from '@otp/otp.service';
 import { OtpType } from '@otp/enums/otp-type.enum';
@@ -26,8 +25,6 @@ import { ProductsService } from '@products/products.service';
 export class SellersService {
   constructor(
     private readonly sellersRepository: SellersRepository,
-    @InjectModel(Product.name) private readonly productModel: Model<Product>,
-    @InjectModel(SellerProfile.name) private readonly sellerProfileModel: Model<SellerProfile>,
     private readonly usersService: UsersService,
     private readonly otpService: OtpService,
     private readonly emailService: EmailService,
@@ -51,17 +48,20 @@ export class SellersService {
 
     const userId = (user as unknown as { _id: { toString(): string } })._id.toString();
 
-    await this.sellerProfileModel.create({
-      user: userId,
-      businessName: dto.businessName,
-      businessRegistrationNumber: dto.businessRegistrationNumber ?? null,
-      businessAddress: dto.businessAddress,
-      businessType: dto.businessType,
-      bankName: null,
-      bankAccountNumber: null,
-      bankAccountName: null,
-      bankDetailsCompletedAt: null,
-      isApproved: false,
+    await this.sellersRepository.prisma.sellerProfile.create({
+      data: {
+        id: createPublicId(),
+        userId,
+        businessName: dto.businessName,
+        businessRegistrationNumber: dto.businessRegistrationNumber ?? null,
+        businessAddress: dto.businessAddress,
+        businessType: dto.businessType,
+        bankName: null,
+        bankAccountNumber: null,
+        bankAccountName: null,
+        bankDetailsCompletedAt: null,
+        isApproved: false,
+      },
     });
 
     const code = await this.otpService.generateAndStore(dto.email, OtpType.EMAIL_VERIFICATION);
@@ -120,7 +120,7 @@ export class SellersService {
   async getMyOnboardingStatus(userId: string): Promise<object> {
     const [user, profile, storefront] = await Promise.all([
       this.usersService.findById(userId),
-      this.sellerProfileModel.findOne({ user: userId, deletedAt: null }).lean().exec(),
+      this.sellersRepository.prisma.sellerProfile.findFirst({ where: { userId, deletedAt: null } }),
       this.sellersRepository.findByOwner(userId),
     ]);
 
@@ -246,16 +246,11 @@ export class SellersService {
 
     const id = (seller as unknown as { _id: { toString(): string } })._id.toString();
 
-    const [productStats] = await this.productModel.aggregate([
-      { $match: { seller: (seller as any)._id, deletedAt: null, isActive: true } },
-      {
-        $group: {
-          _id: null,
-          productCount: { $sum: 1 },
-          totalSales: { $sum: '$salesCount' },
-        },
-      },
-    ]);
+    const productStats = await this.sellersRepository.prisma.product.aggregate({
+      where: { sellerId: id, deletedAt: null, isActive: true },
+      _count: { _all: true },
+      _sum: { salesCount: true },
+    });
 
     return {
       id,
@@ -270,17 +265,16 @@ export class SellersService {
       logoUrl: seller.logoUrl,
       location: seller.location,
       deliveryTimeRange: seller.deliveryTimeRange,
-      productCount: productStats?.productCount ?? 0,
-      totalSales: productStats?.totalSales ?? 0,
+      productCount: productStats._count._all,
+      totalSales: productStats._sum.salesCount ?? 0,
       sellerUrl: `/sellers/${seller.slug}`,
     };
   }
 
   async getMyBankingDetails(userId: string): Promise<object> {
-    const profile = await this.sellerProfileModel
-      .findOne({ user: userId, deletedAt: null })
-      .lean()
-      .exec();
+    const profile = await this.sellersRepository.prisma.sellerProfile.findFirst({
+      where: { userId, deletedAt: null },
+    });
     if (!profile) {
       throw new NotFoundException('Seller profile not found');
     }
@@ -293,19 +287,17 @@ export class SellersService {
   }
 
   async setMyBankingDetails(userId: string, dto: BankingDetailsDto): Promise<object> {
-    const updated = await this.sellerProfileModel
-      .findOneAndUpdate(
-        { user: userId, deletedAt: null },
-        {
+    const updated = await this.sellersRepository.prisma.sellerProfile
+      .updateManyAndReturn({
+        where: { userId, deletedAt: null },
+        data: {
           bankName: dto.bankName,
           bankAccountNumber: dto.bankAccountNumber,
           bankAccountName: dto.bankAccountName,
           bankDetailsCompletedAt: new Date(),
         },
-        { new: true },
-      )
-      .lean()
-      .exec();
+      })
+      .then((rows) => rows[0] ?? null);
     if (!updated) {
       throw new NotFoundException('Seller profile not found');
     }
@@ -324,7 +316,7 @@ export class SellersService {
     try {
       await this.sellersRepository.follow(userId, sellerId);
     } catch (err: any) {
-      if (err.code === 11000) {
+      if (isPrismaUniqueConstraintError(err)) {
         throw new ConflictException('You are already following this seller');
       }
       throw err;
@@ -346,20 +338,24 @@ export class SellersService {
       limit,
     );
     const sellers = await Promise.all(
-      items.map(async (entry) => {
+      items.map(async (entry: { seller: unknown }) => {
         const seller = entry.seller as unknown as Seller;
         if (!seller || seller.deletedAt) return null;
         const id = (seller as unknown as { _id: { toString(): string } })._id.toString();
-        const products = await this.productModel
-          .find({ seller: id, deletedAt: null, isActive: true })
-          .sort({ createdAt: -1 })
-          .limit(4)
-          .lean()
-          .exec();
+        const products = await this.sellersRepository.prisma.product.findMany({
+          where: { sellerId: id, deletedAt: null, isActive: true },
+          orderBy: { createdAt: 'desc' },
+          take: 4,
+          include: { seller: true },
+        });
         return {
           ...(await this.getSummary(id)),
           products: products.map((product) =>
-            this.productsService.toCard(product as unknown as Product),
+            this.productsService.toCard({
+              ...product,
+              _id: product.id,
+              seller: product.seller ? { ...product.seller, _id: product.seller.id } : null,
+            } as unknown as Product),
           ),
         };
       }),

@@ -13,28 +13,28 @@ services:
     env_file:
       - ../.env.dev
     environment:
-      - MONGO_URI=mongodb://cadna_admin:cadna_secret@mongodb:27017/cadna_mart_dev?authSource=admin
+      - DATABASE_URL=postgresql://cadna_admin:cadna_secret@postgres:5432/cadna_mart_dev?schema=public
     depends_on:
-      - mongodb
+      - postgres
     restart: unless-stopped
     networks:
       - cadna-network
 
-  mongodb:
-    image: mongo:7
+  postgres:
+    image: postgres:16
     ports:
       - '27017:27017'
     environment:
-      MONGO_INITDB_ROOT_USERNAME: cadna_admin
-      MONGO_INITDB_ROOT_PASSWORD: cadna_secret
-      MONGO_INITDB_DATABASE: cadna_mart_dev
+      POSTGRES_USER: cadna_admin
+      POSTGRES_PASSWORD: cadna_secret
+      POSTGRES_DB: cadna_mart_dev
     volumes:
-      - mongodb_data:/data/db
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - cadna-network
 
 volumes:
-  mongodb_data:
+  postgres_data:
 
 networks:
   cadna-network:

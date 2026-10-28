@@ -1,12 +1,11 @@
 import { PipeTransform, Injectable, BadRequestException } from '@nestjs/common';
-import { Types } from 'mongoose';
 import { ERROR_MESSAGES } from '../constants/error-messages.constants';
 
 @Injectable()
-export class ParseObjectIdPipe implements PipeTransform<string, string> {
+export class ParsePublicIdPipe implements PipeTransform<string, string> {
   transform(value: string): string {
-    if (!Types.ObjectId.isValid(value)) {
-      throw new BadRequestException(ERROR_MESSAGES.INVALID_OBJECT_ID);
+    if (!/^[a-f\d]{24}$/i.test(value)) {
+      throw new BadRequestException(ERROR_MESSAGES.INVALID_PUBLIC_ID);
     }
     return value;
   }

@@ -152,7 +152,8 @@ export class ConfigService {
 
   get database(): DatabaseConfig {
     return {
-      uri: this.envConfig.MONGO_URI,
+      directUrl: this.envConfig.DATABASE_URL,
+      pooledUrl: this.envConfig.DATABASE_URL_POOLED,
     };
   }
 
