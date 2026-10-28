@@ -2,21 +2,23 @@
 
 NestJS backend for the CADNA Mart marketplace.
 
-## Start here
-
-- [Project architecture](./docs/project-architecture.md) — system design, API conventions, security, module ownership, and engineering workflow.
-- [SaaS-free delivery roadmap](./docs/saas-free-delivery-roadmap.md) — work that can proceed without adding external provider integrations.
-- [Neon/PostgreSQL migration blueprint](./docs/neon-postgres-migration-blueprint.md) — future migration plan; do not begin it without an explicit decision.
-- [OpenAPI contract](./docs/openapi.json) — generated public API contract.
-
 ## Local development
 
-Prerequisites: a supported Node.js/npm installation and a MongoDB instance. Configuration is validated when the application starts; provide required values through ignored environment files or your deployment environment. Never commit environment files or secrets.
+Prerequisites: Node.js/npm and a PostgreSQL database. The production database is Neon. Copy `.env.example` to `.env` and configure:
+
+- `DATABASE_URL`: Neon direct connection URL, used by Prisma migrations.
+- `DATABASE_URL_POOLED`: Neon pooled connection URL, used by the running API and PostgreSQL-backed sessions.
+
+Both URLs must point to the same Neon project, branch, and database. Keep `.env` and all real credentials out of Git.
 
 ```bash
-npm install
+cp -n .env.example .env
+npm ci
+npm run db:migrate:deploy
 npm run start:dev
 ```
+
+Use the Neon direct URL for `DATABASE_URL` and the Neon pooler URL for `DATABASE_URL_POOLED`. The API can fall back to `DATABASE_URL` if a pooled URL is not configured.
 
 The normal API base is `http://localhost:<configured-port>/api/v1`. Health is available at `/api/v1/health`. Swagger is mounted at `/api/docs` when enabled by the runtime configuration.
 
