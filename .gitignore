@@ -19,6 +19,9 @@ env.*
 .continue/
 skills-lock.json
 
+# Local-only design notes (do not push to GitHub)
+docs/auth-design/
+
 zikel-backup-codes.txt
 # IDE
 .idea/
