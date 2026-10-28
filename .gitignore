@@ -22,6 +22,14 @@ skills-lock.json
 # Local-only design notes (do not push to GitHub)
 docs/auth-design/
 
+# Documentation kept local and excluded from GitHub
+docs/README.md
+docs/openapi.json
+docs/product-overview-and-delivery-plan.md
+docs/project-architecture.md
+docs/notifications.md
+docs/refunds.md
+
 zikel-backup-codes.txt
 # IDE
 .idea/
