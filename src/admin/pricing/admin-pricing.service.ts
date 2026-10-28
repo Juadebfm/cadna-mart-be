@@ -1,8 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { PricingRule } from './schemas/pricing-rule.schema';
-import { SiteConfig } from '@site-config/schemas/site-config.schema';
+import { randomBytes } from 'crypto';
+import { PrismaService } from '@database/prisma.service';
+import { Prisma } from '../../generated/prisma/client';
 import {
   CreatePricingRuleDto,
   UpdatePricingRuleDto,
@@ -24,13 +23,10 @@ export class AdminPricingService {
   private readonly DEFAULT_EXPRESS_DELIVERY = 3000;
   private readonly DEFAULT_PLATFORM_FEE = 0;
 
-  constructor(
-    @InjectModel(PricingRule.name) private readonly pricingRuleModel: Model<PricingRule>,
-    @InjectModel(SiteConfig.name) private readonly siteConfigModel: Model<SiteConfig>,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   private async getFeeConfig(): Promise<FeeConfig> {
-    const doc = await this.siteConfigModel.findOne({ key: 'fees' }).lean().exec();
+    const doc = await this.prisma.siteConfig.findUnique({ where: { key: 'fees' } });
     const stored = (doc?.value ?? {}) as Partial<FeeConfig>;
 
     return {
@@ -41,33 +37,36 @@ export class AdminPricingService {
     };
   }
 
-  async listRules(): Promise<PricingRule[]> {
-    return this.pricingRuleModel.find({ deletedAt: null }).sort({ createdAt: -1 }).exec();
-  }
-
-  async createRule(dto: CreatePricingRuleDto): Promise<PricingRule> {
-    const rule = new this.pricingRuleModel({
-      name: dto.name,
-      type: dto.type,
-      scope: dto.scope,
-      scopeValue: dto.scopeValue ?? null,
-      value: dto.value,
-      valueType: dto.valueType,
-      description: dto.description ?? null,
+  async listRules() {
+    return this.prisma.pricingRule.findMany({
+      where: { deletedAt: null },
+      orderBy: { createdAt: 'desc' },
     });
-    return rule.save();
   }
 
-  async updateRule(id: string, dto: UpdatePricingRuleDto): Promise<PricingRule> {
-    const rule = await this.pricingRuleModel
-      .findOneAndUpdate({ _id: id, deletedAt: null }, { $set: dto }, { new: true })
-      .exec();
+  async createRule(dto: CreatePricingRuleDto) {
+    return this.prisma.pricingRule.create({
+      data: {
+        id: randomBytes(12).toString('hex'),
+        name: dto.name,
+        type: dto.type,
+        scope: dto.scope,
+        scopeValue: dto.scopeValue ?? null,
+        value: dto.value,
+        valueType: dto.valueType,
+        description: dto.description ?? null,
+      },
+    });
+  }
+
+  async updateRule(id: string, dto: UpdatePricingRuleDto) {
+    const rule = await this.prisma.pricingRule.findFirst({ where: { id, deletedAt: null } });
 
     if (!rule) {
       throw new NotFoundException(`Pricing rule ${id} not found`);
     }
 
-    return rule;
+    return this.prisma.pricingRule.update({ where: { id }, data: dto });
   }
 
   async getFees(): Promise<object> {
@@ -80,7 +79,7 @@ export class AdminPricingService {
   }
 
   async updateFees(dto: UpdateFeesDto): Promise<object> {
-    const existing = await this.siteConfigModel.findOne({ key: 'fees' }).lean().exec();
+    const existing = await this.prisma.siteConfig.findUnique({ where: { key: 'fees' } });
     const current = (existing?.value ?? {}) as Record<string, unknown>;
 
     const merged: Record<string, unknown> = { ...current };
@@ -89,9 +88,15 @@ export class AdminPricingService {
     if (dto.expressDeliveryFee !== undefined) merged.expressDeliveryFee = dto.expressDeliveryFee;
     if (dto.platformFeePercent !== undefined) merged.platformFeePercent = dto.platformFeePercent;
 
-    await this.siteConfigModel
-      .findOneAndUpdate({ key: 'fees' }, { $set: { value: merged } }, { upsert: true, new: true })
-      .exec();
+    await this.prisma.siteConfig.upsert({
+      where: { key: 'fees' },
+      create: {
+        id: randomBytes(12).toString('hex'),
+        key: 'fees',
+        value: merged as Prisma.InputJsonValue,
+      },
+      update: { value: merged as Prisma.InputJsonValue },
+    });
 
     return this.getFees();
   }

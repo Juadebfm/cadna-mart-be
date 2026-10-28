@@ -1,18 +1,18 @@
-import { IsInt, IsMongoId, IsOptional, IsString, Min } from 'class-validator';
+import { IsInt, Matches, IsOptional, IsString, Min } from 'class-validator';
 
 export class CreateBookingDto {
-  @IsMongoId()
+  @Matches(/^[a-f\d]{24}$/i)
   slotId!: string;
 
-  @IsMongoId()
+  @Matches(/^[a-f\d]{24}$/i)
   durationTierId!: string;
 
-  @IsMongoId()
+  @Matches(/^[a-f\d]{24}$/i)
   productId!: string;
 }
 
 export class GenerateSlotsDto {
-  @IsMongoId()
+  @Matches(/^[a-f\d]{24}$/i)
   slotTypeId!: string;
 
   @IsString()
@@ -27,7 +27,7 @@ export class GenerateSlotsDto {
 }
 
 export class UpdateCapacityDto {
-  @IsMongoId()
+  @Matches(/^[a-f\d]{24}$/i)
   slotTypeId!: string;
 
   @IsInt()

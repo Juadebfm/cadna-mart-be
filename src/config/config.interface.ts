@@ -7,7 +7,8 @@ export interface AppConfig {
 }
 
 export interface DatabaseConfig {
-  uri: string;
+  directUrl: string;
+  pooledUrl?: string;
 }
 
 export interface JwtConfig {

@@ -1,16 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { ProductPolicy } from './schemas/product-policy.schema';
+import { PrismaService } from '@database/prisma.service';
 
 @Injectable()
 export class PoliciesService {
-  constructor(
-    @InjectModel(ProductPolicy.name) private readonly policyModel: Model<ProductPolicy>,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async getProductPolicy(productId: string) {
-    const policy = await this.policyModel.findOne({ product: productId }).lean().exec();
+    const policy = await this.prisma.productPolicy.findUnique({ where: { productId } });
 
     if (!policy) {
       return {

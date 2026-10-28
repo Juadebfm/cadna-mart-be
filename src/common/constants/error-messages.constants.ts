@@ -5,7 +5,7 @@ export const ERROR_MESSAGES = {
   NOT_FOUND: 'The requested resource was not found',
   VALIDATION_FAILED: 'Validation failed',
   DUPLICATE_ENTRY: 'A record with this value already exists',
-  INVALID_OBJECT_ID: 'Invalid ObjectId format',
+  INVALID_PUBLIC_ID: 'Invalid ID format',
   INVALID_CREDENTIALS: 'Invalid email or password',
   USER_NOT_FOUND: 'User not found',
   USER_ALREADY_EXISTS: 'A user with this email already exists',

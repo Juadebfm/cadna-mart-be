@@ -1,8 +1,10 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 import { randomUUID } from 'crypto';
-import { CheckoutSession, CheckoutSessionStatus } from './schemas/checkout-session.schema';
+import { Prisma } from '../generated/prisma/client';
+import { PrismaService } from '@database/prisma.service';
+import { createPublicId } from '@database/id.util';
+import { CheckoutSession as PrismaCheckoutSession } from '../generated/prisma/client';
+import { CheckoutSessionStatus } from './schemas/checkout-session.schema';
 import { CreateCheckoutSessionDto } from './dto/checkout-session.dto';
 import { SetCheckoutAddressDto } from './dto/set-address.dto';
 import { SelectDeliveryDto } from './dto/select-delivery.dto';
@@ -20,7 +22,7 @@ export class CheckoutService {
   private readonly SESSION_TTL_MINUTES = 30;
 
   constructor(
-    @InjectModel(CheckoutSession.name) private readonly sessionModel: Model<CheckoutSession>,
+    private readonly prisma: PrismaService,
     private readonly ordersService: OrdersService,
     private readonly cartRepository: CartRepository,
   ) {}
@@ -57,7 +59,9 @@ export class CheckoutService {
     return sum;
   }
 
-  private assertSessionActive(session: CheckoutSession | null, _sessionId: string): void {
+  private assertSessionActive(
+    session: PrismaCheckoutSession | null,
+  ): asserts session is PrismaCheckoutSession {
     if (!session) {
       throw new NotFoundException('Checkout session not found');
     }
@@ -88,20 +92,25 @@ export class CheckoutService {
     if (dto.guestEmail) metadata['guestEmail'] = dto.guestEmail;
     if (dto.guestPhone) metadata['guestPhone'] = dto.guestPhone;
 
-    await this.sessionModel.create({
-      sessionId,
-      cartId: dto.cartId,
-      userId: userId ?? null,
-      status: CheckoutSessionStatus.INITIATED,
-      expiresAt,
-      metadata,
+    await this.prisma.checkoutSession.create({
+      data: {
+        id: createPublicId(),
+        sessionId,
+        cartId: dto.cartId,
+        userId: userId ?? null,
+        status: CheckoutSessionStatus.INITIATED,
+        expiresAt,
+        metadata: metadata as Prisma.InputJsonValue,
+      },
     });
 
     return { sessionId, status: 'initiated', expiresAt };
   }
 
   async getSession(sessionId: string): Promise<object> {
-    const session = await this.sessionModel.findOne({ sessionId, deletedAt: null }).lean().exec();
+    const session = await this.prisma.checkoutSession.findFirst({
+      where: { sessionId, deletedAt: null },
+    });
     if (!session) {
       throw new NotFoundException('Checkout session not found');
     }
@@ -118,23 +127,19 @@ export class CheckoutService {
   }
 
   async setAddress(sessionId: string, dto: SetCheckoutAddressDto): Promise<object> {
-    const session = await this.sessionModel.findOne({ sessionId }).exec();
-    this.assertSessionActive(session, sessionId);
+    const session = await this.prisma.checkoutSession.findFirst({
+      where: { sessionId, deletedAt: null },
+    });
+    this.assertSessionActive(session);
 
-    const updated = await this.sessionModel
-      .findOneAndUpdate(
-        { sessionId },
-        {
-          $set: {
-            deliveryAddress: dto,
-            addressValidated: false,
-            status: CheckoutSessionStatus.ADDRESS_SET,
-          },
-        },
-        { new: true },
-      )
-      .lean()
-      .exec();
+    const updated = await this.prisma.checkoutSession.update({
+      where: { sessionId },
+      data: {
+        deliveryAddress: dto as unknown as Prisma.InputJsonValue,
+        addressValidated: false,
+        status: CheckoutSessionStatus.ADDRESS_SET,
+      },
+    });
 
     return {
       sessionId,
@@ -144,14 +149,19 @@ export class CheckoutService {
   }
 
   async validateAddress(sessionId: string): Promise<object> {
-    const session = await this.sessionModel.findOne({ sessionId }).exec();
-    this.assertSessionActive(session, sessionId);
+    const session = await this.prisma.checkoutSession.findFirst({
+      where: { sessionId, deletedAt: null },
+    });
+    this.assertSessionActive(session);
 
     if (!session!.deliveryAddress) {
       throw new BadRequestException('Set a delivery address first');
     }
 
-    await this.sessionModel.updateOne({ sessionId }, { $set: { addressValidated: true } }).exec();
+    await this.prisma.checkoutSession.update({
+      where: { sessionId },
+      data: { addressValidated: true },
+    });
 
     return {
       sessionId,
@@ -161,8 +171,10 @@ export class CheckoutService {
   }
 
   async getDeliveryOptions(sessionId: string): Promise<object> {
-    const session = await this.sessionModel.findOne({ sessionId }).exec();
-    this.assertSessionActive(session, sessionId);
+    const session = await this.prisma.checkoutSession.findFirst({
+      where: { sessionId, deletedAt: null },
+    });
+    this.assertSessionActive(session);
 
     return {
       sessionId,
@@ -190,41 +202,46 @@ export class CheckoutService {
   }
 
   async selectDelivery(sessionId: string, dto: SelectDeliveryDto): Promise<object> {
-    const session = await this.sessionModel.findOne({ sessionId }).exec();
-    this.assertSessionActive(session, sessionId);
+    const session = await this.prisma.checkoutSession.findFirst({
+      where: { sessionId, deletedAt: null },
+    });
+    this.assertSessionActive(session);
 
-    await this.sessionModel
-      .updateOne(
-        { sessionId },
-        {
-          $set: {
-            deliveryMode: dto.mode,
-            status: CheckoutSessionStatus.DELIVERY_SET,
-            pricingLocked: false,
-          },
-        },
-      )
-      .exec();
+    await this.prisma.checkoutSession.update({
+      where: { sessionId },
+      data: {
+        deliveryMode: dto.mode,
+        status: CheckoutSessionStatus.DELIVERY_SET,
+        pricingLocked: false,
+      },
+    });
 
     return { sessionId, status: 'delivery_set', deliveryMode: dto.mode };
   }
 
   async setPickupDetails(sessionId: string, dto: PickupDetailsDto): Promise<object> {
-    const session = await this.sessionModel.findOne({ sessionId }).exec();
-    this.assertSessionActive(session, sessionId);
+    const session = await this.prisma.checkoutSession.findFirst({
+      where: { sessionId, deletedAt: null },
+    });
+    this.assertSessionActive(session);
 
     if (session!.deliveryMode !== 'pickup') {
       throw new BadRequestException('Pickup details only apply to pickup delivery mode');
     }
 
-    await this.sessionModel.updateOne({ sessionId }, { $set: { pickupDetails: dto } }).exec();
+    await this.prisma.checkoutSession.update({
+      where: { sessionId },
+      data: { pickupDetails: dto as unknown as Prisma.InputJsonValue },
+    });
 
     return { sessionId, pickupDetails: dto };
   }
 
   async getSummary(sessionId: string): Promise<object> {
-    const session = await this.sessionModel.findOne({ sessionId }).exec();
-    this.assertSessionActive(session, sessionId);
+    const session = await this.prisma.checkoutSession.findFirst({
+      where: { sessionId, deletedAt: null },
+    });
+    this.assertSessionActive(session);
 
     if (!session!.deliveryAddress) {
       throw new BadRequestException('Set delivery address first');
@@ -249,18 +266,14 @@ export class CheckoutService {
 
     const pricing = this.computePricing(subtotal, feeAmount);
 
-    await this.sessionModel
-      .updateOne(
-        { sessionId },
-        {
-          $set: {
-            pricingSnapshot: pricing,
-            pricingLocked: true,
-            status: CheckoutSessionStatus.SUMMARY_READY,
-          },
-        },
-      )
-      .exec();
+    await this.prisma.checkoutSession.update({
+      where: { sessionId },
+      data: {
+        pricingSnapshot: pricing as unknown as Prisma.InputJsonValue,
+        pricingLocked: true,
+        status: CheckoutSessionStatus.SUMMARY_READY,
+      },
+    });
 
     return {
       sessionId,
@@ -275,8 +288,10 @@ export class CheckoutService {
   }
 
   async confirmSession(sessionId: string, userId: string | null): Promise<object> {
-    const session = await this.sessionModel.findOne({ sessionId }).exec();
-    this.assertSessionActive(session, sessionId);
+    const session = await this.prisma.checkoutSession.findFirst({
+      where: { sessionId, deletedAt: null },
+    });
+    this.assertSessionActive(session);
 
     if (session!.status !== CheckoutSessionStatus.SUMMARY_READY) {
       throw new BadRequestException('Review the order summary before confirming');
@@ -307,7 +322,7 @@ export class CheckoutService {
     });
 
     const pricing = session!.pricingSnapshot as any;
-    const metadata = (session as unknown as { metadata: Record<string, unknown> }).metadata ?? {};
+    const metadata = (session.metadata as Record<string, unknown> | null) ?? {};
 
     const order = await this.ordersService.create({
       userId: userId ?? null,
@@ -322,16 +337,17 @@ export class CheckoutService {
       cartRef: session!.cartId,
     });
 
-    const orderId = (order as unknown as { _id: { toString(): string } })._id;
+    const orderId = String((order as unknown as { _id: { toString(): string } })._id);
 
-    await this.sessionModel
-      .updateOne({ sessionId }, { $set: { status: CheckoutSessionStatus.CONFIRMED, orderId } })
-      .exec();
+    await this.prisma.checkoutSession.update({
+      where: { sessionId },
+      data: { status: CheckoutSessionStatus.CONFIRMED, orderId },
+    });
 
     return {
       sessionId,
       status: 'confirmed',
-      orderId: orderId.toString(),
+      orderId,
       orderRef: order.orderRef,
       pricing: order.pricing,
     };

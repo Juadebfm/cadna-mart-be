@@ -1,7 +1,7 @@
-import { IsBoolean, IsInt, IsMongoId, IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import { IsBoolean, IsInt, Matches, IsNumber, IsOptional, IsString, Min } from 'class-validator';
 
 export class CreateDurationTierDto {
-  @IsMongoId()
+  @Matches(/^[a-f\d]{24}$/i)
   slotTypeId!: string;
 
   @IsString()

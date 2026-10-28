@@ -14,7 +14,7 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AccountTypes } from '@auth/decorators/account-types.decorator';
 import { CurrentUser } from '@auth/decorators/current-user.decorator';
 import { AccountType } from '@users/enums/account-type.enum';
-import { ParseObjectIdPipe } from '@common/pipes/parse-object-id.pipe';
+import { ParsePublicIdPipe } from '@common/pipes/parse-public-id.pipe';
 import { DealsService } from './deals.service';
 import { CreateDealCampaignDto } from './dto/create-deal-campaign.dto';
 import { UpdateDealCampaignDto } from './dto/update-deal-campaign.dto';
@@ -48,7 +48,7 @@ export class DealsController {
   @Get('my/:id')
   @ApiOperation({ summary: 'Get one of my deal campaigns' })
   async getMy(
-    @Param('id', ParseObjectIdPipe) id: string,
+    @Param('id', ParsePublicIdPipe) id: string,
     @CurrentUser() actor: { userId: string; accountType: string },
   ) {
     return this.dealsService.getMyCampaign(id, actor);
@@ -57,7 +57,7 @@ export class DealsController {
   @Patch('my/:id')
   @ApiOperation({ summary: 'Update one of my deal campaigns' })
   async updateMy(
-    @Param('id', ParseObjectIdPipe) id: string,
+    @Param('id', ParsePublicIdPipe) id: string,
     @Body() dto: UpdateDealCampaignDto,
     @CurrentUser() actor: { userId: string; accountType: string },
   ) {
@@ -68,7 +68,7 @@ export class DealsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete one of my deal campaigns' })
   async deleteMy(
-    @Param('id', ParseObjectIdPipe) id: string,
+    @Param('id', ParsePublicIdPipe) id: string,
     @CurrentUser() actor: { userId: string; accountType: string },
   ) {
     await this.dealsService.removeMyCampaign(id, actor);
@@ -77,7 +77,7 @@ export class DealsController {
   @Post('my/:id/initialize-payment')
   @ApiOperation({ summary: 'Initialize Paystack payment for my deal campaign' })
   async initializePayment(
-    @Param('id', ParseObjectIdPipe) id: string,
+    @Param('id', ParsePublicIdPipe) id: string,
     @CurrentUser() actor: { userId: string; accountType: string },
   ) {
     return this.dealsService.initializePayment(id, actor);

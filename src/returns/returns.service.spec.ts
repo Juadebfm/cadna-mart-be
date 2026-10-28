@@ -4,7 +4,6 @@ import {
   ForbiddenException,
   NotFoundException,
 } from '@nestjs/common';
-import { Types } from 'mongoose';
 import { ReturnsService } from './returns.service';
 import {
   RefundMethod,
@@ -15,13 +14,15 @@ import {
 } from './schemas/return-request.schema';
 import { OrderPaymentStatus, OrderStatus } from '@orders/schemas/order.schema';
 
+const newId = (): string => Math.random().toString(16).slice(2).padEnd(24, '0').slice(0, 24);
+
 describe('ReturnsService', () => {
-  const buyerId = new Types.ObjectId().toString();
-  const orderId = new Types.ObjectId().toString();
-  const requestId = new Types.ObjectId().toString();
+  const buyerId = newId();
+  const orderId = newId();
+  const requestId = newId();
   const order = {
-    _id: new Types.ObjectId(orderId),
-    userId: new Types.ObjectId(buyerId),
+    _id: orderId,
+    userId: buyerId,
     orderRef: 'CDN-ORDER-1',
     status: OrderStatus.CONFIRMED,
     paymentStatus: OrderPaymentStatus.PAID,
@@ -47,7 +48,7 @@ describe('ReturnsService', () => {
 
   beforeEach(() => {
     repository = {
-      create: jest.fn(async (data) => ({ ...data, _id: new Types.ObjectId(requestId) })),
+      create: jest.fn(async (data) => ({ ...data, _id: requestId })),
       findByOrderId: jest.fn().mockResolvedValue([]),
       findById: jest.fn(),
       findProcessingByProviderRefund: jest.fn(),
@@ -88,7 +89,7 @@ describe('ReturnsService', () => {
   });
 
   it('rejects orders not owned by the requesting buyer without creating a request', async () => {
-    ordersRepository.findById.mockResolvedValue({ ...order, userId: new Types.ObjectId() });
+    ordersRepository.findById.mockResolvedValue({ ...order, userId: newId() });
 
     await expect(
       service.create(buyerId, {
@@ -137,8 +138,8 @@ describe('ReturnsService', () => {
 
   it('does not refund until seller review has approved the request', async () => {
     repository.findById.mockResolvedValue({
-      _id: new Types.ObjectId(requestId),
-      orderId: new Types.ObjectId(orderId),
+      _id: requestId,
+      orderId: orderId,
       status: ReturnStatus.PENDING,
       requestType: ReturnRequestType.ITEM_RETURN,
       items: [{ lineTotal: 5000 }],
@@ -152,7 +153,7 @@ describe('ReturnsService', () => {
           refundMethod: RefundMethod.ORIGINAL_PAYMENT,
           refundAmount: 5000,
         },
-        new Types.ObjectId().toString(),
+        newId(),
       ),
     ).rejects.toBeInstanceOf(BadRequestException);
 
@@ -191,8 +192,8 @@ describe('ReturnsService', () => {
 
   it('keeps whole-order cancellation pending after a seller objects for admin decision', async () => {
     const pendingCancellation = {
-      _id: new Types.ObjectId(requestId),
-      orderId: new Types.ObjectId(orderId),
+      _id: requestId,
+      orderId: orderId,
       orderRef: 'CDN-ORDER-1',
       requestType: ReturnRequestType.ORDER_CANCELLATION,
       status: ReturnStatus.PENDING,
@@ -221,8 +222,8 @@ describe('ReturnsService', () => {
 
   it('requires an admin reason to approve cancellation over a seller objection', async () => {
     repository.findById.mockResolvedValue({
-      _id: new Types.ObjectId(requestId),
-      orderId: new Types.ObjectId(orderId),
+      _id: requestId,
+      orderId: orderId,
       requestType: ReturnRequestType.ORDER_CANCELLATION,
       status: ReturnStatus.PENDING,
       refundStatus: null,
@@ -230,16 +231,16 @@ describe('ReturnsService', () => {
     });
 
     await expect(
-      service.adminDecision(requestId, 'approve', undefined, new Types.ObjectId().toString()),
+      service.adminDecision(requestId, 'approve', undefined, newId()),
     ).rejects.toBeInstanceOf(BadRequestException);
     expect(repository.decideByAdmin).not.toHaveBeenCalled();
   });
 
   it('restores the prior order state when the buyer withdraws a cancellation request', async () => {
     const pendingCancellation = {
-      _id: new Types.ObjectId(requestId),
-      userId: new Types.ObjectId(buyerId),
-      orderId: new Types.ObjectId(orderId),
+      _id: requestId,
+      userId: buyerId,
+      orderId: orderId,
       requestType: ReturnRequestType.ORDER_CANCELLATION,
       previousOrderStatus: OrderStatus.CONFIRMED,
       status: ReturnStatus.PENDING,
@@ -263,8 +264,8 @@ describe('ReturnsService', () => {
 
   it('rejects admin refund amounts above the order total before reserving money', async () => {
     repository.findById.mockResolvedValue({
-      _id: new Types.ObjectId(requestId),
-      orderId: new Types.ObjectId(orderId),
+      _id: requestId,
+      orderId: orderId,
       status: ReturnStatus.APPROVED,
       requestType: ReturnRequestType.ITEM_RETURN,
       items: [{ lineTotal: 5000 }],
@@ -278,7 +279,7 @@ describe('ReturnsService', () => {
           refundMethod: RefundMethod.ORIGINAL_PAYMENT,
           refundAmount: 12001,
         },
-        new Types.ObjectId().toString(),
+        newId(),
       ),
     ).rejects.toBeInstanceOf(BadRequestException);
 
@@ -302,8 +303,8 @@ describe('ReturnsService', () => {
 
   it('requires an exact provider refund identifier and amount before applying a refund event', async () => {
     repository.findProcessingByProviderRefund.mockResolvedValue({
-      _id: new Types.ObjectId(requestId),
-      orderId: new Types.ObjectId(orderId),
+      _id: requestId,
+      orderId: orderId,
       refundAmount: 5000,
       refundReference: 'refund-1',
       requestType: ReturnRequestType.ITEM_RETURN,
@@ -330,8 +331,8 @@ describe('ReturnsService', () => {
 
   it('matches a Paystack refund event by the provider refund ID when no refund reference exists', async () => {
     const request = {
-      _id: new Types.ObjectId(requestId),
-      orderId: new Types.ObjectId(orderId),
+      _id: requestId,
+      orderId: orderId,
       refundAmount: 5000,
       refundReference: null,
       requestType: ReturnRequestType.ITEM_RETURN,
@@ -374,9 +375,9 @@ describe('ReturnsService', () => {
 
   it('reconciles only when Paystack confirms the same refund, payment, amount, and currency', async () => {
     const request = {
-      _id: new Types.ObjectId(requestId),
-      userId: new Types.ObjectId(buyerId),
-      orderId: new Types.ObjectId(orderId),
+      _id: requestId,
+      userId: buyerId,
+      orderId: orderId,
       refundStatus: RefundStatus.PROCESSING,
       refundProviderId: '12345',
       refundReference: 'refund-reference-1',
@@ -419,8 +420,8 @@ describe('ReturnsService', () => {
 
   it('does not reconcile when the provider amount does not match the request', async () => {
     repository.findById.mockResolvedValue({
-      _id: new Types.ObjectId(requestId),
-      orderId: new Types.ObjectId(orderId),
+      _id: requestId,
+      orderId: orderId,
       refundStatus: RefundStatus.PROCESSING,
       refundProviderId: '12345',
       refundAmount: 5000,
@@ -442,8 +443,8 @@ describe('ReturnsService', () => {
 
   it('saves return evidence only from buyer-owned uploads and enforces the total image limit', async () => {
     repository.findById.mockResolvedValue({
-      _id: new Types.ObjectId(requestId),
-      userId: new Types.ObjectId(buyerId),
+      _id: requestId,
+      userId: buyerId,
       status: ReturnStatus.PENDING,
       evidenceUrls: ['existing-1', 'existing-2', 'existing-3', 'existing-4'],
     });
@@ -453,8 +454,8 @@ describe('ReturnsService', () => {
     );
     expect(uploadService.resolveOwnedImage).not.toHaveBeenCalled();
     repository.update.mockResolvedValueOnce({
-      _id: new Types.ObjectId(requestId),
-      userId: new Types.ObjectId(buyerId),
+      _id: requestId,
+      userId: buyerId,
       status: ReturnStatus.PENDING,
       evidenceUrls: [
         'existing-1',
@@ -478,8 +479,8 @@ describe('ReturnsService', () => {
 
   it('does not save a return evidence image owned by another buyer', async () => {
     repository.findById.mockResolvedValue({
-      _id: new Types.ObjectId(requestId),
-      userId: new Types.ObjectId(buyerId),
+      _id: requestId,
+      userId: buyerId,
       status: ReturnStatus.PENDING,
       evidenceUrls: [],
     });

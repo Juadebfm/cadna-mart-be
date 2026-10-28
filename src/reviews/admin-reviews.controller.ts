@@ -3,7 +3,7 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AccountTypes } from '@auth/decorators/account-types.decorator';
 import { CurrentUser } from '@auth/decorators/current-user.decorator';
 import { AccountType } from '@users/enums/account-type.enum';
-import { ParseObjectIdPipe } from '@common/pipes/parse-object-id.pipe';
+import { ParsePublicIdPipe } from '@common/pipes/parse-public-id.pipe';
 import { ReviewsService } from './reviews.service';
 import { ModerateReviewDto } from './dto/moderate-review.dto';
 
@@ -17,7 +17,7 @@ export class AdminReviewsController {
   @Post(':id/moderate')
   @ApiOperation({ summary: 'Moderate a review by approving or hiding it' })
   async moderateReview(
-    @Param('id', ParseObjectIdPipe) id: string,
+    @Param('id', ParsePublicIdPipe) id: string,
     @Body() dto: ModerateReviewDto,
     @CurrentUser('userId') adminUserId: string,
   ) {

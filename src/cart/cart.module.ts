@@ -19,6 +19,6 @@ import { PrismaModule } from '@database/prisma.module';
   ],
   controllers: [CartController],
   providers: [CartRepository, CartService],
-  exports: [CartService],
+  exports: [CartService, CartRepository],
 })
 export class CartModule {}

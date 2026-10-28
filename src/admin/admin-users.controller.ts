@@ -16,7 +16,7 @@ import { AccountType } from '@users/enums/account-type.enum';
 import { UsersService } from '@users/users.service';
 import { UserQueryDto } from '@users/dto/user-query.dto';
 import { UpdateUserDto } from '@users/dto/update-user.dto';
-import { ParseObjectIdPipe } from '@common/pipes/parse-object-id.pipe';
+import { ParsePublicIdPipe } from '@common/pipes/parse-public-id.pipe';
 
 @ApiTags('Admin — Users')
 @ApiBearerAuth()
@@ -33,20 +33,20 @@ export class AdminUsersController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get user by id (admin)' })
-  async findOne(@Param('id', ParseObjectIdPipe) id: string) {
+  async findOne(@Param('id', ParsePublicIdPipe) id: string) {
     return this.usersService.findById(id);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update a user by id (admin)' })
-  async update(@Param('id', ParseObjectIdPipe) id: string, @Body() dto: UpdateUserDto) {
+  async update(@Param('id', ParsePublicIdPipe) id: string, @Body() dto: UpdateUserDto) {
     return this.usersService.update(id, dto);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Soft-delete a user (admin)' })
-  async remove(@Param('id', ParseObjectIdPipe) id: string) {
+  async remove(@Param('id', ParsePublicIdPipe) id: string) {
     await this.usersService.remove(id);
   }
 
@@ -57,7 +57,7 @@ export class AdminUsersController {
       'Suspend (deactivate) a user account. Reactivate by sending {"active": true} - the body is optional and defaults to suspending.',
   })
   async suspend(
-    @Param('id', ParseObjectIdPipe) id: string,
+    @Param('id', ParsePublicIdPipe) id: string,
     @Body() body: { active?: boolean } = {},
   ) {
     const isActive = body?.active === true;

@@ -2,7 +2,7 @@ import { Controller, Get, Post, Patch, Param, Body, HttpCode, HttpStatus } from 
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AccountTypes } from '@auth/decorators/account-types.decorator';
 import { AccountType } from '@users/enums/account-type.enum';
-import { ParseObjectIdPipe } from '@common/pipes/parse-object-id.pipe';
+import { ParsePublicIdPipe } from '@common/pipes/parse-public-id.pipe';
 import { AdminPricingService } from './pricing/admin-pricing.service';
 import {
   CreatePricingRuleDto,
@@ -32,7 +32,7 @@ export class AdminPricingController {
 
   @Patch('rules/:id')
   @ApiOperation({ summary: 'Update a pricing rule' })
-  async updateRule(@Param('id', ParseObjectIdPipe) id: string, @Body() dto: UpdatePricingRuleDto) {
+  async updateRule(@Param('id', ParsePublicIdPipe) id: string, @Body() dto: UpdatePricingRuleDto) {
     return this.adminPricingService.updateRule(id, dto);
   }
 

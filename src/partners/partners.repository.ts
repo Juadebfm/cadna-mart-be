@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { PrismaService } from '@database/prisma.service';
+import { createPublicId } from '@database/id.util';
 import {
   PartnerProfile,
   PartnerCommitment,
@@ -10,165 +10,146 @@ import {
 
 @Injectable()
 export class PartnersRepository {
-  constructor(
-    @InjectModel(PartnerProfile.name) private readonly profileModel: Model<PartnerProfile>,
-    @InjectModel(PartnerCommitment.name) private readonly commitmentModel: Model<PartnerCommitment>,
-    @InjectModel(PartnerDispute.name) private readonly disputeModel: Model<PartnerDispute>,
-  ) {}
-
+  constructor(private readonly prisma: PrismaService) {}
+  private legacy(row: any): any {
+    return row
+      ? {
+          ...row,
+          _id: row.id,
+          user: row.userId,
+          approvedBy: row.approvedById,
+          partnerId: row.partnerId,
+          product: row.productId,
+          commitmentId: row.commitmentId,
+          resolvedBy: row.resolvedById,
+        }
+      : null;
+  }
   async findOrCreateProfile(userId: string): Promise<PartnerProfile> {
-    const existing = (await this.profileModel
-      .findOne({ userId: new Types.ObjectId(userId), deletedAt: null })
-      .lean()
-      .exec()) as unknown as PartnerProfile | null;
-    if (existing) return existing;
-    return this.profileModel.create({ userId: new Types.ObjectId(userId) });
+    const row = await this.prisma.partnerProfile.upsert({
+      where: { userId },
+      create: { id: createPublicId(), userId },
+      update: {},
+    });
+    return this.legacy(row);
   }
-
   async findProfileByUser(userId: string): Promise<PartnerProfile | null> {
-    return this.profileModel
-      .findOne({ userId: new Types.ObjectId(userId), deletedAt: null })
-      .lean()
-      .exec() as unknown as Promise<PartnerProfile | null>;
+    return this.legacy(
+      await this.prisma.partnerProfile.findFirst({ where: { userId, deletedAt: null } }),
+    );
   }
-
   async updateProfile(userId: string, update: Partial<PartnerProfile>): Promise<PartnerProfile> {
-    const doc = (await this.profileModel
-      .findOneAndUpdate({ userId: new Types.ObjectId(userId), deletedAt: null }, update, {
-        new: true,
-        upsert: true,
-      })
-      .lean()
-      .exec()) as unknown as PartnerProfile;
-    return doc;
+    const current = await this.prisma.partnerProfile.findUnique({ where: { userId } });
+    const data: any = { ...(update as any) };
+    if ('approvedBy' in data) {
+      data.approvedById = data.approvedBy;
+      delete data.approvedBy;
+    }
+    const row = current
+      ? await this.prisma.partnerProfile.update({ where: { userId }, data })
+      : await this.prisma.partnerProfile.create({
+          data: { id: createPublicId(), userId, ...data },
+        });
+    return this.legacy(row);
   }
-
-  async findAllProfiles(
-    page: number,
-    limit: number,
-  ): Promise<{ items: PartnerProfile[]; totalItems: number }> {
-    const filter = { deletedAt: null };
-    const [items, totalItems] = await Promise.all([
-      this.profileModel
-        .find(filter)
-        .sort({ createdAt: -1 })
-        .skip((page - 1) * limit)
-        .limit(limit)
-        .lean()
-        .exec() as unknown as Promise<PartnerProfile[]>,
-      this.profileModel.countDocuments(filter).exec(),
+  async findAllProfiles(page: number, limit: number) {
+    const where = { deletedAt: null };
+    const [rows, totalItems] = await Promise.all([
+      this.prisma.partnerProfile.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.partnerProfile.count({ where }),
     ]);
-    return { items, totalItems };
+    return { items: rows.map((row) => this.legacy(row)), totalItems };
   }
-
   async approveProfile(id: string, adminId: string): Promise<PartnerProfile> {
-    const doc = (await this.profileModel
-      .findByIdAndUpdate(
-        id,
-        {
-          status: PartnerStatus.APPROVED,
-          approvedBy: new Types.ObjectId(adminId),
-          approvedAt: new Date(),
-        },
-        { new: true },
-      )
-      .lean()
-      .exec()) as unknown as PartnerProfile | null;
-    if (!doc) throw new NotFoundException('Partner not found');
-    return doc;
+    try {
+      return this.legacy(
+        await this.prisma.partnerProfile.update({
+          where: { id },
+          data: { status: PartnerStatus.APPROVED, approvedById: adminId, approvedAt: new Date() },
+        }),
+      );
+    } catch {
+      throw new NotFoundException('Partner not found');
+    }
   }
-
   async createCommitment(
     partnerId: string,
     productId: string,
     amountNGN: number,
   ): Promise<PartnerCommitment> {
-    return this.commitmentModel.create({
-      partnerId: new Types.ObjectId(partnerId),
-      productId: new Types.ObjectId(productId),
-      amountNGN,
-    });
+    return this.legacy(
+      await this.prisma.partnerCommitment.create({
+        data: { id: createPublicId(), partnerId, productId, amountNGN },
+      }),
+    );
   }
-
-  async findCommitmentsByPartner(
-    partnerId: string,
-    page: number,
-    limit: number,
-  ): Promise<{ items: PartnerCommitment[]; totalItems: number }> {
-    const filter = { partnerId: new Types.ObjectId(partnerId), deletedAt: null };
-    const [items, totalItems] = await Promise.all([
-      this.commitmentModel
-        .find(filter)
-        .sort({ createdAt: -1 })
-        .skip((page - 1) * limit)
-        .limit(limit)
-        .lean()
-        .exec() as unknown as Promise<PartnerCommitment[]>,
-      this.commitmentModel.countDocuments(filter).exec(),
+  async findCommitmentsByPartner(partnerId: string, page: number, limit: number) {
+    const where = { partnerId, deletedAt: null };
+    const [rows, totalItems] = await Promise.all([
+      this.prisma.partnerCommitment.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.partnerCommitment.count({ where }),
     ]);
-    return { items, totalItems };
+    return { items: rows.map((row) => this.legacy(row)), totalItems };
   }
-
   async findCommitmentById(id: string): Promise<PartnerCommitment | null> {
-    return this.commitmentModel
-      .findById(id)
-      .lean()
-      .exec() as unknown as Promise<PartnerCommitment | null>;
+    return this.legacy(await this.prisma.partnerCommitment.findUnique({ where: { id } }));
   }
-
   async approveCommitment(id: string, adminId: string): Promise<PartnerCommitment> {
-    const doc = (await this.commitmentModel
-      .findByIdAndUpdate(
-        id,
-        { status: 'approved', approvedBy: new Types.ObjectId(adminId), approvedAt: new Date() },
-        { new: true },
-      )
-      .lean()
-      .exec()) as unknown as PartnerCommitment | null;
-    if (!doc) throw new NotFoundException('Commitment not found');
-    return doc;
+    try {
+      return this.legacy(
+        await this.prisma.partnerCommitment.update({
+          where: { id },
+          data: { status: 'approved', approvedById: adminId, approvedAt: new Date() },
+        }),
+      );
+    } catch {
+      throw new NotFoundException('Commitment not found');
+    }
   }
-
-  async findAllCommitments(
-    page: number,
-    limit: number,
-  ): Promise<{ items: PartnerCommitment[]; totalItems: number }> {
-    const filter = { deletedAt: null };
-    const [items, totalItems] = await Promise.all([
-      this.commitmentModel
-        .find(filter)
-        .sort({ createdAt: -1 })
-        .skip((page - 1) * limit)
-        .limit(limit)
-        .lean()
-        .exec() as unknown as Promise<PartnerCommitment[]>,
-      this.commitmentModel.countDocuments(filter).exec(),
+  async findAllCommitments(page: number, limit: number) {
+    const where = { deletedAt: null };
+    const [rows, totalItems] = await Promise.all([
+      this.prisma.partnerCommitment.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.partnerCommitment.count({ where }),
     ]);
-    return { items, totalItems };
+    return { items: rows.map((row) => this.legacy(row)), totalItems };
   }
-
   async createDispute(
     partnerId: string,
     commitmentId: string,
     reason: string,
   ): Promise<PartnerDispute> {
-    return this.disputeModel.create({
-      partnerId: new Types.ObjectId(partnerId),
-      commitmentId: new Types.ObjectId(commitmentId),
-      reason,
-    });
+    return this.legacy(
+      await this.prisma.partnerDispute.create({
+        data: { id: createPublicId(), partnerId, commitmentId, reason },
+      }),
+    );
   }
-
   async resolveDispute(id: string, adminId: string, resolution: string): Promise<PartnerDispute> {
-    const doc = (await this.disputeModel
-      .findByIdAndUpdate(
-        id,
-        { status: 'resolved', resolvedBy: new Types.ObjectId(adminId), resolution },
-        { new: true },
-      )
-      .lean()
-      .exec()) as unknown as PartnerDispute | null;
-    if (!doc) throw new NotFoundException('Dispute not found');
-    return doc;
+    try {
+      return this.legacy(
+        await this.prisma.partnerDispute.update({
+          where: { id },
+          data: { status: 'resolved', resolvedById: adminId, resolution },
+        }),
+      );
+    } catch {
+      throw new NotFoundException('Dispute not found');
+    }
   }
 }

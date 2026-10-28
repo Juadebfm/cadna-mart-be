@@ -3,7 +3,6 @@ import { NotificationsRepository } from './notifications.repository';
 import { NotificationPreferencesDto } from './dto/notification.dto';
 import { UsersService } from '@users/users.service';
 import { NotificationCategory, Notification } from './schemas/notification.schema';
-import { Types } from 'mongoose';
 import { EmailService } from '@email/email.service';
 import { StackApiSmsService } from './stackapi-sms.service';
 import { FirebasePushService } from './firebase-push.service';
@@ -67,7 +66,7 @@ export class NotificationsService {
       return { notification: null, suppressed: true };
     }
     const notification = await this.repo.create({
-      userId: new Types.ObjectId(input.userId),
+      userId: input.userId as any,
       title: input.title,
       body: input.body,
       actionUrl: input.actionUrl ?? null,

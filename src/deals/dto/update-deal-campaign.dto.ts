@@ -2,7 +2,7 @@ import {
   IsArray,
   ArrayMinSize,
   ArrayMaxSize,
-  IsMongoId,
+  Matches,
   IsOptional,
   IsString,
   MinLength,
@@ -27,7 +27,7 @@ export class UpdateDealCampaignDto {
   @IsArray()
   @ArrayMinSize(1)
   @ArrayMaxSize(10)
-  @IsMongoId({ each: true })
+  @Matches(/^[a-f\d]{24}$/i, { each: true })
   selectedProductIds?: string[];
 
   @ApiPropertyOptional({ description: 'Optional campaign start datetime (ISO-8601)' })

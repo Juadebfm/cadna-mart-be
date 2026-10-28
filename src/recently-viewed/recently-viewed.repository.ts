@@ -1,51 +1,44 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
-import { RecentlyViewed } from './schemas/recently-viewed.schema';
+import { PrismaService } from '@database/prisma.service';
+import { createPublicId } from '@database/id.util';
 
 const MAX_RECENT_PRODUCTS = 100;
 
 @Injectable()
 export class RecentlyViewedRepository {
-  constructor(@InjectModel(RecentlyViewed.name) private readonly model: Model<RecentlyViewed>) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async record(userId: string, productId: string): Promise<void> {
-    await this.model
-      .updateOne(
-        { user: new Types.ObjectId(userId), product: new Types.ObjectId(productId) },
-        {
-          $set: { viewedAt: new Date(), deletedAt: null },
-          $setOnInsert: { createdAt: new Date() },
-        },
-        { upsert: true },
-      )
-      .exec();
+    await this.prisma.recentlyViewed.upsert({
+      where: { userId_productId: { userId, productId } },
+      create: { id: createPublicId(), userId, productId, viewedAt: new Date() },
+      update: { viewedAt: new Date() },
+    });
 
-    const stale = await this.model
-      .find({ user: new Types.ObjectId(userId), deletedAt: null })
-      .sort({ viewedAt: -1 })
-      .skip(MAX_RECENT_PRODUCTS)
-      .select('_id')
-      .lean()
-      .exec();
-    if (stale.length) {
-      await this.model.deleteMany({ _id: { $in: stale.map((entry) => entry._id) } }).exec();
-    }
+    const stale = await this.prisma.recentlyViewed.findMany({
+      where: { userId },
+      orderBy: { viewedAt: 'desc' },
+      skip: MAX_RECENT_PRODUCTS,
+      select: { id: true },
+    });
+    if (stale.length)
+      await this.prisma.recentlyViewed.deleteMany({
+        where: { id: { in: stale.map(({ id }) => id) } },
+      });
   }
 
   async findByUser(userId: string, page: number, limit: number) {
-    const filter = { user: new Types.ObjectId(userId), deletedAt: null };
+    const filter = { userId, product: { deletedAt: null, isActive: true } };
     const [items, totalItems] = await Promise.all([
-      this.model
-        .find(filter)
-        .populate({ path: 'product', match: { deletedAt: null, isActive: true } })
-        .sort({ viewedAt: -1 })
-        .skip((page - 1) * limit)
-        .limit(limit)
-        .lean()
-        .exec(),
-      this.model.countDocuments(filter).exec(),
+      this.prisma.recentlyViewed.findMany({
+        where: filter,
+        include: { product: { include: { seller: true } } },
+        orderBy: { viewedAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.recentlyViewed.count({ where: filter }),
     ]);
-    return { items: items as unknown as RecentlyViewed[], totalItems };
+    return { items, totalItems };
   }
 }

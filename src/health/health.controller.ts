@@ -1,7 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { HealthCheck, HealthCheckService } from '@nestjs/terminus';
-import { MongoHealthIndicator } from './indicators/mongo-health.indicator';
+import { PostgresHealthIndicator } from './indicators/postgres-health.indicator';
 import { Public } from '@auth/decorators/public.decorator';
 
 @ApiTags('Health')
@@ -9,7 +9,7 @@ import { Public } from '@auth/decorators/public.decorator';
 export class HealthController {
   constructor(
     private health: HealthCheckService,
-    private mongoHealth: MongoHealthIndicator,
+    private readonly postgresHealth: PostgresHealthIndicator,
   ) {}
 
   @Public()
@@ -25,6 +25,6 @@ export class HealthController {
   @HealthCheck()
   @ApiOperation({ summary: 'Database health check' })
   checkDb() {
-    return this.health.check([() => this.mongoHealth.isHealthy('mongodb')]);
+    return this.health.check([() => this.postgresHealth.isHealthy('postgresql')]);
   }
 }

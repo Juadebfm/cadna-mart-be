@@ -13,7 +13,7 @@ import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger'
 import { AccountTypes } from '@auth/decorators/account-types.decorator';
 import { CurrentUser } from '@auth/decorators/current-user.decorator';
 import { AccountType } from '@users/enums/account-type.enum';
-import { ParseObjectIdPipe } from '@common/pipes/parse-object-id.pipe';
+import { ParsePublicIdPipe } from '@common/pipes/parse-public-id.pipe';
 import { ReviewsService } from './reviews.service';
 import { UpdateReviewDto } from './dto/update-review.dto';
 
@@ -43,7 +43,7 @@ export class UserReviewsController {
   @Patch(':id')
   @ApiOperation({ summary: 'Edit your own review' })
   async updateReview(
-    @Param('id', ParseObjectIdPipe) id: string,
+    @Param('id', ParsePublicIdPipe) id: string,
     @Body() dto: UpdateReviewDto,
     @CurrentUser('userId') userId: string,
   ) {
@@ -54,7 +54,7 @@ export class UserReviewsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete your own review' })
   async deleteReview(
-    @Param('id', ParseObjectIdPipe) id: string,
+    @Param('id', ParsePublicIdPipe) id: string,
     @CurrentUser('userId') userId: string,
   ) {
     await this.reviewsService.deleteOwnReview(id, userId);

@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { applicationDefault, getApps, initializeApp } from 'firebase-admin/app';
 import { getMessaging, FidMulticastMessage } from 'firebase-admin/messaging';
-import { Types } from 'mongoose';
 import { ConfigService } from '@config/config.service';
 import { LoggerService } from '@logger/logger.service';
 import { NotificationsRepository } from './notifications.repository';
@@ -54,7 +53,7 @@ export class FirebasePushService {
         accepted ||= result.successCount > 0;
         const invalidIds = result.responses.flatMap((response, index) =>
           response.error?.code === 'messaging/registration-token-not-registered'
-            ? [batch[index]._id as Types.ObjectId]
+            ? [batch[index]._id]
             : [],
         );
         await this.repo.removeDevicesByIds(invalidIds);

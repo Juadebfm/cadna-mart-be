@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { CurrentUser } from '@auth/decorators/current-user.decorator';
-import { ParseObjectIdPipe } from '@common/pipes/parse-object-id.pipe';
+import { ParsePublicIdPipe } from '@common/pipes/parse-public-id.pipe';
 import { AddressesService } from './addresses.service';
 import { CreateAddressDto } from './dto/create-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
@@ -39,7 +39,7 @@ export class AddressesController {
   @ApiOperation({ summary: 'Update an address' })
   async update(
     @CurrentUser('userId') userId: string,
-    @Param('id', ParseObjectIdPipe) id: string,
+    @Param('id', ParsePublicIdPipe) id: string,
     @Body() dto: UpdateAddressDto,
   ) {
     return this.addressesService.update(userId, id, dto);
@@ -48,7 +48,7 @@ export class AddressesController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete an address (soft delete)' })
-  async remove(@CurrentUser('userId') userId: string, @Param('id', ParseObjectIdPipe) id: string) {
+  async remove(@CurrentUser('userId') userId: string, @Param('id', ParsePublicIdPipe) id: string) {
     await this.addressesService.remove(userId, id);
   }
 
@@ -56,7 +56,7 @@ export class AddressesController {
   @ApiOperation({ summary: 'Set an address as default' })
   async setDefault(
     @CurrentUser('userId') userId: string,
-    @Param('id', ParseObjectIdPipe) id: string,
+    @Param('id', ParsePublicIdPipe) id: string,
   ) {
     return this.addressesService.setDefault(userId, id);
   }

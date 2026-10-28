@@ -1,7 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { SiteConfig } from './schemas/site-config.schema';
+import { PrismaService } from '@database/prisma.service';
 
 type LegalPage = {
   title: string;
@@ -11,10 +9,10 @@ type LegalPage = {
 
 @Injectable()
 export class SiteConfigService {
-  constructor(@InjectModel(SiteConfig.name) private readonly siteConfigModel: Model<SiteConfig>) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async getConfig() {
-    const configs = await this.siteConfigModel.find().lean().exec();
+    const configs = await this.prisma.siteConfig.findMany();
     const result: Record<string, any> = {};
 
     for (const config of configs) {
@@ -34,7 +32,7 @@ export class SiteConfigService {
 
   async getLegalPage(slug: string) {
     const normalizedSlug = slug.trim().toLowerCase();
-    const configs = await this.siteConfigModel.find().lean().exec();
+    const configs = await this.prisma.siteConfig.findMany();
     const raw: Record<string, any> = {};
 
     for (const config of configs) {
