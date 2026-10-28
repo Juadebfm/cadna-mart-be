@@ -37,9 +37,20 @@ export interface EmailConfig {
   logoUrl: string;
 }
 
+export interface StackApiConfig {
+  apiKey: string;
+  publicKey: string;
+}
+
+export interface FirebaseConfig {
+  projectId: string;
+  credentialsConfigured: boolean;
+}
+
 export interface ClerkConfig {
   webhookSecret: string;
   secretKey: string;
+  jwtKey: string;
 }
 
 export interface PaystackConfig {

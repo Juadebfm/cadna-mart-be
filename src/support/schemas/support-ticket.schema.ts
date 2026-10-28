@@ -25,6 +25,11 @@ export interface TicketMessage {
   sentAt: Date;
 }
 
+export interface TicketAttachment {
+  url: string;
+  publicId: string;
+}
+
 @Schema({
   timestamps: true,
   toJSON: { virtuals: true },
@@ -57,6 +62,9 @@ export class SupportTicket extends BaseSchema {
 
   @Prop({ type: String, default: null })
   orderId!: string | null;
+
+  @Prop({ type: [Object], default: [] })
+  attachments!: TicketAttachment[];
 
   @Prop({ type: Date, default: null })
   closedAt!: Date | null;

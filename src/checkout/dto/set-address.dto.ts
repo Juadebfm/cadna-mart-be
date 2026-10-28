@@ -14,6 +14,10 @@ export class SetCheckoutAddressDto {
   @IsString()
   street2?: string;
 
+  @IsOptional()
+  @IsString()
+  notes?: string;
+
   @IsString()
   city!: string;
 

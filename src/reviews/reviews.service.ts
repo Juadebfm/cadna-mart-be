@@ -12,12 +12,14 @@ import { UpdateReviewDto } from './dto/update-review.dto';
 import { ModerateReviewDto } from './dto/moderate-review.dto';
 import { Product } from '@products/schemas/product.schema';
 import { Review } from './schemas/review.schema';
+import { Order, OrderStatus } from '@orders/schemas/order.schema';
 
 @Injectable()
 export class ReviewsService {
   constructor(
     private readonly reviewsRepository: ReviewsRepository,
     @InjectModel(Product.name) private readonly productModel: Model<Product>,
+    @InjectModel(Order.name) private readonly orderModel: Model<Order>,
   ) {}
 
   async createReview(productId: string, userId: string, userName: string, dto: CreateReviewDto) {
@@ -32,6 +34,12 @@ export class ReviewsService {
     const existing = await this.reviewsRepository.findByUserAndProduct(userId, productId);
     if (existing) throw new ConflictException('You have already reviewed this product');
 
+    const isVerifiedPurchase = await this.orderModel.exists({
+      userId,
+      status: OrderStatus.DELIVERED,
+      'items.productId': productId,
+      deletedAt: null,
+    });
     const review = await this.reviewsRepository.create({
       product: productId as any,
       user: userId as any,
@@ -39,7 +47,7 @@ export class ReviewsService {
       title: dto.title ?? null,
       comment: dto.comment ?? null,
       reviewerName: userName,
-      isVerifiedPurchase: false,
+      isVerifiedPurchase: !!isVerifiedPurchase,
       moderationStatus: 'approved',
       moderationReason: null,
       moderatedAt: null,
@@ -50,6 +58,56 @@ export class ReviewsService {
     await this.syncProductRating(productId);
 
     return this.toDto(review);
+  }
+
+  async findPendingReviews(userId: string, page = 1, limit = 20) {
+    const orders = await this.orderModel
+      .find({ userId, status: OrderStatus.DELIVERED, deletedAt: null })
+      .select('orderRef items timeline createdAt')
+      .sort({ updatedAt: -1 })
+      .lean()
+      .exec();
+
+    const candidates = new Map<
+      string,
+      {
+        productId: string;
+        name: string;
+        thumbnailUrl: string | null;
+        orderRef: string;
+        deliveredAt: Date | null;
+      }
+    >();
+    for (const order of orders) {
+      const deliveredAt =
+        [...(order.timeline ?? [])]
+          .reverse()
+          .find((entry) => entry.status === OrderStatus.DELIVERED)?.timestamp ?? null;
+      for (const item of order.items ?? []) {
+        if (!item.productId || candidates.has(item.productId)) continue;
+        candidates.set(item.productId, {
+          productId: item.productId,
+          name: item.name,
+          thumbnailUrl: item.thumbnailUrl,
+          orderRef: order.orderRef,
+          deliveredAt,
+        });
+      }
+    }
+    const candidateItems = Array.from(candidates.values());
+    const reviewedIds = new Set(
+      await this.reviewsRepository.findReviewedProductIds(
+        userId,
+        candidateItems.map((item) => item.productId),
+      ),
+    );
+    const pending = candidateItems.filter((item) => !reviewedIds.has(item.productId));
+    const totalItems = pending.length;
+    const offset = (page - 1) * limit;
+    return {
+      items: pending.slice(offset, offset + limit),
+      pagination: { page, limit, totalItems, totalPages: Math.ceil(totalItems / limit) },
+    };
   }
 
   async findByProduct(productId: string, sort: ReviewSortOption, page: number, limit: number) {

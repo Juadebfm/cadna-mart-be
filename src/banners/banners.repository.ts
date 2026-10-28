@@ -1,70 +1,51 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model } from 'mongoose';
-import { Banner, BannerType } from './schemas/banner.schema';
+import { Banner as PrismaBanner } from '../generated/prisma/client';
+import { PrismaService } from '@database/prisma.service';
+import { BannerType } from './schemas/banner.schema';
+
+export type BannerRecord = PrismaBanner & { _id: string };
 
 @Injectable()
 export class BannersRepository {
-  constructor(@InjectModel(Banner.name) public readonly bannerModel: Model<Banner>) {}
+  constructor(private readonly prisma: PrismaService) {}
 
-  async findByType(type: BannerType, location?: string): Promise<Banner[]> {
-    const normalizedLocation = location?.trim().toLowerCase();
-    const baseFilter = this.buildActiveFilter(type);
-
-    if (!normalizedLocation) {
-      return this.findMany(baseFilter);
-    }
-
-    const [targeted, global] = await Promise.all([
-      this.findMany({
-        $and: [baseFilter, { locations: normalizedLocation }],
-      }),
-      this.findMany({
-        $and: [
-          baseFilter,
-          {
-            $or: [{ locations: { $exists: false } }, { locations: { $size: 0 } }],
-          },
-        ],
-      }),
-    ]);
-
-    if (targeted.length === 0) {
-      return global;
-    }
-
-    const seen = new Set(
-      targeted.map((banner) =>
-        (banner as unknown as { _id: { toString(): string } })._id.toString(),
-      ),
-    );
-
-    return [
-      ...targeted,
-      ...global.filter((banner) => {
-        const bannerId = (banner as unknown as { _id: { toString(): string } })._id.toString();
-        return !seen.has(bannerId);
-      }),
-    ];
-  }
-
-  private buildActiveFilter(type: BannerType): FilterQuery<Banner> {
+  async findByType(type: BannerType, location?: string): Promise<BannerRecord[]> {
     const now = new Date();
-
-    return {
+    const activeFilter = {
       type,
       isActive: true,
       deletedAt: null,
-      $or: [
+      OR: [
         { startAt: null },
-        { startAt: { $lte: now }, $or: [{ endAt: null }, { endAt: { $gte: now } }] },
+        {
+          startAt: { lte: now },
+          OR: [{ endAt: null }, { endAt: { gte: now } }],
+        },
       ],
     };
-  }
 
-  private findMany(filter: FilterQuery<Banner>): Promise<Banner[]> {
-    return this.bannerModel.find(filter).sort({ order: 1 }).lean().exec() as unknown as Promise<
-      Banner[]
-    >;
+    const mapId = (banner: PrismaBanner): BannerRecord => ({ ...banner, _id: banner.id });
+    if (!location) {
+      const rows = await this.prisma.banner.findMany({
+        where: activeFilter,
+        orderBy: { order: 'asc' },
+      });
+      return rows.map(mapId);
+    }
+
+    const [targeted, global] = await Promise.all([
+      this.prisma.banner.findMany({
+        where: { AND: [activeFilter, { locations: { has: location } }] },
+        orderBy: { order: 'asc' },
+      }),
+      this.prisma.banner.findMany({
+        where: { AND: [activeFilter, { locations: { isEmpty: true } }] },
+        orderBy: { order: 'asc' },
+      }),
+    ]);
+
+    if (targeted.length === 0) return global.map(mapId);
+    const seen = new Set(targeted.map((banner) => banner.id));
+    return [...targeted.map(mapId), ...global.filter((banner) => !seen.has(banner.id)).map(mapId)];
   }
 }

@@ -62,4 +62,24 @@ export class SellersRepository {
     const doc = await this.followerModel.findOne({ user: userId, seller: sellerId }).lean().exec();
     return !!doc;
   }
+
+  async findFollowedByUser(
+    userId: string,
+    page = 1,
+    limit = 20,
+  ): Promise<{ items: SellerFollower[]; totalItems: number }> {
+    const filter = { user: userId, deletedAt: null };
+    const [items, totalItems] = await Promise.all([
+      this.followerModel
+        .find(filter)
+        .populate('seller')
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean()
+        .exec(),
+      this.followerModel.countDocuments(filter).exec(),
+    ]);
+    return { items: items as unknown as SellerFollower[], totalItems };
+  }
 }

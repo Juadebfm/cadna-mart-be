@@ -9,6 +9,13 @@ export enum NotificationChannel {
   PUSH = 'push',
 }
 
+export enum NotificationCategory {
+  ORDER_UPDATES = 'orderUpdates',
+  PROMOTIONS = 'promotions',
+  NEWSLETTER = 'newsletter',
+  SECURITY_ALERTS = 'securityAlerts',
+}
+
 @Schema({
   timestamps: true,
   toJSON: { virtuals: true },

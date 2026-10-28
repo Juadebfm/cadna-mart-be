@@ -33,7 +33,7 @@ export class ProductsService {
         if (cat.slug === 'deals') {
           resolvedQuery.section = 'best_deals';
         } else {
-          categoryIds = [(cat as unknown as { _id: { toString(): string } })._id.toString()];
+          categoryIds = [cat.id];
         }
       }
     }
@@ -41,7 +41,7 @@ export class ProductsService {
     if (query.subCategory && query.category !== 'deals') {
       const subCat = await this.categoriesService.findBySlug(query.subCategory);
       if (subCat) {
-        subCategoryIds = [(subCat as unknown as { _id: { toString(): string } })._id.toString()];
+        subCategoryIds = [subCat.id];
       }
     }
 

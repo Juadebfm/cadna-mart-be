@@ -38,11 +38,14 @@ import { RegisterSellerDetailsDto } from './dto/register-seller-details.dto';
 import { RegisterSellerPasswordDto } from './dto/register-seller-password.dto';
 import { OtpRequestDto, OtpVerifyDto, OtpResendDto, OtpPurpose } from './dto/otp.dto';
 import { RegisterDto } from './dto/register.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { Public } from './decorators/public.decorator';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { UsersService } from '@users/users.service';
 import { AuthEventsService } from '@auth-events/auth-events.service';
+import { AccountTypes } from './decorators/account-types.decorator';
+import { AccountType } from '@users/enums/account-type.enum';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -153,14 +156,14 @@ export class AuthController {
   @Public()
   @Post('register')
   @ApiOperation({
-    summary: 'Single-call registration (orchestrates email + details + password steps)',
+    summary: 'Submit buyer signup details in one request and send an email verification code',
   })
   @ApiCreatedResponse({
     description:
-      'Account created. Email a verification OTP is sent automatically. Caller should then hit /auth/otp/verify or /auth/register/verify.',
+      'Signup details are held in a temporary pending record; no buyer account is created until the email verification code is accepted. The caller should then hit /auth/otp/verify or /auth/register/verify.',
     schema: {
       example: {
-        message: 'Account created. Please verify your email.',
+        message: 'Signup saved. Please verify your email.',
         email: 'jane@example.com',
       },
     },
@@ -245,9 +248,41 @@ export class AuthController {
   @Public()
   @Post('clerk/login')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Login or register via Clerk OAuth (Google/Facebook)' })
+  @ApiOperation({
+    summary: 'Login or register a buyer via Clerk using verified email, phone, or both',
+  })
+  @ApiOkResponse({
+    schema: {
+      example: {
+        accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+        refreshToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+        expiresIn: '15m',
+        user: {
+          id: '6710abc123def456789012ab',
+          firstName: 'Jane',
+          lastName: 'Doe',
+          email: null,
+          accountType: 'BUYER',
+          phoneNumber: '+2348012345678',
+          isEmailVerified: false,
+          isPhoneVerified: true,
+        },
+      },
+    },
+  })
   async clerkLogin(@Body() dto: ClerkLoginDto) {
     return this.authService.clerkLogin(dto.token);
+  }
+
+  @AccountTypes(AccountType.BUYER)
+  @ApiBearerAuth()
+  @Post('clerk/link')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Link a Clerk sign-in to the currently authenticated buyer account',
+  })
+  async linkClerkIdentity(@CurrentUser('userId') userId: string, @Body() dto: ClerkLoginDto) {
+    return this.authService.linkClerkIdentity(userId, dto.token);
   }
 
   @Public()
@@ -375,6 +410,14 @@ export class AuthController {
   }
 
   // ─── 2FA MANAGEMENT ─────────────────────────────────────────
+
+  @ApiBearerAuth()
+  @Post('password/change')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Change the current local account password' })
+  async changePassword(@CurrentUser('userId') userId: string, @Body() dto: ChangePasswordDto) {
+    return this.authService.changePassword(userId, dto);
+  }
 
   @ApiBearerAuth()
   @Post('2fa/enable')

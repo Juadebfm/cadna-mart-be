@@ -90,15 +90,27 @@ export class SellerPostOrderController {
 
     const order = await this.ordersRepository.findById(orderId);
     if (!order) throw new NotFoundException('Order not found');
+    if (
+      order.status === OrderStatus.REFUND_REQUESTED ||
+      order.status === OrderStatus.CANCELLED ||
+      order.status === OrderStatus.REFUNDED
+    ) {
+      throw new BadRequestException(
+        'This order cannot be acknowledged while cancellation or refund is pending',
+      );
+    }
 
     const hasSellersItems = order.items.some((item) => item.sellerId === sellerId);
     if (!hasSellersItems) throw new NotFoundException('Order does not contain your products');
 
-    await this.ordersRepository.updateStatus(
+    const transitioned = await this.ordersRepository.transitionStatusIfCurrent(
       orderId,
+      [OrderStatus.CONFIRMED, OrderStatus.PROCESSING],
       OrderStatus.PROCESSING,
       dto.note ?? 'Acknowledged by seller',
     );
+    if (!transitioned)
+      throw new BadRequestException('Order status changed; refresh before acknowledging');
 
     return { orderId, acknowledged: true, note: dto.note ?? null };
   }
@@ -116,15 +128,27 @@ export class SellerPostOrderController {
 
     const order = await this.ordersRepository.findById(orderId);
     if (!order) throw new NotFoundException('Order not found');
+    if (
+      order.status === OrderStatus.REFUND_REQUESTED ||
+      order.status === OrderStatus.CANCELLED ||
+      order.status === OrderStatus.REFUNDED
+    ) {
+      throw new BadRequestException(
+        'This order cannot be dispatched while cancellation or refund is pending',
+      );
+    }
 
     const hasSellersItems = order.items.some((item) => item.sellerId === sellerId);
     if (!hasSellersItems) throw new NotFoundException('Order does not contain your products');
 
-    await this.ordersRepository.updateStatus(
+    const transitioned = await this.ordersRepository.transitionStatusIfCurrent(
       orderId,
+      [OrderStatus.CONFIRMED, OrderStatus.PROCESSING],
       OrderStatus.SHIPPED,
       dto.note ?? 'Dispatched by seller',
     );
+    if (!transitioned)
+      throw new BadRequestException('Order status changed; refresh before dispatching');
 
     return {
       orderId,

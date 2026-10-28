@@ -1,4 +1,4 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsIn, IsOptional, IsString } from 'class-validator';
 
 export class SellerOrderActionDto {
   @IsOptional()
@@ -11,6 +11,7 @@ export class SellerOrderActionDto {
 }
 
 export class SellerReturnDecisionDto {
+  @IsIn(['approve', 'reject'])
   @IsString()
   decision!: 'approve' | 'reject';
 

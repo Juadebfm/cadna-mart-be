@@ -1,10 +1,22 @@
 import { Injectable } from '@nestjs/common';
 import { NotificationsRepository } from './notifications.repository';
 import { NotificationPreferencesDto } from './dto/notification.dto';
+import { UsersService } from '@users/users.service';
+import { NotificationCategory, Notification } from './schemas/notification.schema';
+import { Types } from 'mongoose';
+import { EmailService } from '@email/email.service';
+import { StackApiSmsService } from './stackapi-sms.service';
+import { FirebasePushService } from './firebase-push.service';
 
 @Injectable()
 export class NotificationsService {
-  constructor(private readonly repo: NotificationsRepository) {}
+  constructor(
+    private readonly repo: NotificationsRepository,
+    private readonly usersService: UsersService,
+    private readonly emailService: EmailService,
+    private readonly smsService: StackApiSmsService,
+    private readonly pushService: FirebasePushService,
+  ) {}
 
   async findByUser(userId: string, page: number, limit: number): Promise<object> {
     const { items, totalItems } = await this.repo.findByUser(userId, page, limit);
@@ -24,9 +36,84 @@ export class NotificationsService {
     return { notification };
   }
 
-  async updatePreferences(_userId: string, dto: NotificationPreferencesDto): Promise<object> {
-    // Deferred: preferences are stored in user profile; stub returns accepted preferences
-    return { preferences: dto, note: 'preferences saved (user-profile integration deferred)' };
+  async updatePreferences(userId: string, dto: NotificationPreferencesDto): Promise<object> {
+    return { preferences: await this.usersService.updateNotificationPreferences(userId, dto) };
+  }
+
+  async getPreferences(userId: string): Promise<object> {
+    return { preferences: await this.usersService.getNotificationPreferences(userId) };
+  }
+
+  async createForUser(input: {
+    userId: string;
+    category: NotificationCategory;
+    title: string;
+    body: string;
+    actionUrl?: string;
+  }): Promise<{ notification: Notification | null; suppressed: boolean }> {
+    const user = await this.usersService.findById(input.userId);
+    const preferences = user.notificationPreferences ?? {
+      orderUpdates: true,
+      promotions: false,
+      newsletter: false,
+      securityAlerts: true,
+    };
+    if (!preferences[input.category]) return { notification: null, suppressed: true };
+    if (
+      (input.category === NotificationCategory.PROMOTIONS ||
+        input.category === NotificationCategory.NEWSLETTER) &&
+      !user.marketingConsentAt
+    ) {
+      return { notification: null, suppressed: true };
+    }
+    const notification = await this.repo.create({
+      userId: new Types.ObjectId(input.userId),
+      title: input.title,
+      body: input.body,
+      actionUrl: input.actionUrl ?? null,
+      type: input.category,
+    } as Partial<Notification>);
+
+    const deliveries: Promise<unknown>[] = [];
+    if (user.email && user.isVerified) {
+      deliveries.push(
+        this.emailService.sendNotificationEmail({
+          to: user.email,
+          title: input.title,
+          body: input.body,
+          ...(input.actionUrl ? { actionUrl: input.actionUrl } : {}),
+        }),
+      );
+    }
+
+    deliveries.push(
+      this.pushService.sendToUser(input.userId, input.title, input.body, input.actionUrl),
+    );
+
+    if (
+      (input.category === NotificationCategory.ORDER_UPDATES ||
+        input.category === NotificationCategory.SECURITY_ALERTS) &&
+      user.phoneNumber &&
+      user.isPhoneVerified
+    ) {
+      deliveries.push(this.smsService.send(user.phoneNumber, `${input.title}: ${input.body}`));
+    }
+    await Promise.allSettled(deliveries.map((delivery) => this.withDeliveryTimeout(delivery)));
+    return { notification, suppressed: false };
+  }
+
+  private async withDeliveryTimeout<T>(delivery: Promise<T>): Promise<T | null> {
+    let timeout: NodeJS.Timeout | undefined;
+    try {
+      return await Promise.race([
+        delivery,
+        new Promise<null>((resolve) => {
+          timeout = setTimeout(() => resolve(null), 5000);
+        }),
+      ]);
+    } finally {
+      if (timeout) clearTimeout(timeout);
+    }
   }
 
   async broadcast(dto: {

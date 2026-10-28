@@ -1,12 +1,11 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
-import { Category, CategorySchema } from './schemas/category.schema';
+import { PrismaModule } from '@database/prisma.module';
 import { CategoriesRepository } from './categories.repository';
 import { CategoriesService } from './categories.service';
 import { CategoriesController } from './categories.controller';
 
 @Module({
-  imports: [MongooseModule.forFeature([{ name: Category.name, schema: CategorySchema }])],
+  imports: [PrismaModule],
   controllers: [CategoriesController],
   providers: [CategoriesRepository, CategoriesService],
   exports: [CategoriesService, CategoriesRepository],

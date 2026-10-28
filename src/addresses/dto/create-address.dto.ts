@@ -47,6 +47,11 @@ export class CreateAddressDto {
   @IsString()
   postalCode?: string;
 
+  @ApiPropertyOptional({ example: 'Near the central market' })
+  @IsOptional()
+  @IsString()
+  notes?: string;
+
   @ApiPropertyOptional({ example: false })
   @IsOptional()
   @IsBoolean()

@@ -1,10 +1,9 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
-import { AuthEvent, AuthEventSchema } from './schemas/auth-event.schema';
+import { PrismaModule } from '@database/prisma.module';
 import { AuthEventsService } from './auth-events.service';
 
 @Module({
-  imports: [MongooseModule.forFeature([{ name: AuthEvent.name, schema: AuthEventSchema }])],
+  imports: [PrismaModule],
   providers: [AuthEventsService],
   exports: [AuthEventsService],
 })

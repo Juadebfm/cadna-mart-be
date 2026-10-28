@@ -1,17 +1,23 @@
 import { Document } from 'mongoose';
 import { AccountType } from '../enums/account-type.enum';
 import { AuthProvider } from '../enums/auth-provider.enum';
+import { BuyerNotificationPreferences, UserGender } from '../schemas/user.schema';
 
 export interface IUser extends Document {
   firstName: string;
   lastName: string;
-  email: string;
+  email: string | null;
   password: string | null;
   accountType: AccountType;
   authProvider: AuthProvider;
   clerkId: string | null;
   phoneNumber: string | null;
+  isPhoneVerified: boolean;
   dateOfBirth: Date | null;
+  gender: UserGender | null;
+  avatarUrl: string | null;
+  avatarPublicId: string | null;
+  notificationPreferences: BuyerNotificationPreferences;
   isVerified: boolean;
   isActive: boolean;
   isTwoFactorEnabled: boolean;

@@ -1,18 +1,10 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
-import {
-  NewsletterSubscription,
-  NewsletterSubscriptionSchema,
-} from './schemas/newsletter-subscription.schema';
+import { PrismaModule } from '@database/prisma.module';
 import { NewsletterController } from './newsletter.controller';
 import { NewsletterService } from './newsletter.service';
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([
-      { name: NewsletterSubscription.name, schema: NewsletterSubscriptionSchema },
-    ]),
-  ],
+  imports: [PrismaModule],
   controllers: [NewsletterController],
   providers: [NewsletterService],
 })

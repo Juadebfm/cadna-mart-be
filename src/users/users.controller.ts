@@ -7,6 +7,10 @@ import { CurrentUser } from '@auth/decorators/current-user.decorator';
 import { AddressesService } from '@addresses/addresses.service';
 import { DataRequestsService } from '@data-requests/data-requests.service';
 import { DataRequestKind } from '@data-requests/schemas/data-request.schema';
+import { UploadService } from '@upload/upload.service';
+import { UpdateProfileAvatarDto } from './dto/update-profile-avatar.dto';
+import { AccountTypes } from '@auth/decorators/account-types.decorator';
+import { AccountType } from './enums/account-type.enum';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -16,6 +20,7 @@ export class UsersController {
     private readonly usersService: UsersService,
     private readonly addressesService: AddressesService,
     private readonly dataRequestsService: DataRequestsService,
+    private readonly uploadService: UploadService,
   ) {}
 
   @Get('profile')
@@ -26,9 +31,23 @@ export class UsersController {
   }
 
   @Patch('profile')
-  @ApiOperation({ summary: 'Update the current user profile' })
+  @ApiOperation({
+    summary:
+      'Update profile fields; Clerk-managed email and phone changes must be verified through Clerk',
+  })
   async updateProfile(@CurrentUser('userId') userId: string, @Body() dto: UpdateProfileDto) {
     const user = await this.usersService.updateProfile(userId, dto);
+    return this.usersService.toPublicUser(user);
+  }
+
+  @Patch('profile/avatar')
+  @AccountTypes(AccountType.BUYER)
+  @ApiOperation({
+    summary: 'Set the current buyer profile photo using an owned profile image upload',
+  })
+  async updateAvatar(@CurrentUser('userId') userId: string, @Body() dto: UpdateProfileAvatarDto) {
+    const media = this.uploadService.resolveOwnedImage(dto.publicId, 'profiles', userId);
+    const user = await this.usersService.updateAvatar(userId, media.url, media.publicId);
     return this.usersService.toPublicUser(user);
   }
 

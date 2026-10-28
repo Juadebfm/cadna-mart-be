@@ -1,11 +1,20 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
-import { AuthEvent, AuthEventKind } from './schemas/auth-event.schema';
+import { Prisma } from '../generated/prisma/client';
+import { PrismaService } from '@database/prisma.service';
+import { createPublicId } from '@database/id.util';
+import { AuthEventKind } from './schemas/auth-event.schema';
+
+type AuthEventRow = Prisma.AuthEventGetPayload<Record<string, never>>;
+type AuthEventResponse = Omit<AuthEventRow, 'id'> & { _id: string };
+
+function toAuthEventResponse(event: AuthEventRow): AuthEventResponse {
+  const { id, ...fields } = event;
+  return { ...fields, _id: id };
+}
 
 @Injectable()
 export class AuthEventsService {
-  constructor(@InjectModel(AuthEvent.name) private readonly model: Model<AuthEvent>) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async log(
     userId: string | null,
@@ -13,12 +22,15 @@ export class AuthEventsService {
     options: { succeeded?: boolean; ip?: string | null; userAgent?: string | null } = {},
   ): Promise<void> {
     try {
-      await this.model.create({
-        userId: userId ? new Types.ObjectId(userId) : null,
-        kind,
-        succeeded: options.succeeded ?? true,
-        ip: options.ip ?? null,
-        userAgent: options.userAgent ?? null,
+      await this.prisma.authEvent.create({
+        data: {
+          id: createPublicId(),
+          userId,
+          kind,
+          succeeded: options.succeeded ?? true,
+          ip: options.ip ?? null,
+          userAgent: options.userAgent ?? null,
+        },
       });
     } catch {
       // Audit logging must never break an auth flow.
@@ -30,25 +42,24 @@ export class AuthEventsService {
     page = 1,
     limit = 20,
   ): Promise<{
-    items: AuthEvent[];
+    items: AuthEventResponse[];
     pagination: { page: number; limit: number; totalItems: number; totalPages: number };
   }> {
     const cap = Math.min(Math.max(Number(limit) || 20, 1), 100);
     const p = Math.max(Number(page) || 1, 1);
-    const filter = { userId: new Types.ObjectId(userId) };
+    const where = { userId };
     const [items, totalItems] = await Promise.all([
-      this.model
-        .find(filter)
-        .sort({ createdAt: -1 })
-        .skip((p - 1) * cap)
-        .limit(cap)
-        .lean()
-        .exec(),
-      this.model.countDocuments(filter),
+      this.prisma.authEvent.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (p - 1) * cap,
+        take: cap,
+      }),
+      this.prisma.authEvent.count({ where }),
     ]);
 
     return {
-      items: items as unknown as AuthEvent[],
+      items: items.map(toAuthEventResponse),
       pagination: {
         page: p,
         limit: cap,

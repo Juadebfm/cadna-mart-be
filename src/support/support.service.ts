@@ -1,12 +1,16 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { SupportTicket, TicketCategory, TicketStatus } from './schemas/support-ticket.schema';
 import { SupportRepository } from './support.repository';
 import { CreateTicketDto, AddMessageDto } from './dto/ticket.dto';
+import { UploadService } from '@upload/upload.service';
 
 @Injectable()
 export class SupportService {
-  constructor(private readonly repo: SupportRepository) {}
+  constructor(
+    private readonly repo: SupportRepository,
+    private readonly uploadService: UploadService,
+  ) {}
 
   private toDto(t: SupportTicket): object {
     const id = (t as unknown as { _id: { toString(): string } })._id.toString();
@@ -21,6 +25,7 @@ export class SupportService {
       assignedTo: t.assignedTo,
       messages: t.messages,
       orderId: t.orderId,
+      attachments: t.attachments ?? [],
       closedAt: t.closedAt,
       createdAt: t.createdAt,
       updatedAt: t.updatedAt,
@@ -28,6 +33,13 @@ export class SupportService {
   }
 
   async create(dto: CreateTicketDto, userId?: string): Promise<object> {
+    if (dto.attachmentPublicIds?.length && !userId) {
+      throw new BadRequestException('Attachments require a signed-in buyer account');
+    }
+    const attachments = (dto.attachmentPublicIds ?? []).map((publicId) => {
+      const media = this.uploadService.resolveOwnedImage(publicId, 'support', userId!);
+      return media;
+    });
     const ticket = await this.repo.create({
       userId: userId ? (new Types.ObjectId(userId) as unknown as SupportTicket['userId']) : null,
       guestEmail: dto.guestEmail ?? null,
@@ -35,6 +47,7 @@ export class SupportService {
       body: dto.body,
       category: dto.category ?? TicketCategory.OTHER,
       orderId: dto.orderId ?? null,
+      attachments,
       messages: [
         {
           authorId: userId ?? 'guest',
@@ -59,6 +72,32 @@ export class SupportService {
     const t = await this.repo.findById(id);
     if (!t) throw new NotFoundException('Support ticket not found');
     return this.toDto(t);
+  }
+
+  async findByIdForUser(id: string, userId: string): Promise<object> {
+    const ticket = await this.repo.findByUserAndId(userId, id);
+    if (!ticket) throw new NotFoundException('Support ticket not found');
+    return this.toDto(ticket);
+  }
+
+  async addMessageForUser(id: string, dto: AddMessageDto, userId: string): Promise<object> {
+    const added = await this.repo.pushMessageForUser(id, userId, {
+      authorId: userId,
+      authorRole: 'user',
+      body: dto.body,
+      sentAt: new Date(),
+    });
+    if (!added) throw new NotFoundException('Support ticket not found');
+    return this.findByIdForUser(id, userId);
+  }
+
+  async closeForUser(id: string, userId: string): Promise<object> {
+    const updated = await this.repo.updateForUser(userId, id, {
+      status: TicketStatus.CLOSED,
+      closedAt: new Date(),
+    } as Partial<SupportTicket>);
+    if (!updated) throw new NotFoundException('Support ticket not found');
+    return this.toDto(updated);
   }
 
   async addMessage(

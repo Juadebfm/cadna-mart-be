@@ -64,6 +64,7 @@ export interface DeliveryAddressSnapshot {
   phoneNumber: string;
   street1: string;
   street2: string | null;
+  notes?: string | null;
   city: string;
   state: string;
   country: string;
@@ -87,6 +88,13 @@ export interface OrderTrackingEvent {
   event: string;
   timestamp: Date;
   location: string | null;
+}
+
+export interface ReturnQuantityReservation {
+  requestId: Types.ObjectId;
+  productId: string;
+  variantId: string | null;
+  quantity: number;
 }
 
 @Schema({
@@ -133,6 +141,18 @@ export class Order extends BaseSchema {
 
   @Prop({ type: String, default: null })
   paystackReference!: string | null;
+
+  @Prop({ type: Number, default: 0 })
+  refundedAmount!: number;
+
+  @Prop({ type: Number, default: 0 })
+  reservedRefundAmount!: number;
+
+  @Prop({ type: [Object], default: [] })
+  returnQuantityReservations!: ReturnQuantityReservation[];
+
+  @Prop({ type: String, default: null })
+  refundInProgressRequestId!: string | null;
 
   @Prop({ type: [Object], default: [] })
   timeline!: OrderTimelineEntry[];

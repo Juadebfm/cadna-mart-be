@@ -27,6 +27,47 @@ export class EmailService {
       </div>`;
   }
 
+  async sendNotificationEmail(input: {
+    to: string;
+    title: string;
+    body: string;
+    actionUrl?: string;
+  }): Promise<boolean> {
+    const safeTitle = this.escapeHtml(input.title);
+    const safeBody = this.escapeHtml(input.body).replace(/\r?\n/g, '<br />');
+    const safeActionUrl =
+      input.actionUrl?.startsWith('/') && !input.actionUrl.startsWith('//')
+        ? this.escapeHtml(input.actionUrl)
+        : null;
+    const action = safeActionUrl
+      ? `<p><a href="${safeActionUrl}" style="color: #6C63FF;">View details</a></p>`
+      : '';
+
+    return this.send(
+      input.to,
+      `Cadna Mart: ${input.title}`,
+      `<div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
+        ${this.logoHeader()}
+        <h2 style="color: #6C63FF;">${safeTitle}</h2>
+        <p>${safeBody}</p>
+        ${action}
+      </div>`,
+    );
+  }
+
+  private escapeHtml(value: string): string {
+    return value.replace(/[&<>"']/g, (character) => {
+      const entities: Record<string, string> = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;',
+      };
+      return entities[character];
+    });
+  }
+
   async sendVerificationCode(email: string, code: string): Promise<void> {
     await this.send(
       email,
@@ -114,20 +155,22 @@ export class EmailService {
     );
   }
 
-  private async send(to: string, subject: string, html: string): Promise<void> {
+  private async send(to: string, subject: string, html: string): Promise<boolean> {
     try {
-      await this.resend.emails.send({
+      const { error } = await this.resend.emails.send({
         from: this.fromAddress,
         to,
         subject,
         html,
       });
-    } catch (error) {
-      this.logger.error(
-        `Failed to send email to ${to}: ${(error as Error).message}`,
-        (error as Error).stack,
-        'EmailService',
-      );
+      if (error) {
+        this.logger.warn('Resend rejected an email notification.', 'EmailService');
+        return false;
+      }
+      return true;
+    } catch {
+      this.logger.warn('Email provider request failed.', 'EmailService');
+      return false;
     }
   }
 }

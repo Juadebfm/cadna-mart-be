@@ -23,7 +23,7 @@ import { AddEvidenceDto } from './dto/evidence.dto';
 export class ReturnsController {
   constructor(private readonly returnsService: ReturnsService) {}
 
-  @AccountTypes(AccountType.BUYER, AccountType.SELLER)
+  @AccountTypes(AccountType.BUYER)
   @Post('/')
   async createReturn(
     @CurrentUser('id') userId: string,
@@ -32,7 +32,7 @@ export class ReturnsController {
     return this.returnsService.create(userId, dto);
   }
 
-  @AccountTypes(AccountType.BUYER, AccountType.SELLER)
+  @AccountTypes(AccountType.BUYER)
   @Get('/')
   async listReturns(
     @CurrentUser('id') userId: string,
@@ -42,32 +42,32 @@ export class ReturnsController {
     return this.returnsService.findByUser(userId, Number(page), Number(limit));
   }
 
-  @AccountTypes(AccountType.BUYER, AccountType.SELLER)
+  @AccountTypes(AccountType.BUYER)
   @Get('/eligibility/:orderItemId')
   checkEligibility(@Param('orderItemId') orderItemId: string): object {
     return this.returnsService.checkEligibility(orderItemId);
   }
 
-  @AccountTypes(AccountType.BUYER, AccountType.SELLER)
+  @AccountTypes(AccountType.BUYER)
   @Get('/:id')
   async getReturn(@Param('id') id: string, @CurrentUser('id') userId: string): Promise<object> {
     return this.returnsService.findById(id, userId);
   }
 
-  @AccountTypes(AccountType.BUYER, AccountType.SELLER)
+  @AccountTypes(AccountType.BUYER)
   @Patch('/:id/cancel')
   @HttpCode(HttpStatus.OK)
   async cancelReturn(@Param('id') id: string, @CurrentUser('id') userId: string): Promise<object> {
     return this.returnsService.cancel(id, userId);
   }
 
-  @AccountTypes(AccountType.BUYER, AccountType.SELLER)
+  @AccountTypes(AccountType.BUYER)
   @Post('/:id/evidence')
   async addEvidence(
     @Param('id') id: string,
     @CurrentUser('id') userId: string,
     @Body() dto: AddEvidenceDto,
   ): Promise<object> {
-    return this.returnsService.addEvidence(id, userId, dto.urls);
+    return this.returnsService.addEvidence(id, userId, dto.publicIds);
   }
 }

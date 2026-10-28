@@ -18,6 +18,13 @@ export class SupportRepository {
       .exec() as unknown as Promise<SupportTicket | null>;
   }
 
+  async findByUserAndId(userId: string, id: string): Promise<SupportTicket | null> {
+    return this.model
+      .findOne({ _id: new Types.ObjectId(id), userId: new Types.ObjectId(userId), deletedAt: null })
+      .lean()
+      .exec() as unknown as Promise<SupportTicket | null>;
+  }
+
   async findByUser(
     userId: string,
     page: number,
@@ -67,6 +74,33 @@ export class SupportRepository {
       .findByIdAndUpdate(id, data, { new: true })
       .lean()
       .exec() as unknown as Promise<SupportTicket | null>;
+  }
+
+  async updateForUser(
+    userId: string,
+    id: string,
+    data: Partial<SupportTicket>,
+  ): Promise<SupportTicket | null> {
+    return this.model
+      .findOneAndUpdate(
+        { _id: new Types.ObjectId(id), userId: new Types.ObjectId(userId), deletedAt: null },
+        data,
+        { new: true },
+      )
+      .lean()
+      .exec() as unknown as Promise<SupportTicket | null>;
+  }
+
+  async pushMessageForUser(
+    userId: string,
+    id: string,
+    message: SupportTicket['messages'][0],
+  ): Promise<boolean> {
+    const result = await this.model.updateOne(
+      { _id: new Types.ObjectId(id), userId: new Types.ObjectId(userId), deletedAt: null },
+      { $push: { messages: message } },
+    );
+    return result.matchedCount > 0;
   }
 
   async pushMessage(id: string, message: SupportTicket['messages'][0]): Promise<void> {

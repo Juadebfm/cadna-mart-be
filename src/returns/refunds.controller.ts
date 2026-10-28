@@ -22,9 +22,19 @@ export class RefundsController {
     return this.returnsService.processRefund(returnId, dto, adminId);
   }
 
-  @AccountTypes(AccountType.BUYER, AccountType.SELLER, AccountType.ADMIN)
+  @AccountTypes(AccountType.ADMIN)
+  @Post('/:id/reconcile')
+  async reconcileRefund(@Param('id') id: string): Promise<object> {
+    return this.returnsService.reconcileRefund(id);
+  }
+
+  @AccountTypes(AccountType.BUYER, AccountType.ADMIN)
   @Get('/:id')
-  async getRefundStatus(@Param('id') id: string): Promise<object> {
-    return this.returnsService.getRefundStatus(id);
+  async getRefundStatus(
+    @Param('id') id: string,
+    @CurrentUser('id') userId: string,
+    @CurrentUser('accountType') accountType: AccountType,
+  ): Promise<object> {
+    return this.returnsService.getRefundStatus(id, userId, accountType === AccountType.ADMIN);
   }
 }

@@ -86,7 +86,7 @@ async function bootstrap(): Promise<void> {
     origin: corsOrigin,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'x-correlation-id'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-correlation-id', 'x-guest-token'],
   });
 
   // Session (dual-layer auth)

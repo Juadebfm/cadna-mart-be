@@ -3,7 +3,9 @@ import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { randomBytes } from 'crypto';
 import { CartRepository } from './cart.repository';
-import { Cart, CartOwnerType } from './schemas/cart.schema';
+import { CartOwnerType } from './schemas/cart.schema';
+import { CartRow } from './cart.repository';
+import { PrismaService } from '@database/prisma.service';
 import { ConfigService } from '@config/config.service';
 import { comparePassword, hashPassword } from '@common/utils/hash.util';
 
@@ -30,6 +32,7 @@ export class CartService {
     private readonly cartRepository: CartRepository,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly prisma: PrismaService,
   ) {}
 
   // ─── Auth helpers ──────────────────────────────────────────
@@ -47,11 +50,11 @@ export class CartService {
     }
   }
 
-  private async assertAccess(req: Request, cart: Cart): Promise<{ userId: string | null }> {
+  private async assertAccess(req: Request, cart: CartRow): Promise<{ userId: string | null }> {
     const userId = await this.resolveUserIdFromRequest(req);
 
     if (cart.ownerType === CartOwnerType.USER) {
-      const ownerId = cart.user?.toString();
+      const ownerId = cart.userId?.toString();
       if (!userId || ownerId !== userId) {
         throw new ForbiddenException('You do not have access to this cart');
       }
@@ -195,12 +198,12 @@ export class CartService {
     const issues: Array<{ itemId: string; reason: string }> = [];
     for (const item of cart.items) {
       const product = item.product as unknown as {
-        _id: { toString(): string };
+        id: string;
         isActive: boolean;
         inventoryStatus: string;
         variants: Array<{ id: string; isInStock: boolean; stockQty: number }>;
       };
-      const itemId = (item as unknown as { _id: { toString(): string } })._id.toString();
+      const itemId = item.id;
       if (!product) {
         issues.push({ itemId, reason: 'product_missing' });
         continue;
@@ -250,6 +253,81 @@ export class CartService {
     return this.toDto(cart);
   }
 
+  async addAvailableReorderItems(
+    userId: string,
+    requestedItems: Array<{ productId: string; variantId: string | null; quantity: number }>,
+  ) {
+    const results: Array<{
+      productId: string;
+      variantId: string | null;
+      requestedQuantity: number;
+      addedQuantity: number;
+      reason?: string;
+    }> = [];
+
+    for (const item of requestedItems) {
+      const product = await this.prisma.product.findFirst({
+        where: { id: item.productId, deletedAt: null, isActive: true },
+        select: { id: true, inventoryStatus: true, variants: true, isActive: true },
+      });
+      if (!product) {
+        results.push({
+          productId: item.productId,
+          variantId: item.variantId,
+          requestedQuantity: item.quantity,
+          addedQuantity: 0,
+          reason: 'product_unavailable',
+        });
+        continue;
+      }
+
+      const variant = item.variantId
+        ? (product.variants as Array<{ id: string; isInStock: boolean; stockQty: number }>).find(
+            (candidate) => candidate.id === item.variantId,
+          )
+        : null;
+      if (item.variantId && !variant) {
+        results.push({
+          productId: item.productId,
+          variantId: item.variantId,
+          requestedQuantity: item.quantity,
+          addedQuantity: 0,
+          reason: 'variant_unavailable',
+        });
+        continue;
+      }
+
+      const availableQuantity = item.variantId
+        ? variant?.isInStock
+          ? variant.stockQty
+          : 0
+        : product.inventoryStatus === 'in_stock'
+          ? item.quantity
+          : 0;
+      const quantityToAdd = Math.min(item.quantity, availableQuantity);
+      if (quantityToAdd > 0) {
+        await this.addItem(userId, item.productId, item.variantId, quantityToAdd);
+      }
+      results.push({
+        productId: item.productId,
+        variantId: item.variantId,
+        requestedQuantity: item.quantity,
+        addedQuantity: quantityToAdd,
+        ...(quantityToAdd < item.quantity
+          ? { reason: quantityToAdd ? 'quantity_limited' : 'out_of_stock' }
+          : {}),
+      });
+    }
+
+    const cart = await this.getCart(userId);
+    const cartId = cart.id ?? (await this.cartRepository.findOrCreateForUser(userId)).publicCartId;
+    return {
+      cartId,
+      items: results,
+      unavailableItems: results.filter((item) => item.addedQuantity < item.requestedQuantity),
+    };
+  }
+
   async updateItemQuantity(userId: string, itemId: string, quantity: number) {
     const cart = await this.cartRepository.updateItemQuantity(userId, itemId, quantity);
     if (!cart) throw new NotFoundException('Cart item not found');
@@ -264,13 +342,12 @@ export class CartService {
 
   // ─── DTO ──────────────────────────────────────────────────
 
-  private toDto(cart: Cart) {
-    const id = (cart as unknown as { _id?: { toString(): string }; publicCartId: string })
-      .publicCartId;
+  private toDto(cart: CartRow) {
+    const id = cart.publicCartId;
 
     const items = cart.items.map((item) => {
       const product = item.product as unknown as {
-        _id: { toString(): string };
+        id: string;
         name: string;
         slug: string;
         thumbnailUrl: string | null;
@@ -278,14 +355,14 @@ export class CartService {
         variants: Array<{ id: string; price: MoneyDto; stockQty: number }>;
       };
 
-      const itemId = (item as unknown as { _id: { toString(): string } })._id.toString();
+      const itemId = item.id;
       const variant = product?.variants?.find((v) => v.id === item.variantId);
       const price = variant?.price ?? product?.price ?? formatMoney(0);
       const lineTotal = formatMoney(price.amount * item.quantity);
 
       return {
         itemId,
-        productId: product?._id?.toString() ?? '',
+        productId: product?.id ?? '',
         variantId: item.variantId,
         name: product?.name ?? '',
         thumbnailUrl: product?.thumbnailUrl ?? null,

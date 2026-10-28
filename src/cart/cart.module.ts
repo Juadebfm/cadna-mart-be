@@ -1,15 +1,14 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
 import { JwtModule } from '@nestjs/jwt';
-import { Cart, CartSchema } from './schemas/cart.schema';
 import { CartRepository } from './cart.repository';
 import { CartService } from './cart.service';
 import { CartController } from './cart.controller';
 import { ConfigService } from '@config/config.service';
+import { PrismaModule } from '@database/prisma.module';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Cart.name, schema: CartSchema }]),
+    PrismaModule,
     JwtModule.registerAsync({
       useFactory: (configService: ConfigService) => ({
         secret: configService.jwt.accessSecret,

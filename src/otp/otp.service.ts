@@ -1,4 +1,5 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
+import { randomInt } from 'crypto';
 import { OtpRepository } from './otp.repository';
 import { OtpType } from './enums/otp-type.enum';
 import { hashPassword, comparePassword } from '@common/utils/hash.util';
@@ -23,7 +24,7 @@ export class OtpService {
     const hashedCode = await hashPassword(code);
 
     await this.otpRepository.create({
-      userId: userId ? (userId as any) : null,
+      userId: userId ?? null,
       email: email.toLowerCase(),
       code: hashedCode,
       type,
@@ -38,7 +39,7 @@ export class OtpService {
     if (code === DEV_BYPASS_CODE && process.env.NODE_ENV !== 'prod') {
       const otp = await this.otpRepository.findLatestValid(email, type);
       if (otp) {
-        await this.otpRepository.markAsUsed(otp._id as unknown as string);
+        await this.otpRepository.markAsUsed(otp.id);
       }
       return true;
     }
@@ -50,18 +51,18 @@ export class OtpService {
     }
 
     if (otp.attempts >= OTP_MAX_ATTEMPTS) {
-      await this.otpRepository.markAsUsed(otp._id as unknown as string);
+      await this.otpRepository.markAsUsed(otp.id);
       throw new BadRequestException(ERROR_MESSAGES.OTP_MAX_ATTEMPTS);
     }
 
     const isValid = await comparePassword(code, otp.code);
 
     if (!isValid) {
-      await this.otpRepository.incrementAttempts(otp._id as unknown as string);
+      await this.otpRepository.incrementAttempts(otp.id);
       throw new BadRequestException(ERROR_MESSAGES.OTP_INVALID);
     }
 
-    await this.otpRepository.markAsUsed(otp._id as unknown as string);
+    await this.otpRepository.markAsUsed(otp.id);
     return true;
   }
 
@@ -76,6 +77,6 @@ export class OtpService {
   }
 
   private generateCode(): string {
-    return Math.floor(100000 + Math.random() * 900000).toString();
+    return randomInt(100000, 1000000).toString();
   }
 }

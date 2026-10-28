@@ -10,6 +10,29 @@ export enum ReturnStatus {
   COMPLETED = 'completed',
 }
 
+export enum ReturnRequestType {
+  ORDER_CANCELLATION = 'order_cancellation',
+  ITEM_RETURN = 'item_return',
+}
+
+export enum SellerReviewStatus {
+  PENDING = 'pending',
+  APPROVED = 'approved',
+  REJECTED = 'rejected',
+}
+
+export interface ReturnLineItem {
+  productId: string;
+  variantId: string | null;
+  name: string;
+  quantity: number;
+  sellerId: string | null;
+  lineTotal: number;
+  sellerDecision: SellerReviewStatus;
+  sellerDecisionNote: string | null;
+  sellerDecidedAt: Date | null;
+}
+
 export enum ReturnReason {
   DEFECTIVE = 'defective',
   NOT_AS_DESCRIBED = 'not_as_described',
@@ -40,6 +63,20 @@ export enum RefundMethod {
 export class ReturnRequest extends BaseSchema {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true, index: true })
   userId!: Types.ObjectId;
+
+  @Prop({
+    type: String,
+    enum: ReturnRequestType,
+    default: ReturnRequestType.ITEM_RETURN,
+    index: true,
+  })
+  requestType!: ReturnRequestType;
+
+  @Prop({ type: String, default: null })
+  previousOrderStatus!: string | null;
+
+  @Prop({ type: [Object], default: [] })
+  items!: ReturnLineItem[];
 
   @Prop({ type: Types.ObjectId, ref: 'Order', required: true, index: true })
   orderId!: Types.ObjectId;
@@ -95,11 +132,23 @@ export class ReturnRequest extends BaseSchema {
   @Prop({ type: String, default: null })
   refundReference!: string | null;
 
+  @Prop({ type: String, default: null })
+  refundProviderId!: string | null;
+
   @Prop({ type: Date, default: null })
   refundProcessedAt!: Date | null;
 
   @Prop({ default: 0 })
   refundAmount!: number;
+
+  @Prop({ type: String, default: null })
+  paymentReference!: string | null;
+
+  @Prop({ type: String, default: null })
+  refundProviderStatus!: string | null;
+
+  @Prop({ type: String, default: null })
+  adjustmentReason!: string | null;
 }
 
 export const ReturnRequestSchema = SchemaFactory.createForClass(ReturnRequest);

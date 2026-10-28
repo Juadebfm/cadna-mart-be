@@ -163,7 +163,7 @@ export class PaymentsService {
     };
   }
 
-  async initializeRefund(orderId: string, amount?: number): Promise<object> {
+  async initializeRefund(orderId: string, amount: number, returnId: string): Promise<object> {
     const order = await this.ordersRepository.findById(orderId);
     if (!order || order.paymentStatus !== OrderPaymentStatus.PAID) {
       throw new BadRequestException('Order is not eligible for refund');
@@ -177,9 +177,18 @@ export class PaymentsService {
     const refundPayload: Record<string, unknown> = {
       transaction: order.paystackReference,
     };
-    if (amount !== undefined) {
-      refundPayload['amount'] = amount * 100;
+    if (
+      !returnId ||
+      !Number.isSafeInteger(amount) ||
+      amount <= 0 ||
+      amount > order.pricing.total.amount
+    ) {
+      throw new BadRequestException(
+        'Refund amount must be a positive whole-currency amount within the order total',
+      );
     }
+    refundPayload['amount'] = amount * 100;
+    refundPayload['merchant_note'] = `Buyer money-back request ${returnId}`;
 
     const response = await fetch('https://api.paystack.co/refund', {
       method: 'POST',
@@ -190,7 +199,11 @@ export class PaymentsService {
       body: JSON.stringify(refundPayload),
       signal: AbortSignal.timeout(15000),
     });
-    const result = (await response.json()) as { status: boolean; message: string };
+    const result = (await response.json()) as {
+      status: boolean;
+      message: string;
+      data?: { id?: string | number; status?: string; refund_reference?: string | null };
+    };
 
     if (!response.ok || !result.status) {
       this.logger.error(
@@ -201,10 +214,63 @@ export class PaymentsService {
       throw new BadGatewayException('Failed to initialize refund');
     }
 
-    const id = (order as unknown as { _id: { toString(): string } })._id.toString();
-    await this.ordersService.updatePaymentStatus(id, OrderPaymentStatus.REFUNDED);
+    return {
+      orderId,
+      queued: true,
+      refundReference: result.data?.refund_reference ?? null,
+      refundId: result.data?.id?.toString() ?? null,
+      status: result.data?.status ?? 'pending',
+    };
+  }
 
-    return { orderId, refunded: true };
+  async fetchRefund(refundId: string): Promise<{
+    id: string;
+    amount: number;
+    currency: string;
+    status: string;
+    transactionReference: string;
+    refundReference: string | null;
+  }> {
+    const paystackSecretKey = this.configService.paystack.secretKey;
+    if (!paystackSecretKey) {
+      throw new InternalServerErrorException('PAYSTACK_SECRET_KEY is not configured');
+    }
+    const response = await fetch(`https://api.paystack.co/refund/${encodeURIComponent(refundId)}`, {
+      headers: { Authorization: `Bearer ${paystackSecretKey}` },
+      signal: AbortSignal.timeout(15000),
+    });
+    const result = (await response.json()) as {
+      status?: boolean;
+      data?: {
+        id?: string | number;
+        amount?: number;
+        currency?: string;
+        status?: string;
+        refund_reference?: string | null;
+        transaction?: { reference?: string };
+      };
+    };
+    const data = result.data;
+    const transactionReference = data?.transaction?.reference;
+    if (
+      !response.ok ||
+      !result.status ||
+      data?.id === undefined ||
+      !Number.isSafeInteger(data.amount) ||
+      !data.currency ||
+      !data.status ||
+      !transactionReference
+    ) {
+      throw new BadGatewayException('Could not verify refund status with Paystack');
+    }
+    return {
+      id: data.id.toString(),
+      amount: data.amount!,
+      currency: data.currency,
+      status: data.status,
+      transactionReference,
+      refundReference: data.refund_reference ?? null,
+    };
   }
 
   async handleOrderPaystackEvent(payload: unknown): Promise<void> {

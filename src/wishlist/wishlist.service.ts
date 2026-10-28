@@ -9,14 +9,23 @@ export class WishlistService {
     private readonly productsService: ProductsService,
   ) {}
 
-  async getWishlist(userId: string) {
-    const items = await this.wishlistRepository.findByUser(userId);
+  async getWishlist(userId: string, page = 1, limit = 20) {
+    const { items, totalItems } = await this.wishlistRepository.findByUser(userId, page, limit);
+    const visible = items.filter((item) => item.product);
     return {
-      items: items.map((item) => ({
-        productId: (item.product as unknown as { _id: { toString(): string } })._id.toString(),
+      items: visible.map((item) => ({
+        productId: item.product.id,
         addedAt: item.createdAt,
-        product: this.productsService.toCard(item.product as never),
+        product: this.productsService.toCard({
+          ...item.product,
+          _id: { toString: () => item.product.id },
+          seller: {
+            ...item.product.seller,
+            _id: { toString: () => item.product.seller.id },
+          },
+        } as never),
       })),
+      pagination: { page, limit, totalItems, totalPages: Math.ceil(totalItems / limit) },
     };
   }
 

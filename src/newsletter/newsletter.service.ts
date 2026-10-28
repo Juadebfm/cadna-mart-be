@@ -1,26 +1,18 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { NewsletterSubscription } from './schemas/newsletter-subscription.schema';
+import { PrismaService } from '@database/prisma.service';
+import { createPublicId } from '@database/id.util';
 
 @Injectable()
 export class NewsletterService {
-  constructor(
-    @InjectModel(NewsletterSubscription.name)
-    private readonly subscriptionModel: Model<NewsletterSubscription>,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async subscribe(email: string) {
-    const existing = await this.subscriptionModel.findOne({ email: email.toLowerCase() });
-    if (existing) {
-      if (!existing.isActive) {
-        existing.isActive = true;
-        await existing.save();
-      }
-      return { message: 'Subscription successful' };
-    }
-
-    await this.subscriptionModel.create({ email: email.toLowerCase() });
+    const normalizedEmail = email.toLowerCase();
+    await this.prisma.newsletterSubscription.upsert({
+      where: { email: normalizedEmail },
+      create: { id: createPublicId(), email: normalizedEmail },
+      update: { isActive: true },
+    });
     return { message: 'Subscription successful' };
   }
 }

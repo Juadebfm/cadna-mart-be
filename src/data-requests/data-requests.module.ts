@@ -1,10 +1,9 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
-import { DataRequest, DataRequestSchema } from './schemas/data-request.schema';
+import { PrismaModule } from '@database/prisma.module';
 import { DataRequestsService } from './data-requests.service';
 
 @Module({
-  imports: [MongooseModule.forFeature([{ name: DataRequest.name, schema: DataRequestSchema }])],
+  imports: [PrismaModule],
   providers: [DataRequestsService],
   exports: [DataRequestsService],
 })

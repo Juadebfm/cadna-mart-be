@@ -27,13 +27,15 @@ export class NotificationWebhooksController {
   @Post('/sms/delivery')
   @HttpCode(HttpStatus.OK)
   handleSmsDelivery(@Body() payload: unknown): object {
-    return { received: true, provider: 'sms', payload };
+    void payload;
+    return { received: true, provider: 'sms' };
   }
 
   @Public()
   @Post('/whatsapp/delivery')
   @HttpCode(HttpStatus.OK)
   handleWhatsappDelivery(@Body() payload: unknown): object {
-    return { received: true, provider: 'whatsapp', payload };
+    void payload;
+    return { received: true, provider: 'whatsapp' };
   }
 }

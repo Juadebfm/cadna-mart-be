@@ -39,6 +39,18 @@ export class ReviewsRepository {
       .exec() as unknown as Promise<Review | null>;
   }
 
+  async findReviewedProductIds(userId: string, productIds: string[]): Promise<string[]> {
+    if (!productIds.length) return [];
+    const reviews = await this.reviewModel
+      .find({ user: userId, product: { $in: productIds }, deletedAt: null })
+      .select('product')
+      .lean()
+      .exec();
+    return reviews.map((review) =>
+      (review.product as unknown as { toString(): string }).toString(),
+    );
+  }
+
   async findById(id: string): Promise<Review | null> {
     return this.reviewModel.findById(id).lean().exec() as unknown as Promise<Review | null>;
   }
