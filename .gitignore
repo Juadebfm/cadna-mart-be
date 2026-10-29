@@ -25,12 +25,15 @@ docs/seller-auth-design/
 docs/seller-auth-backend.md
 
 # Documentation kept local and excluded from GitHub
+docs/endpoint-audit.csv
+docs/neon-postgres-migration-blueprint.md
 docs/README.md
 docs/openapi.json
 docs/product-overview-and-delivery-plan.md
 docs/project-architecture.md
 docs/notifications.md
 docs/refunds.md
+docs/saas-free-delivery-roadmap.md
 
 zikel-backup-codes.txt
 # IDE
