@@ -49,7 +49,13 @@ export class ProductsRepository {
     } = {},
   ): Prisma.Sql {
     const filters: Prisma.Sql[] = [Prisma.sql`p."deletedAt" IS NULL`];
-    if (!options.includeInactive) filters.push(Prisma.sql`p."isActive" = TRUE`);
+    if (!options.includeInactive) {
+      filters.push(Prisma.sql`p."isActive" = TRUE`);
+      filters.push(Prisma.sql`EXISTS (
+        SELECT 1 FROM "stores" AS s
+        WHERE s."id" = p."sellerId" AND s."isActive" = TRUE AND s."deletedAt" IS NULL
+      )`);
+    }
     if (options.sellerId) filters.push(Prisma.sql`p."sellerId" = ${options.sellerId}`);
     if (query.q) filters.push(Prisma.sql`p."name" ILIKE ${`%${query.q}%`}`);
     if (query.section) filters.push(Prisma.sql`p."sections" @> ARRAY[${query.section}]::text[]`);
@@ -130,7 +136,12 @@ export class ProductsRepository {
 
   async findBySlug(slug: string): Promise<Product | null> {
     const row = await this.prisma.product.findFirst({
-      where: { slug, deletedAt: null, isActive: true },
+      where: {
+        slug,
+        deletedAt: null,
+        isActive: true,
+        seller: { is: { isActive: true, deletedAt: null } },
+      },
       include: { seller: { select: this.cardSeller } },
     });
     return this.legacy(row);
@@ -138,7 +149,12 @@ export class ProductsRepository {
 
   async findById(id: string): Promise<Product | null> {
     const row = await this.prisma.product.findFirst({
-      where: { id, deletedAt: null, isActive: true },
+      where: {
+        id,
+        deletedAt: null,
+        isActive: true,
+        seller: { is: { isActive: true, deletedAt: null } },
+      },
       include: { seller: { select: this.cardSeller } },
     });
     return this.legacy(row);
@@ -154,7 +170,12 @@ export class ProductsRepository {
 
   async findBySection(section: string, limit: number): Promise<Product[]> {
     const rows = await this.prisma.product.findMany({
-      where: { deletedAt: null, isActive: true, sections: { has: section } },
+      where: {
+        deletedAt: null,
+        isActive: true,
+        sections: { has: section },
+        seller: { is: { isActive: true, deletedAt: null } },
+      },
       orderBy: [{ salesCount: 'desc' }, { createdAt: 'desc' }],
       take: limit,
       include: { seller: { select: this.cardSeller } },
@@ -173,6 +194,7 @@ export class ProductsRepository {
         id: { not: productId },
         deletedAt: null,
         isActive: true,
+        seller: { is: { isActive: true, deletedAt: null } },
         OR: [{ categoryId: row.categoryId ?? undefined }, { brand: row.brand ?? undefined }],
       },
       orderBy: { salesCount: 'desc' },
@@ -184,7 +206,12 @@ export class ProductsRepository {
 
   async searchSuggest(q: string, limit: number): Promise<Product[]> {
     const rows = await this.prisma.product.findMany({
-      where: { deletedAt: null, isActive: true, name: { contains: q, mode: 'insensitive' } },
+      where: {
+        deletedAt: null,
+        isActive: true,
+        name: { contains: q, mode: 'insensitive' },
+        seller: { is: { isActive: true, deletedAt: null } },
+      },
       take: limit,
     });
     return rows.map((row) => this.legacy(row));

@@ -3,9 +3,17 @@ import { v2 as cloudinary, UploadApiResponse } from 'cloudinary';
 import { ConfigService } from '@config/config.service';
 import { Readable } from 'stream';
 import { AccountType } from '@users/enums/account-type.enum';
+import { randomUUID } from 'node:crypto';
 
 export type UploadFolder =
   'products' | 'stores' | 'categories' | 'profiles' | 'support' | 'general';
+
+export type PrivateSellerDocumentUpload = {
+  storageKey: string;
+  resourceType: string;
+  format: string;
+  sizeBytes: number;
+};
 
 @Injectable()
 export class UploadService {
@@ -42,6 +50,65 @@ export class UploadService {
     });
 
     return { url: result.secure_url, publicId: result.public_id };
+  }
+
+  async uploadPrivateSellerDocument(
+    file: Express.Multer.File,
+    userId: string,
+  ): Promise<PrivateSellerDocumentUpload> {
+    const { cloudName } = this.configService.storage;
+    if (!cloudName) throw new BadRequestException('Storage is not configured');
+    const publicId = `${this.buildFolder('support', userId)}/seller-application/${randomUUID()}`;
+    const result = await new Promise<UploadApiResponse>((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          public_id: publicId,
+          resource_type: 'auto',
+          type: 'authenticated',
+          overwrite: false,
+          use_filename: false,
+          unique_filename: false,
+          context: { ownerId: userId, documentClass: 'seller-application' },
+        },
+        (error, uploaded) => {
+          if (error || !uploaded) return reject(error ?? new Error('Private upload failed'));
+          resolve(uploaded);
+        },
+      );
+      Readable.from(file.buffer).pipe(uploadStream);
+    });
+    return {
+      storageKey: result.public_id,
+      resourceType: result.resource_type,
+      format: result.format,
+      sizeBytes: result.bytes,
+    };
+  }
+
+  async deletePrivateSellerDocument(storageKey: string, resourceType: string): Promise<void> {
+    const { cloudName } = this.configService.storage;
+    if (!cloudName) throw new BadRequestException('Storage is not configured');
+    await cloudinary.uploader.destroy(storageKey, {
+      resource_type: resourceType as 'image' | 'video' | 'raw',
+      type: 'authenticated',
+      invalidate: true,
+    });
+  }
+
+  createPrivateSellerDocumentDownloadUrl(
+    storageKey: string,
+    resourceType: string,
+    format: string,
+    expiresInSeconds = 60,
+  ): string {
+    const { cloudName } = this.configService.storage;
+    if (!cloudName) throw new BadRequestException('Storage is not configured');
+    const expiresAt = Math.floor(Date.now() / 1000) + expiresInSeconds;
+    return cloudinary.utils.private_download_url(storageKey, format, {
+      resource_type: resourceType as 'image' | 'video' | 'raw',
+      type: 'authenticated',
+      expires_at: expiresAt,
+    });
   }
 
   createPresignedUpload(folder: UploadFolder = 'general', ownerId: string) {

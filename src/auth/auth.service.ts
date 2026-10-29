@@ -8,7 +8,6 @@ import { JwtService } from '@nestjs/jwt';
 import { createClerkClient, verifyToken } from '@clerk/backend';
 import { PrismaService } from '@database/prisma.service';
 import { isPrismaUniqueConstraintError } from '@database/prisma-errors';
-import { createPublicId } from '@database/id.util';
 import { ConfigService } from '@config/config.service';
 import { UsersService } from '@users/users.service';
 import { User } from '@users/schemas/user.schema';
@@ -232,134 +231,17 @@ export class AuthService {
     return { message: 'Verification code sent' };
   }
 
-  // ─── SELLER REGISTRATION ───────────────────────────────────
-
-  async registerSellerEmail(email: string): Promise<{ sessionId: string }> {
-    const existing = await this.usersService.findByEmail(email);
-    if (existing) {
-      throw new ConflictException(ERROR_MESSAGES.USER_ALREADY_EXISTS);
-    }
-
-    const pendingBuyerSignup = await this.pendingBuyerSignupService.findByEmail(email);
-    if (pendingBuyerSignup) {
-      throw new ConflictException(ERROR_MESSAGES.USER_ALREADY_EXISTS);
-    }
-
-    const session = await this.registrationSessionService.createSession(email);
-    return { sessionId: session.sessionId };
-  }
-
-  async registerSellerDetails(
-    sessionId: string,
-    details: {
-      firstName: string;
-      lastName: string;
-      dateOfBirth?: string;
-      phoneNumber?: string;
-      businessName: string;
-      businessRegistrationNumber?: string;
-      businessAddress: string;
-      businessType: string;
-      termsAccepted: boolean;
-    },
-  ): Promise<{ sessionId: string }> {
-    if (details.termsAccepted !== true) {
-      throw new BadRequestException('You must accept the terms and conditions to register');
-    }
-    await this.registrationSessionService.setDetails(sessionId, {
-      firstName: details.firstName,
-      lastName: details.lastName,
-      dateOfBirth: details.dateOfBirth,
-      phoneNumber: details.phoneNumber,
-      termsAccepted: details.termsAccepted,
-    });
-
-    // Store business details in session metadata (we'll read them back at password step).
-    // Bank details are intentionally NOT collected here - the FE collects them in the
-    // same screen but submits via POST /sellers/me/banking after login. See dto.
-    const session = await this.registrationSessionService.getSession(sessionId);
-    (session as any).businessDetails = {
-      businessName: details.businessName,
-      businessRegistrationNumber: details.businessRegistrationNumber ?? null,
-      businessAddress: details.businessAddress,
-      businessType: details.businessType,
-    };
-
-    return { sessionId };
-  }
-
-  async registerSellerPassword(
-    sessionId: string,
-    password: string,
-    confirmPassword: string,
-    businessDetails: {
-      businessName: string;
-      businessRegistrationNumber?: string;
-      businessAddress: string;
-      businessType: string;
-    },
-  ): Promise<{ message: string }> {
-    if (password !== confirmPassword) {
-      throw new BadRequestException('Passwords do not match');
-    }
-
-    const session = await this.registrationSessionService.validateStep(sessionId, 2);
-
-    validatePasswordStrength(password, {
-      firstName: session.firstName ?? undefined,
-      lastName: session.lastName ?? undefined,
-      email: session.email,
-    });
-
-    // Create user as SELLER — usersService.create() handles hashing
-    const user = await this.usersService.create({
-      email: session.email,
-      password,
-      firstName: session.firstName!,
-      lastName: session.lastName!,
-      accountType: AccountType.SELLER,
-      phoneNumber: session.phoneNumber ?? undefined,
-      dateOfBirth: session.dateOfBirth ? session.dateOfBirth.toISOString() : undefined,
-      termsAccepted: session.termsAccepted,
-    });
-
-    const userId = (user as any)._id.toString();
-
-    // Create SellerProfile. Bank fields stay null until the seller submits them
-    // via POST /sellers/me/banking after login (avoids accepting bank PII on
-    // unauthenticated endpoints).
-    await this.prisma.sellerProfile.create({
-      data: {
-        id: createPublicId(),
-        userId,
-        businessName: businessDetails.businessName,
-        businessRegistrationNumber: businessDetails.businessRegistrationNumber ?? null,
-        businessAddress: businessDetails.businessAddress,
-        businessType: businessDetails.businessType,
-        bankName: null,
-        bankAccountNumber: null,
-        bankAccountName: null,
-        bankDetailsCompletedAt: null,
-        isApproved: false,
-      },
-    });
-
-    // Send verification OTP
-    const code = await this.otpService.generateAndStore(session.email, OtpType.EMAIL_VERIFICATION);
-    await this.emailService.sendVerificationCode(session.email, code);
-
-    // Clean up registration session
-    await this.registrationSessionService.completeAndDelete(sessionId);
-
-    return { message: 'Seller account created. Please verify your email.' };
-  }
-
   // ─── LOGIN ───────────────────────────────────────────────────
 
   async validateUser(
     email: string,
     password: string,
-  ): Promise<{ userId: string; email: string; accountType: string } | null> {
+  ): Promise<{
+    userId: string;
+    email: string;
+    accountType: string;
+    accountTypes?: AccountType[];
+  } | null> {
     const user = await this.usersService.findByEmailWithPassword(email);
     if (!user || !user.isActive || !user.email) {
       return null;
@@ -382,6 +264,7 @@ export class AuthService {
       userId: (user as unknown as { _id: { toString(): string } })._id.toString(),
       email: user.email,
       accountType: user.accountType,
+      accountTypes: user.accountTypes,
     };
   }
 
@@ -389,6 +272,7 @@ export class AuthService {
     userId: string;
     email: string;
     accountType: string;
+    accountTypes?: AccountType[];
   }): Promise<TokenResponse | { requires2FA: true; email: string }> {
     const fullUser = await this.usersService.findById(user.userId);
 
@@ -419,6 +303,7 @@ export class AuthService {
       userId: (user as unknown as { _id: { toString(): string } })._id.toString(),
       email: user.email,
       accountType: user.accountType,
+      accountTypes: user.accountTypes,
     });
   }
 
@@ -492,6 +377,7 @@ export class AuthService {
         userId,
         email: user.email,
         accountType: user.accountType,
+        accountTypes: user.accountTypes,
       });
       await this.authEventsService.log(userId, AuthEventKind.LOGIN_OTP);
       const fullUser = await this.usersService.findById(userId);
@@ -886,6 +772,7 @@ export class AuthService {
       userId,
       email: user.email,
       accountType: user.accountType,
+      accountTypes: user.accountTypes,
     });
 
     await this.authEventsService.log(userId, AuthEventKind.CLERK_LOGIN);
@@ -927,6 +814,7 @@ export class AuthService {
       sub: (user as unknown as { _id: { toString(): string } })._id.toString(),
       ...(user.email ? { email: user.email } : {}),
       accountType: user.accountType,
+      accountTypes: user.accountTypes,
     };
 
     const tokens = await this.generateTokens(newPayload);
@@ -949,11 +837,13 @@ export class AuthService {
     userId: string;
     email: string | null;
     accountType: string;
+    accountTypes?: AccountType[];
   }): Promise<TokenResponse> {
     const payload: JwtPayload = {
       sub: user.userId,
       ...(user.email ? { email: user.email } : {}),
       accountType: user.accountType as JwtPayload['accountType'],
+      accountTypes: user.accountTypes ?? [user.accountType as AccountType],
     };
 
     const tokens = await this.generateTokens(payload);

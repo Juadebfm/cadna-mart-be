@@ -181,6 +181,7 @@ export class DataRequestsService {
         throw new ConflictException('The account record for this request is no longer available');
       const categories = items.map((item) => item.category);
       await this.ensureOperationalRecordsHaveDisposition(user.id, categories);
+      await this.deleteSellerApplicationDocuments(user.id);
       await this.removeExternalIdentity(id, user);
       await this.deleteNonretainedSupportMedia(
         user.id,
@@ -486,6 +487,36 @@ export class DataRequestsService {
 
   private async deleteNonretainedSupportMedia(userId: string, retainOpenTickets: boolean) {
     await this.deleteSupportMedia(userId, retainOpenTickets ? { status: { not: 'open' } } : {});
+  }
+
+  async deleteSellerApplicationDocuments(userId: string): Promise<{ deleted: number }> {
+    const documents = await this.prisma.sellerApplicationDocument.findMany({
+      where: { deletedAt: null, sellerProfile: { userId } },
+      select: { id: true, storageKey: true, resourceType: true },
+    });
+    if (!documents.length) return { deleted: 0 };
+    if (!this.configService.storage.cloudName) {
+      throw new ServiceUnavailableException(
+        'Seller identity storage is not configured; account erasure remains in progress',
+      );
+    }
+    try {
+      for (const document of documents) {
+        await this.uploadService.deletePrivateSellerDocument(
+          document.storageKey,
+          document.resourceType,
+        );
+      }
+    } catch {
+      throw new ServiceUnavailableException(
+        'Seller identity files could not be deleted; account erasure remains in progress',
+      );
+    }
+    const result = await this.prisma.sellerApplicationDocument.updateMany({
+      where: { id: { in: documents.map(({ id }) => id) }, deletedAt: null },
+      data: { deletedAt: new Date() },
+    });
+    return { deleted: result.count };
   }
 
   private async deleteSupportMedia(userId: string, statusFilter: Record<string, unknown>) {

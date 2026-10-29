@@ -14,7 +14,10 @@ describe('AdminUsersController deletion', () => {
     findById: jest.fn(),
     remove: jest.fn(),
   };
-  const dataRequestsService = { create: jest.fn() };
+  const dataRequestsService = {
+    create: jest.fn(),
+    deleteSellerApplicationDocuments: jest.fn().mockResolvedValue({ deleted: 0 }),
+  };
   let controller: AdminUsersController;
 
   beforeEach(() => {
@@ -50,6 +53,7 @@ describe('AdminUsersController deletion', () => {
     const result = await controller.remove('seller-1');
 
     expect(usersService.remove).toHaveBeenCalledWith('seller-1');
+    expect(dataRequestsService.deleteSellerApplicationDocuments).toHaveBeenCalledWith('seller-1');
     expect(dataRequestsService.create).not.toHaveBeenCalled();
     expect(result).toEqual({ id: 'seller-1', status: 'soft_deleted' });
   });

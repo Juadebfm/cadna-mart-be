@@ -21,6 +21,8 @@ skills-lock.json
 
 # Local-only design notes (do not push to GitHub)
 docs/auth-design/
+docs/seller-auth-design/
+docs/seller-auth-backend.md
 
 # Documentation kept local and excluded from GitHub
 docs/README.md

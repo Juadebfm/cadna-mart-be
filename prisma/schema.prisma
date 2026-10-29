@@ -16,6 +16,7 @@ model User {
   email                    String?   @unique
   password                 String?
   accountType              String
+  accountTypes             String[]  @default([])
   authProvider             String    @default("local")
   clerkId                  String?   @unique
   phoneNumber              String?
@@ -40,6 +41,9 @@ model User {
   seller                   Seller?
   sellerProfile            SellerProfile?
   approvedSellerProfiles   SellerProfile[] @relation("SellerApprover")
+  reviewedSellerProfiles   SellerProfile[] @relation("SellerProfileReviewer")
+  uploadedSellerDocuments  SellerApplicationDocument[] @relation("SellerDocumentUploader")
+  sellerApplicationReviews SellerApplicationReview[] @relation("SellerApplicationActor")
   orders                   Order[]
   returnRequests           ReturnRequest[]
   checkoutSessions        CheckoutSession[]
@@ -125,14 +129,25 @@ model Seller {
 model SellerProfile {
   id                       String    @id @db.VarChar(24)
   userId                   String    @unique @db.VarChar(24)
+  applicantType            String?
   businessName             String
   businessRegistrationNumber String?
   businessAddress          String
   businessType             String
   bankName                 String?
+  bankCode                 String?
   bankAccountNumber        String?
+  bankAccountNumberLast4   String?
   bankAccountName          String?
   bankDetailsCompletedAt   DateTime?
+  bankVerificationProvider String?
+  bankVerifiedAt            DateTime?
+  applicationStatus         String    @default("pending")
+  submittedAt               DateTime?
+  reviewReason              String?
+  requestedDocumentTypes    String[]  @default([])
+  reviewedAt                DateTime?
+  reviewedById              String?   @db.VarChar(24)
   isApproved               Boolean   @default(false)
   approvedAt               DateTime?
   approvedById             String?   @db.VarChar(24)
@@ -142,8 +157,50 @@ model SellerProfile {
 
   user                     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   approvedBy               User?     @relation("SellerApprover", fields: [approvedById], references: [id], onDelete: SetNull)
+  reviewedBy               User?     @relation("SellerProfileReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  documents                SellerApplicationDocument[]
+  reviewHistory            SellerApplicationReview[]
 
+  @@index([applicationStatus, submittedAt])
   @@map("seller_profiles")
+}
+
+model SellerApplicationDocument {
+  id               String    @id @db.VarChar(24)
+  sellerProfileId  String    @db.VarChar(24)
+  uploadedById     String?   @db.VarChar(24)
+  documentType     String
+  storageKey       String    @unique
+  resourceType     String
+  format           String
+  originalFileName String
+  contentType      String
+  sizeBytes        Int
+  createdAt        DateTime  @default(now())
+  deletedAt        DateTime?
+
+  sellerProfile SellerProfile @relation(fields: [sellerProfileId], references: [id], onDelete: Cascade)
+  uploadedBy    User?         @relation("SellerDocumentUploader", fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  @@index([sellerProfileId, documentType, deletedAt])
+  @@map("seller_application_documents")
+}
+
+model SellerApplicationReview {
+  id                     String   @id @db.VarChar(24)
+  sellerProfileId        String   @db.VarChar(24)
+  actorId                String   @db.VarChar(24)
+  fromStatus             String
+  toStatus               String
+  reason                 String?
+  requestedDocumentTypes String[] @default([])
+  createdAt              DateTime @default(now())
+
+  sellerProfile SellerProfile @relation(fields: [sellerProfileId], references: [id], onDelete: Cascade)
+  actor         User          @relation("SellerApplicationActor", fields: [actorId], references: [id], onDelete: Restrict)
+
+  @@index([sellerProfileId, createdAt])
+  @@map("seller_application_reviews")
 }
 
 model Product {

@@ -14,6 +14,7 @@ function toUser(row: PrismaUser, includePassword = false): User {
     ...safeFields,
     id,
     _id: id,
+    accountTypes: row.accountTypes?.length > 0 ? row.accountTypes : [row.accountType],
     fullName: `${row.firstName} ${row.lastName}`,
     ...(includePassword ? { password } : {}),
     // These properties have sensitive database-only semantics and stay hidden in
@@ -156,6 +157,7 @@ export class UsersRepository {
       ...data,
       password: null,
       accountType: AccountType.BUYER,
+      accountTypes: [AccountType.BUYER],
       authProvider: AuthProvider.CLERK,
       isVerified: true,
     } as Partial<User>);

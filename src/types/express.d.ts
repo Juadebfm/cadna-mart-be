@@ -4,6 +4,7 @@ declare global {
       userId: string;
       email: string;
       accountType: string;
+      accountTypes?: string[];
     }
   }
 }

@@ -12,8 +12,12 @@ describe('DataRequestsService deletion lifecycle', () => {
   let prisma: any;
   let tx: any;
   let request: any;
+  let sellerDocuments: any[];
+  let config: any;
+  let upload: any;
 
   beforeEach(() => {
+    sellerDocuments = [];
     request = {
       id: 'request-1',
       userId: 'buyer-1',
@@ -58,6 +62,7 @@ describe('DataRequestsService deletion lifecycle', () => {
       otp: delegate(),
       sellerFollower: delegate(),
       checkoutSession: delegate(),
+      sellerApplicationDocument: delegate(),
       authEvent: delegate(),
       supportTicket: delegate(),
       wallet: delegate(),
@@ -90,10 +95,17 @@ describe('DataRequestsService deletion lifecycle', () => {
         findMany: jest.fn().mockResolvedValue([]),
       },
       wallet: { findUnique: jest.fn().mockResolvedValue(null) },
+      sellerApplicationDocument: {
+        findMany: jest.fn().mockImplementation(async () => sellerDocuments),
+        updateMany: jest.fn().mockImplementation(async () => ({ count: sellerDocuments.length })),
+      },
       $transaction: jest.fn(async (callback: (client: any) => unknown) => callback(tx)),
     };
-    const config = { clerk: { secretKey: '' }, storage: { cloudName: '' } };
-    const upload = { deleteFile: jest.fn() };
+    config = { clerk: { secretKey: '' }, storage: { cloudName: '' } };
+    upload = {
+      deleteFile: jest.fn(),
+      deletePrivateSellerDocument: jest.fn().mockResolvedValue(undefined),
+    };
     const email = { sendNotificationEmail: jest.fn().mockResolvedValue(true) };
     const sms = { send: jest.fn().mockResolvedValue(true) };
     service = new DataRequestsService(
@@ -191,5 +203,42 @@ describe('DataRequestsService deletion lifecycle', () => {
     expect(tx.authEvent.deleteMany).toHaveBeenCalledWith({ where: { userId: 'buyer-1' } });
     expect(tx.user.deleteMany).toHaveBeenCalledWith({ where: { id: 'buyer-1' } });
     expect(result.status).toBe(DataRequestStatus.COMPLETED);
+  });
+
+  it('deletes private seller identity files immediately during approved account erasure', async () => {
+    sellerDocuments = [{ id: 'doc-1', storageKey: 'private/key', resourceType: 'raw' }];
+    config.storage.cloudName = 'configured';
+
+    await service.processDeletionRequest(
+      request.id,
+      'admin-1',
+      DataRequestDecision.APPROVE,
+      undefined,
+    );
+
+    expect(upload.deletePrivateSellerDocument).toHaveBeenCalledWith('private/key', 'raw');
+    expect(prisma.sellerApplicationDocument.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: { in: ['doc-1'] }, deletedAt: null },
+        data: { deletedAt: expect.any(Date) },
+      }),
+    );
+  });
+
+  it('keeps erasure in progress if private seller identity files cannot be deleted', async () => {
+    sellerDocuments = [{ id: 'doc-1', storageKey: 'private/key', resourceType: 'raw' }];
+    config.storage.cloudName = 'configured';
+    upload.deletePrivateSellerDocument.mockRejectedValue(new Error('provider unavailable'));
+
+    await expect(
+      service.processDeletionRequest(request.id, 'admin-1', DataRequestDecision.APPROVE, undefined),
+    ).rejects.toThrow('Seller identity files could not be deleted');
+
+    expect(tx.user.delete).not.toHaveBeenCalled();
+    expect(prisma.dataRequest.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: { status: DataRequestStatus.IN_PROGRESS, processingStartedAt: null },
+      }),
+    );
   });
 });

@@ -64,6 +64,7 @@ export class AdminUsersController {
       );
       return { id: request.id, status: request.status, submittedAt: request.createdAt };
     }
+    await this.dataRequestsService.deleteSellerApplicationDocuments(id);
     await this.usersService.remove(id);
     return { id, status: 'soft_deleted' };
   }

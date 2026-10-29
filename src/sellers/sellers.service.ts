@@ -3,6 +3,7 @@ import {
   NotFoundException,
   ConflictException,
   ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 import { createPublicId } from '@database/id.util';
 import { isPrismaUniqueConstraintError } from '@database/prisma-errors';
@@ -10,72 +11,528 @@ import { SellersRepository } from './sellers.repository';
 import { CreateSellerDto } from './dto/create-seller.dto';
 import { UpdateSellerDto } from './dto/update-seller.dto';
 import { BankingDetailsDto } from './dto/banking-details.dto';
-import { OnboardSellerDto } from './dto/onboard-seller.dto';
 import { AccountType } from '@users/enums/account-type.enum';
 import { Product } from '@products/schemas/product.schema';
 import { Seller } from './schemas/seller.schema';
 import { UsersService } from '@users/users.service';
-import { OtpService } from '@otp/otp.service';
-import { OtpType } from '@otp/enums/otp-type.enum';
-import { EmailService } from '@email/email.service';
-import { ConfigService } from '@config/config.service';
 import { ProductsService } from '@products/products.service';
+import { SaveSellerApplicationDto } from './dto/save-seller-application.dto';
+import {
+  SellerApplicantType,
+  SellerApplicationStatus,
+  SellerDocumentType,
+} from './schemas/seller-profile.schema';
+import { hasAccountType } from '@auth/utils/account-types.util';
+import { SellerBankingService } from './seller-banking.service';
+import { SellerPiiService } from './seller-pii.service';
+import { UploadService } from '@upload/upload.service';
+import { CreateMyProductDto } from './dto/create-my-product.dto';
+import { UpdateProductDto } from '@products/dto/update-product.dto';
+import { ProductQueryDto } from '@products/dto/product-query.dto';
 
 @Injectable()
 export class SellersService {
   constructor(
     private readonly sellersRepository: SellersRepository,
     private readonly usersService: UsersService,
-    private readonly otpService: OtpService,
-    private readonly emailService: EmailService,
-    private readonly configService: ConfigService,
     private readonly productsService: ProductsService,
+    private readonly sellerBankingService: SellerBankingService,
+    private readonly sellerPiiService: SellerPiiService,
+    private readonly uploadService: UploadService,
   ) {}
 
-  async onboardPublic(dto: OnboardSellerDto): Promise<{ message: string }> {
-    const existing = await this.usersService.findByEmail(dto.email).catch(() => null);
-    if (existing) throw new ConflictException('An account with this email already exists');
-
-    const user = await this.usersService.create({
-      email: dto.email,
-      password: dto.password,
-      firstName: dto.firstName,
-      lastName: dto.lastName,
-      accountType: AccountType.SELLER,
-      phoneNumber: dto.phoneNumber,
-      termsAccepted: dto.termsAccepted,
-    });
-
-    const userId = (user as unknown as { _id: { toString(): string } })._id.toString();
-
-    await this.sellersRepository.prisma.sellerProfile.create({
-      data: {
-        id: createPublicId(),
-        userId,
-        businessName: dto.businessName,
-        businessRegistrationNumber: dto.businessRegistrationNumber ?? null,
-        businessAddress: dto.businessAddress,
-        businessType: dto.businessType,
-        bankName: null,
-        bankAccountNumber: null,
-        bankAccountName: null,
-        bankDetailsCompletedAt: null,
-        isApproved: false,
+  async getMyApplication(userId: string): Promise<object | null> {
+    const profile = await this.sellersRepository.prisma.sellerProfile.findFirst({
+      where: { userId, deletedAt: null },
+      include: {
+        documents: {
+          where: { deletedAt: null },
+          select: {
+            id: true,
+            documentType: true,
+            originalFileName: true,
+            contentType: true,
+            sizeBytes: true,
+            createdAt: true,
+          },
+        },
+        reviewHistory: {
+          orderBy: { createdAt: 'desc' },
+          select: {
+            fromStatus: true,
+            toStatus: true,
+            reason: true,
+            requestedDocumentTypes: true,
+            createdAt: true,
+          },
+        },
       },
     });
+    if (!profile) return null;
+    return {
+      id: profile.id,
+      applicantType: profile.applicantType,
+      businessName: profile.businessName,
+      businessRegistrationNumber: profile.businessRegistrationNumber,
+      businessAddress: profile.businessAddress,
+      businessType: profile.businessType,
+      applicationStatus: profile.applicationStatus,
+      submittedAt: profile.submittedAt,
+      reviewReason: profile.reviewReason,
+      requestedDocumentTypes: profile.requestedDocumentTypes,
+      documents: profile.documents,
+      reviewHistory: profile.reviewHistory,
+      bank: {
+        bankName: profile.bankName,
+        accountName: profile.bankAccountName,
+        accountNumberMasked: this.maskAccountNumber(
+          profile.bankAccountNumber,
+          profile.bankAccountNumberLast4,
+        ),
+        verifiedAt: profile.bankVerifiedAt,
+      },
+    };
+  }
 
-    const code = await this.otpService.generateAndStore(dto.email, OtpType.EMAIL_VERIFICATION);
-    await Promise.all([
-      this.emailService.sendVerificationCode(dto.email, code),
-      this.emailService.sendSellerWelcome(dto.email, dto.firstName, dto.businessName),
-      this.emailService.sendAdminNewSellerAlert(
-        this.configService.email.fromAddress,
-        dto.email,
-        dto.businessName,
-      ),
+  async listSellerBanks() {
+    return { items: await this.sellerBankingService.listBanks() };
+  }
+
+  async setApplicationBank(userId: string, dto: BankingDetailsDto): Promise<object> {
+    const [user, profile] = await Promise.all([
+      this.usersService.findById(userId),
+      this.sellersRepository.prisma.sellerProfile.findFirst({ where: { userId, deletedAt: null } }),
     ]);
+    if (!user.isVerified || !user.email) {
+      throw new ForbiddenException('Verify your email before adding payout details');
+    }
+    if (!profile) throw new NotFoundException('Seller application not found');
+    if (
+      profile.applicationStatus === SellerApplicationStatus.PENDING ||
+      profile.applicationStatus === SellerApplicationStatus.MORE_INFORMATION_NEEDED
+    ) {
+      throw new ConflictException('Update payout details after the application review is complete');
+    }
 
-    return { message: 'Seller account created. Please verify your email to continue.' };
+    const resolved = await this.sellerBankingService.resolveAccount(
+      dto.bankCode,
+      dto.bankAccountNumber,
+    );
+    const expectedName =
+      profile.applicantType === SellerApplicantType.INDIVIDUAL
+        ? `${user.firstName} ${user.lastName}`
+        : profile.businessName;
+    const normalizeName = (value: string) =>
+      value
+        .normalize('NFKD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '');
+    if (normalizeName(resolved.accountName) !== normalizeName(expectedName)) {
+      throw new BadRequestException(
+        'The verified bank account name must match the seller applicant name',
+      );
+    }
+
+    const verifiedAt = new Date();
+    const updated = await this.sellersRepository.prisma.sellerProfile.update({
+      where: { id: profile.id },
+      data: {
+        bankName: resolved.bankName,
+        bankCode: resolved.bankCode,
+        bankAccountNumber: this.sellerPiiService.encryptBankAccountNumber(dto.bankAccountNumber),
+        bankAccountNumberLast4: dto.bankAccountNumber.slice(-4),
+        bankAccountName: resolved.accountName,
+        bankDetailsCompletedAt: verifiedAt,
+        bankVerificationProvider: this.sellerBankingService.providerName,
+        bankVerifiedAt: verifiedAt,
+      },
+    });
+    return {
+      bankName: updated.bankName,
+      bankAccountName: updated.bankAccountName,
+      bankAccountNumberMasked: this.maskAccountNumber(
+        updated.bankAccountNumber,
+        updated.bankAccountNumberLast4,
+      ),
+      verifiedAt: updated.bankVerifiedAt,
+      verificationProvider: updated.bankVerificationProvider,
+    };
+  }
+
+  async submitMyApplication(userId: string): Promise<object> {
+    const [user, profile] = await Promise.all([
+      this.usersService.findById(userId),
+      this.sellersRepository.prisma.sellerProfile.findFirst({
+        where: { userId, deletedAt: null },
+        include: { documents: { where: { deletedAt: null }, select: { documentType: true } } },
+      }),
+    ]);
+    if (!user.isVerified || !user.email) {
+      throw new ForbiddenException('Verify your email before submitting a seller application');
+    }
+    if (!profile) throw new NotFoundException('Seller application not found');
+    if (
+      ![
+        SellerApplicationStatus.DRAFT,
+        SellerApplicationStatus.MORE_INFORMATION_NEEDED,
+        SellerApplicationStatus.REJECTED,
+      ].includes(profile.applicationStatus as SellerApplicationStatus)
+    ) {
+      throw new ConflictException(
+        'This seller application cannot be submitted in its current status',
+      );
+    }
+    if (!profile.bankVerifiedAt || !profile.bankVerificationProvider) {
+      throw new BadRequestException('Verify a matching payout account before submitting');
+    }
+    const requiredDocuments =
+      profile.applicantType === SellerApplicantType.INDIVIDUAL
+        ? [SellerDocumentType.GOVERNMENT_ID]
+        : [SellerDocumentType.CAC_REGISTRATION, SellerDocumentType.OWNER_ID];
+    if (
+      requiredDocuments.some((type) => !profile.documents.some((doc) => doc.documentType === type))
+    ) {
+      throw new BadRequestException('Upload the required identity documents before submitting');
+    }
+
+    const fromStatus = profile.applicationStatus;
+    const submittedAt = new Date();
+    await this.sellersRepository.prisma.$transaction(async (tx) => {
+      await tx.sellerProfile.update({
+        where: { id: profile.id },
+        data: {
+          applicationStatus: SellerApplicationStatus.PENDING,
+          submittedAt,
+          reviewReason: null,
+          requestedDocumentTypes: [],
+          reviewedAt: null,
+          reviewedById: null,
+        },
+      });
+      await tx.sellerApplicationReview.create({
+        data: {
+          id: createPublicId(),
+          sellerProfileId: profile.id,
+          actorId: userId,
+          fromStatus,
+          toStatus: SellerApplicationStatus.PENDING,
+        },
+      });
+    });
+    return { applicationStatus: SellerApplicationStatus.PENDING, submittedAt };
+  }
+
+  async getMyApplicationProducts(userId: string, query: ProductQueryDto): Promise<object> {
+    const profile = await this.sellersRepository.prisma.sellerProfile.findFirst({
+      where: { userId, deletedAt: null },
+    });
+    if (!profile) throw new NotFoundException('Seller application not found');
+    this.assertDraftManagementStatus(profile.applicationStatus);
+    const seller = await this.sellersRepository.prisma.seller.findFirst({
+      where: { ownerId: userId, deletedAt: null },
+    });
+    if (!seller)
+      return {
+        items: [],
+        pagination: {
+          page: query.page,
+          limit: query.limit,
+          totalItems: 0,
+          totalPages: 0,
+          hasNextPage: false,
+          hasPrevPage: false,
+        },
+      };
+    return this.productsService.findMyProducts(userId, query);
+  }
+
+  async createApplicationProductDraft(
+    user: { userId: string; accountType: string },
+    dto: CreateMyProductDto,
+  ): Promise<object> {
+    const profile = await this.sellersRepository.prisma.sellerProfile.findFirst({
+      where: { userId: user.userId, deletedAt: null },
+    });
+    if (!profile) throw new NotFoundException('Seller application not found');
+    this.assertDraftManagementStatus(profile.applicationStatus);
+    await this.ensurePrivateApplicationStore(user.userId, profile.businessName);
+    return this.productsService.createMyProduct({ ...dto, isActive: false }, user);
+  }
+
+  async updateApplicationProductDraft(
+    user: { userId: string; accountType: string },
+    productId: string,
+    dto: UpdateProductDto,
+  ): Promise<object> {
+    const profile = await this.sellersRepository.prisma.sellerProfile.findFirst({
+      where: { userId: user.userId, deletedAt: null },
+    });
+    if (!profile) throw new NotFoundException('Seller application not found');
+    this.assertDraftManagementStatus(profile.applicationStatus);
+    return this.productsService.updateProduct(productId, { ...dto, isActive: false }, user);
+  }
+
+  async setMyStorefrontActive(userId: string, isActive: boolean): Promise<object> {
+    const profile = await this.sellersRepository.prisma.sellerProfile.findFirst({
+      where: { userId, deletedAt: null },
+    });
+    if (!profile || profile.applicationStatus !== SellerApplicationStatus.APPROVED) {
+      throw new ForbiddenException('Only approved sellers can change storefront availability');
+    }
+    const seller = await this.sellersRepository.prisma.seller.findFirst({
+      where: { ownerId: userId, deletedAt: null },
+    });
+    if (!seller) throw new NotFoundException('Seller storefront not found');
+    const updated = await this.sellersRepository.prisma.seller.update({
+      where: { id: seller.id },
+      data: { isActive },
+      select: { id: true, name: true, slug: true, isActive: true },
+    });
+    return updated;
+  }
+
+  private assertDraftManagementStatus(status: string): void {
+    if (
+      ![
+        SellerApplicationStatus.DRAFT,
+        SellerApplicationStatus.PENDING,
+        SellerApplicationStatus.MORE_INFORMATION_NEEDED,
+        SellerApplicationStatus.REJECTED,
+      ].includes(status as SellerApplicationStatus)
+    ) {
+      throw new ConflictException(
+        'Application product drafts are only available before seller approval',
+      );
+    }
+  }
+
+  private async ensurePrivateApplicationStore(userId: string, businessName: string) {
+    const existing = await this.sellersRepository.prisma.seller.findFirst({
+      where: { ownerId: userId, deletedAt: null },
+    });
+    if (existing) {
+      if (!existing.isActive && existing.name !== businessName) {
+        return this.sellersRepository.prisma.seller.update({
+          where: { id: existing.id },
+          data: { name: businessName },
+        });
+      }
+      return existing;
+    }
+    const base =
+      businessName
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '') || 'seller';
+    return this.sellersRepository.create({
+      name: businessName,
+      slug: `${base}-${Date.now().toString(36)}`,
+      owner: userId as any,
+      isActive: false,
+      isVerified: false,
+    } as any);
+  }
+
+  async uploadApplicationDocument(
+    userId: string,
+    documentType: SellerDocumentType,
+    file: Express.Multer.File,
+  ): Promise<object> {
+    if (!Object.values(SellerDocumentType).includes(documentType)) {
+      throw new BadRequestException('Unsupported seller document type');
+    }
+    const [user, profile] = await Promise.all([
+      this.usersService.findById(userId),
+      this.sellersRepository.prisma.sellerProfile.findFirst({
+        where: { userId, deletedAt: null },
+        include: { documents: { where: { deletedAt: null } } },
+      }),
+    ]);
+    if (!user.isVerified || !user.email) {
+      throw new ForbiddenException('Verify your email before uploading seller documents');
+    }
+    if (!profile) throw new NotFoundException('Seller application not found');
+    if (
+      ![
+        SellerApplicationStatus.DRAFT,
+        SellerApplicationStatus.MORE_INFORMATION_NEEDED,
+        SellerApplicationStatus.REJECTED,
+      ].includes(profile.applicationStatus as SellerApplicationStatus)
+    ) {
+      throw new ConflictException(
+        'Documents cannot be changed while the application is under review or approved',
+      );
+    }
+    const requiredTypes =
+      profile.applicantType === SellerApplicantType.INDIVIDUAL
+        ? [SellerDocumentType.GOVERNMENT_ID]
+        : [SellerDocumentType.CAC_REGISTRATION, SellerDocumentType.OWNER_ID];
+    if (
+      !requiredTypes.includes(documentType) &&
+      !profile.requestedDocumentTypes.includes(documentType)
+    ) {
+      throw new BadRequestException('This document type was not requested for this application');
+    }
+    if (profile.documents.some((document) => document.documentType === documentType)) {
+      throw new ConflictException(
+        'A document of this type is already attached; delete it before replacing it',
+      );
+    }
+
+    const uploaded = await this.uploadService.uploadPrivateSellerDocument(file, userId);
+    try {
+      const row = await this.sellersRepository.prisma.sellerApplicationDocument.create({
+        data: {
+          id: createPublicId(),
+          sellerProfileId: profile.id,
+          uploadedById: userId,
+          documentType,
+          storageKey: uploaded.storageKey,
+          resourceType: uploaded.resourceType,
+          format: uploaded.format,
+          originalFileName: this.safeDocumentFileName(file.originalname),
+          contentType: file.mimetype,
+          sizeBytes: uploaded.sizeBytes,
+        },
+        select: {
+          id: true,
+          documentType: true,
+          originalFileName: true,
+          contentType: true,
+          sizeBytes: true,
+          createdAt: true,
+        },
+      });
+      return row;
+    } catch (error) {
+      await this.uploadService
+        .deletePrivateSellerDocument(uploaded.storageKey, uploaded.resourceType)
+        .catch(() => undefined);
+      throw error;
+    }
+  }
+
+  async deleteApplicationDocument(userId: string, documentId: string): Promise<object> {
+    const document = await this.sellersRepository.prisma.sellerApplicationDocument.findFirst({
+      where: { id: documentId, deletedAt: null, sellerProfile: { userId, deletedAt: null } },
+      include: { sellerProfile: { select: { applicationStatus: true } } },
+    });
+    if (!document) throw new NotFoundException('Seller application document not found');
+    if (
+      ![
+        SellerApplicationStatus.DRAFT,
+        SellerApplicationStatus.MORE_INFORMATION_NEEDED,
+        SellerApplicationStatus.REJECTED,
+      ].includes(document.sellerProfile.applicationStatus as SellerApplicationStatus)
+    ) {
+      throw new ConflictException(
+        'Documents cannot be deleted while the application is under review or approved',
+      );
+    }
+    await this.uploadService.deletePrivateSellerDocument(
+      document.storageKey,
+      document.resourceType,
+    );
+    await this.sellersRepository.prisma.sellerApplicationDocument.update({
+      where: { id: document.id },
+      data: { deletedAt: new Date() },
+    });
+    return { deleted: true };
+  }
+
+  async getAdminDocumentDownloadUrl(documentId: string): Promise<object> {
+    const document = await this.sellersRepository.prisma.sellerApplicationDocument.findFirst({
+      where: { id: documentId, deletedAt: null, sellerProfile: { deletedAt: null } },
+      select: { storageKey: true, resourceType: true, format: true },
+    });
+    if (!document) throw new NotFoundException('Seller application document not found');
+    return {
+      url: this.uploadService.createPrivateSellerDocumentDownloadUrl(
+        document.storageKey,
+        document.resourceType,
+        document.format,
+        60,
+      ),
+      expiresInSeconds: 60,
+    };
+  }
+
+  private safeDocumentFileName(value: string): string {
+    const name =
+      value
+        .split(/[\\/]/)
+        .pop()
+        ?.replace(/[\r\n\0]/g, '')
+        .trim() ?? '';
+    return name.slice(0, 120) || 'seller-document';
+  }
+
+  private maskAccountNumber(accountNumber: string | null, last4?: string | null): string | null {
+    if (!accountNumber) return null;
+    const suffix = last4 ?? (accountNumber.startsWith('v1:') ? null : accountNumber.slice(-4));
+    return suffix ? `${'*'.repeat(Math.max(10 - suffix.length, 0))}${suffix}` : null;
+  }
+
+  async saveMyApplication(userId: string, dto: SaveSellerApplicationDto): Promise<object> {
+    const user = await this.usersService.findById(userId);
+    if (!user.isVerified || !user.email) {
+      throw new ForbiddenException('Verify your email before starting a seller application');
+    }
+    if (!hasAccountType(user, AccountType.BUYER) && !hasAccountType(user, AccountType.SELLER)) {
+      throw new ForbiddenException('A buyer account is required to apply as a seller');
+    }
+
+    const current = await this.sellersRepository.prisma.sellerProfile.findFirst({
+      where: { userId, deletedAt: null },
+    });
+    if (current?.applicationStatus === SellerApplicationStatus.APPROVED) {
+      throw new ConflictException('This account already has an approved seller application');
+    }
+    if (current?.applicationStatus === SellerApplicationStatus.PENDING) {
+      throw new ConflictException('A submitted application cannot be edited while under review');
+    }
+    if (dto.applicantType === 'individual' && dto.businessRegistrationNumber !== undefined) {
+      throw new BadRequestException('Individuals must not submit a business registration number');
+    }
+
+    const data = {
+      applicantType: dto.applicantType,
+      businessName: dto.businessName.trim(),
+      businessRegistrationNumber:
+        dto.applicantType === 'registered_business'
+          ? (dto.businessRegistrationNumber?.trim() ?? null)
+          : null,
+      businessAddress: dto.businessAddress.trim(),
+      businessType: dto.businessType,
+      applicationStatus:
+        current?.applicationStatus === SellerApplicationStatus.MORE_INFORMATION_NEEDED
+          ? SellerApplicationStatus.MORE_INFORMATION_NEEDED
+          : SellerApplicationStatus.DRAFT,
+    };
+
+    const profile = current
+      ? await this.sellersRepository.prisma.sellerProfile.update({
+          where: { id: current.id },
+          data,
+        })
+      : await this.sellersRepository.prisma.sellerProfile.create({
+          data: {
+            id: createPublicId(),
+            userId,
+            ...data,
+            isApproved: false,
+          },
+        });
+    return {
+      id: profile.id,
+      applicantType: profile.applicantType,
+      businessName: profile.businessName,
+      businessRegistrationNumber: profile.businessRegistrationNumber,
+      businessAddress: profile.businessAddress,
+      businessType: profile.businessType,
+      applicationStatus: profile.applicationStatus,
+    };
   }
 
   async createSeller(dto: CreateSellerDto, ownerId: string): Promise<object> {
@@ -135,9 +592,10 @@ export class SellersService {
       profile.bankDetailsCompletedAt
     );
 
-    const maskedAccountNumber = profile.bankAccountNumber
-      ? `${'*'.repeat(Math.max(profile.bankAccountNumber.length - 4, 0))}${profile.bankAccountNumber.slice(-4)}`
-      : null;
+    const maskedAccountNumber = this.maskAccountNumber(
+      profile.bankAccountNumber,
+      profile.bankAccountNumberLast4,
+    );
 
     const nextStep = !user.isVerified
       ? 'verify_email'
@@ -240,7 +698,7 @@ export class SellersService {
 
   async getSummary(sellerId: string) {
     const seller = await this.sellersRepository.findById(sellerId);
-    if (!seller) {
+    if (!seller || !seller.isActive) {
       throw new NotFoundException('Seller not found');
     }
 
@@ -280,33 +738,19 @@ export class SellersService {
     }
     return {
       bankName: profile.bankName,
-      bankAccountNumber: profile.bankAccountNumber,
+      bankAccountNumberMasked: this.maskAccountNumber(
+        profile.bankAccountNumber,
+        profile.bankAccountNumberLast4,
+      ),
       bankAccountName: profile.bankAccountName,
       completedAt: profile.bankDetailsCompletedAt,
+      verifiedAt: profile.bankVerifiedAt,
+      verificationProvider: profile.bankVerificationProvider,
     };
   }
 
   async setMyBankingDetails(userId: string, dto: BankingDetailsDto): Promise<object> {
-    const updated = await this.sellersRepository.prisma.sellerProfile
-      .updateManyAndReturn({
-        where: { userId, deletedAt: null },
-        data: {
-          bankName: dto.bankName,
-          bankAccountNumber: dto.bankAccountNumber,
-          bankAccountName: dto.bankAccountName,
-          bankDetailsCompletedAt: new Date(),
-        },
-      })
-      .then((rows) => rows[0] ?? null);
-    if (!updated) {
-      throw new NotFoundException('Seller profile not found');
-    }
-    return {
-      bankName: updated.bankName,
-      bankAccountNumber: updated.bankAccountNumber,
-      bankAccountName: updated.bankAccountName,
-      completedAt: updated.bankDetailsCompletedAt,
-    };
+    return this.setApplicationBank(userId, dto);
   }
 
   async followSeller(userId: string, sellerId: string): Promise<void> {
@@ -340,7 +784,7 @@ export class SellersService {
     const sellers = await Promise.all(
       items.map(async (entry: { seller: unknown }) => {
         const seller = entry.seller as unknown as Seller;
-        if (!seller || seller.deletedAt) return null;
+        if (!seller || seller.deletedAt || !seller.isActive) return null;
         const id = (seller as unknown as { _id: { toString(): string } })._id.toString();
         const products = await this.sellersRepository.prisma.product.findMany({
           where: { sellerId: id, deletedAt: null, isActive: true },

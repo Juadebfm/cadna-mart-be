@@ -59,6 +59,29 @@ export class CheckoutService {
     return sum;
   }
 
+  private async assertCartProductsAvailable(cart: any): Promise<void> {
+    const productIds = Array.from(
+      new Set<string>(
+        (cart.items ?? [])
+          .map((item: any) => item.productId)
+          .filter((id: unknown): id is string => typeof id === 'string' && id.length > 0),
+      ),
+    );
+    if (productIds.length === 0) throw new BadRequestException('Cart is empty');
+    const available = await this.prisma.product.findMany({
+      where: {
+        id: { in: productIds },
+        deletedAt: null,
+        isActive: true,
+        seller: { is: { isActive: true, deletedAt: null } },
+      },
+      select: { id: true },
+    });
+    if (available.length !== productIds.length) {
+      throw new BadRequestException('One or more products are no longer available');
+    }
+  }
+
   private assertSessionActive(
     session: PrismaCheckoutSession | null,
   ): asserts session is PrismaCheckoutSession {
@@ -254,6 +277,7 @@ export class CheckoutService {
     if (!cart) {
       throw new NotFoundException('Cart not found');
     }
+    await this.assertCartProductsAvailable(cart);
 
     const subtotal = this.getCartSubtotal(cart);
     const mode = session!.deliveryMode;
@@ -301,6 +325,7 @@ export class CheckoutService {
     if (!cart) {
       throw new NotFoundException('Cart not found');
     }
+    await this.assertCartProductsAvailable(cart);
 
     const items: OrderItemSnapshot[] = cart.items.map((item) => {
       const product = item.product as any;

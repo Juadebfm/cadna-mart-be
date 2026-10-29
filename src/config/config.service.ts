@@ -210,6 +210,20 @@ export class ConfigService {
     };
   }
 
+  get sellerBankVerification() {
+    return {
+      provider: this.envConfig.SELLER_BANK_VERIFICATION_PROVIDER,
+      paystackSecretKey: this.envConfig.PAYSTACK_SECRET_KEY,
+      nombaAccountId: this.envConfig.NOMBA_ACCOUNT_ID,
+      nombaClientId: this.envConfig.NOMBA_CLIENT_ID,
+      nombaClientSecret: this.envConfig.NOMBA_CLIENT_SECRET,
+    };
+  }
+
+  get sellerPiiEncryptionKey(): string {
+    return this.envConfig.SELLER_PII_ENCRYPTION_KEY;
+  }
+
   get deals(): DealsConfig {
     return {
       feePerProduct: this.envConfig.DEALS_FEE_PER_PRODUCT,

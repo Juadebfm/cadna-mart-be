@@ -34,8 +34,6 @@ import {
 } from './dto/forgot-password.dto';
 import { Verify2faLoginDto, Enable2faDto } from './dto/verify-2fa.dto';
 import { ClerkLoginDto } from './dto/clerk-login.dto';
-import { RegisterSellerDetailsDto } from './dto/register-seller-details.dto';
-import { RegisterSellerPasswordDto } from './dto/register-seller-password.dto';
 import { OtpRequestDto, OtpVerifyDto, OtpResendDto, OtpPurpose } from './dto/otp.dto';
 import { RegisterDto } from './dto/register.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
@@ -99,56 +97,6 @@ export class AuthController {
   @ApiOperation({ summary: 'Resend email verification OTP' })
   async resendOtp(@Body() dto: ResendOtpDto) {
     return this.authService.resendVerificationOtp(dto.email);
-  }
-
-  // ─── SELLER REGISTRATION ───────────────────────────────────
-
-  @Public()
-  @Post('register/seller/email')
-  @ApiOperation({ summary: 'Seller Step 1: Start registration with email' })
-  async registerSellerEmail(@Body() dto: RegisterEmailDto) {
-    return this.authService.registerSellerEmail(dto.email);
-  }
-
-  // Renamed from /register/seller/details after Render's edge WAF built up
-  // reputation against the old path (we'd hammered it with bank-shaped bodies
-  // earlier in dev). New path is functionally identical; FE should call this.
-  @Public()
-  @Post('register/seller/profile')
-  @ApiOperation({
-    summary:
-      'Seller Step 2: Provide personal + business details. Bank info is collected separately via POST /sellers/me/banking after login - do not send it here.',
-  })
-  async registerSellerProfile(@Body() dto: RegisterSellerDetailsDto) {
-    return this.authService.registerSellerDetails(dto.sessionId, dto);
-  }
-
-  @Public()
-  @Post('register/seller/password')
-  @ApiOperation({
-    summary:
-      'Seller Step 3: Set password and create account. Bank info is collected separately via POST /sellers/me/banking after login.',
-  })
-  async registerSellerPassword(@Body() dto: RegisterSellerPasswordDto) {
-    return this.authService.registerSellerPassword(
-      dto.sessionId,
-      dto.password,
-      dto.confirmPassword,
-      {
-        businessName: dto.businessName,
-        businessRegistrationNumber: dto.businessRegistrationNumber,
-        businessAddress: dto.businessAddress,
-        businessType: dto.businessType,
-      },
-    );
-  }
-
-  @Public()
-  @Post('register/seller/verify')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Seller Step 4: Verify email with OTP code' })
-  async verifySellerEmail(@Body() dto: VerifyEmailDto) {
-    return this.authService.verifyEmail(dto.email, dto.code);
   }
 
   // ─── SINGLE-CALL REGISTRATION (spec alias) ──────────────────

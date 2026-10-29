@@ -141,7 +141,7 @@ export class ProductsService {
 
   async findBySeller(sellerSlug: string, query: ProductQueryDto) {
     const seller = await this.productsRepository.prisma.seller.findFirst({
-      where: { slug: sellerSlug, deletedAt: null },
+      where: { slug: sellerSlug, deletedAt: null, isActive: true },
     });
 
     if (!seller) throw new NotFoundException('Seller not found');

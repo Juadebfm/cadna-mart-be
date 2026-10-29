@@ -17,7 +17,6 @@ import { CurrentUser } from '@auth/decorators/current-user.decorator';
 import { AccountType } from '@users/enums/account-type.enum';
 import { SellersService } from './sellers.service';
 import { CreateSellerDto } from './dto/create-seller.dto';
-import { OnboardSellerDto } from './dto/onboard-seller.dto';
 import { UpdateSellerDto } from './dto/update-seller.dto';
 import { BankingDetailsDto } from './dto/banking-details.dto';
 import { ProductsService } from '@products/products.service';
@@ -26,6 +25,7 @@ import { UpdateProductDto } from '@products/dto/update-product.dto';
 import { ParsePublicIdPipe } from '@common/pipes/parse-public-id.pipe';
 import { CreateMyProductDto } from './dto/create-my-product.dto';
 import { AttachProductImagesDto } from './dto/attach-product-images.dto';
+import { UpdateStorefrontAvailabilityDto } from './dto/update-storefront-availability.dto';
 
 @ApiTags('Sellers')
 @Controller('sellers')
@@ -34,16 +34,6 @@ export class SellersController {
     private readonly sellersService: SellersService,
     private readonly productsService: ProductsService,
   ) {}
-
-  @Public()
-  @Post('onboard')
-  @ApiOperation({
-    summary:
-      'Public single-step seller registration — creates account, profile, and sends verification email',
-  })
-  async onboardSeller(@Body() dto: OnboardSellerDto) {
-    return this.sellersService.onboardPublic(dto);
-  }
 
   @ApiBearerAuth()
   @AccountTypes(AccountType.SELLER)
@@ -73,6 +63,17 @@ export class SellersController {
     @CurrentUser() user: { userId: string; accountType: string },
   ) {
     return this.sellersService.updateMySeller(dto, user);
+  }
+
+  @ApiBearerAuth()
+  @AccountTypes(AccountType.SELLER)
+  @Patch('me/availability')
+  @ApiOperation({ summary: 'Make your approved storefront visible or take it offline' })
+  async setMyStorefrontAvailability(
+    @CurrentUser('userId') userId: string,
+    @Body() dto: UpdateStorefrontAvailabilityDto,
+  ) {
+    return this.sellersService.setMyStorefrontActive(userId, dto.isActive);
   }
 
   @ApiBearerAuth()

@@ -10,6 +10,7 @@ import { ERROR_MESSAGES } from '@common/constants/error-messages.constants';
 import { PaginatedResult } from '@common/interfaces/api-response.interface';
 import { AccountType } from './enums/account-type.enum';
 import { BuyerNotificationPreferences } from './schemas/user.schema';
+import { hasAccountType } from '@auth/utils/account-types.util';
 
 @Injectable()
 export class UsersService {
@@ -25,6 +26,7 @@ export class UsersService {
     const { dateOfBirth, termsAccepted, ...rest } = createUserDto;
     return this.usersRepository.create({
       ...rest,
+      accountTypes: [createUserDto.accountType],
       password: hashedPassword,
       dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
       termsAcceptedAt: termsAccepted ? new Date() : null,
@@ -54,6 +56,7 @@ export class UsersService {
       phoneNumber: signup.phoneNumber ?? null,
       password: signup.passwordHash,
       accountType: AccountType.BUYER,
+      accountTypes: [AccountType.BUYER],
       isVerified: true,
       termsAcceptedAt: signup.termsAccepted ? new Date() : null,
     });
@@ -89,7 +92,7 @@ export class UsersService {
 
   async linkClerkIdentity(userId: string, clerkId: string): Promise<User> {
     const current = await this.findById(userId);
-    if (current.accountType !== AccountType.BUYER) {
+    if (!hasAccountType(current, AccountType.BUYER)) {
       throw new ConflictException('Only buyer accounts can link a Clerk identity');
     }
     if (current.clerkId === clerkId) return current;
@@ -286,6 +289,7 @@ export class UsersService {
       lastName: user.lastName,
       email: user.email,
       accountType: user.accountType,
+      accountTypes: user.accountTypes ?? [user.accountType],
       phoneNumber: user.phoneNumber,
       dateOfBirth: user.dateOfBirth,
       gender: user.gender ?? null,

@@ -4,6 +4,7 @@ export interface JwtPayload {
   sub: string;
   email?: string;
   accountType: AccountType;
+  accountTypes?: AccountType[];
 }
 
 export interface TokenResponse {

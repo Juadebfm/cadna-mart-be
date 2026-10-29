@@ -2,6 +2,7 @@ import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ACCOUNT_TYPES_KEY } from '../decorators/account-types.decorator';
 import { AccountType } from '@users/enums/account-type.enum';
+import { hasAccountType } from '../utils/account-types.util';
 
 @Injectable()
 export class AccountTypesGuard implements CanActivate {
@@ -16,6 +17,6 @@ export class AccountTypesGuard implements CanActivate {
       return true;
     }
     const { user } = context.switchToHttp().getRequest();
-    return requiredTypes.some((type) => user?.accountType === type);
+    return requiredTypes.some((type) => hasAccountType(user, type));
   }
 }

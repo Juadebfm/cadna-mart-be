@@ -114,6 +114,7 @@ export class CartService {
     const cart = await this.cartRepository.findByPublicId(cartId);
     if (!cart) throw new NotFoundException('Cart not found');
     await this.assertAccess(req, cart);
+    await this.assertProductAvailable(productId);
     const updated = await this.cartRepository.addItemByCartId(
       cartId,
       productId,
@@ -196,6 +197,16 @@ export class CartService {
     await this.assertAccess(req, cart);
 
     const issues: Array<{ itemId: string; reason: string }> = [];
+    const sellerIds = [
+      ...new Set(cart.items.map((item) => item.product?.sellerId).filter(Boolean)),
+    ] as string[];
+    const activeSellerRows = sellerIds.length
+      ? await this.prisma.seller.findMany({
+          where: { id: { in: sellerIds }, deletedAt: null, isActive: true },
+          select: { id: true },
+        })
+      : [];
+    const activeSellerIds = new Set(activeSellerRows.map((seller) => seller.id));
     for (const item of cart.items) {
       const product = item.product as unknown as {
         id: string;
@@ -210,6 +221,10 @@ export class CartService {
       }
       if (!product.isActive) {
         issues.push({ itemId, reason: 'product_inactive' });
+        continue;
+      }
+      if (!activeSellerIds.has((item.product as any).sellerId)) {
+        issues.push({ itemId, reason: 'seller_unavailable' });
         continue;
       }
       if (item.variantId) {
@@ -249,8 +264,22 @@ export class CartService {
   }
 
   async addItem(userId: string, productId: string, variantId: string | null, quantity: number) {
+    await this.assertProductAvailable(productId);
     const cart = await this.cartRepository.addItem(userId, productId, variantId, quantity);
     return this.toDto(cart);
+  }
+
+  private async assertProductAvailable(productId: string): Promise<void> {
+    const product = await this.prisma.product.findFirst({
+      where: {
+        id: productId,
+        deletedAt: null,
+        isActive: true,
+        seller: { is: { isActive: true, deletedAt: null } },
+      },
+      select: { id: true },
+    });
+    if (!product) throw new NotFoundException('Product not found or unavailable');
   }
 
   async addAvailableReorderItems(
@@ -267,7 +296,12 @@ export class CartService {
 
     for (const item of requestedItems) {
       const product = await this.prisma.product.findFirst({
-        where: { id: item.productId, deletedAt: null, isActive: true },
+        where: {
+          id: item.productId,
+          deletedAt: null,
+          isActive: true,
+          seller: { is: { isActive: true, deletedAt: null } },
+        },
         select: { id: true, inventoryStatus: true, variants: true, isActive: true },
       });
       if (!product) {

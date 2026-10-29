@@ -19,6 +19,7 @@ export class User extends BaseSchema {
   email!: string | null;
   password!: string | null;
   accountType!: AccountType;
+  accountTypes?: AccountType[];
   authProvider!: AuthProvider;
   clerkId!: string | null;
   phoneNumber!: string | null;

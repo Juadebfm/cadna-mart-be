@@ -10,6 +10,7 @@ export interface IUser {
   email: string | null;
   password: string | null;
   accountType: AccountType;
+  accountTypes?: AccountType[];
   authProvider: AuthProvider;
   clerkId: string | null;
   phoneNumber: string | null;
