@@ -29,9 +29,10 @@ export function validatePasswordStrength(password: string, context?: PasswordCon
     }
   }
 
+  const hasLetter = /[a-zA-Z]/.test(password);
   const hasSymbol = /[^a-zA-Z0-9]/.test(password);
   const hasNumber = /[0-9]/.test(password);
-  if (!hasSymbol || !hasNumber) {
+  if (!hasLetter || !hasSymbol || !hasNumber) {
     throw new BadRequestException(ERROR_MESSAGES.PASSWORD_NO_SYMBOL_OR_NUMBER);
   }
 }

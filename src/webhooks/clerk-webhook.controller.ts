@@ -1,4 +1,4 @@
-import { Controller, Post, Req, Res, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Req, Res, HttpCode, HttpStatus, RawBodyRequest } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiExcludeEndpoint } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { Webhook } from 'svix';
@@ -8,6 +8,8 @@ import { LoggerService } from '@logger/logger.service';
 import { Public } from '@auth/decorators/public.decorator';
 import { NotificationsService } from '@notifications/notifications.service';
 import { NotificationCategory } from '@notifications/schemas/notification.schema';
+import { DataRequestsService } from '@data-requests/data-requests.service';
+import { DataRequestKind, DataRequestSource } from '@data-requests/schemas/data-request.schema';
 
 interface ClerkUserData {
   id: string;
@@ -36,6 +38,7 @@ export class ClerkWebhookController {
     private readonly usersService: UsersService,
     private readonly logger: LoggerService,
     private readonly notificationsService: NotificationsService,
+    private readonly dataRequestsService: DataRequestsService,
   ) {}
 
   @Public()
@@ -43,7 +46,7 @@ export class ClerkWebhookController {
   @HttpCode(HttpStatus.OK)
   @ApiExcludeEndpoint()
   @ApiOperation({ summary: 'Clerk webhook endpoint' })
-  async handleClerkWebhook(@Req() req: Request, @Res() res: Response) {
+  async handleClerkWebhook(@Req() req: RawBodyRequest<Request>, @Res() res: Response) {
     const webhookSecret = this.configService.clerk.webhookSecret;
 
     if (!webhookSecret) {
@@ -62,8 +65,8 @@ export class ClerkWebhookController {
     let event: { type: string; data: ClerkUserData };
     try {
       const wh = new Webhook(webhookSecret);
-      const body = JSON.stringify(req.body);
-      event = wh.verify(body, {
+      if (!req.rawBody) return res.status(400).json({ error: 'Missing raw request body' });
+      event = wh.verify(req.rawBody, {
         'svix-id': svixId,
         'svix-timestamp': svixTimestamp,
         'svix-signature': svixSignature,
@@ -212,7 +215,15 @@ export class ClerkWebhookController {
     if (!user) return;
 
     const userId = (user as unknown as { _id: { toString(): string } })._id.toString();
-    await this.usersService.remove(userId);
+    await this.dataRequestsService.create(
+      userId,
+      DataRequestKind.DELETE,
+      'Clerk identity was deleted; data erasure is queued for administrator review',
+      user.email,
+      user.isPhoneVerified ? user.phoneNumber : null,
+      DataRequestSource.CLERK,
+    );
+    await this.usersService.setActive(userId, false);
 
     this.logger.log(`Clerk user deleted: ${data.id}`, 'ClerkWebhook');
   }

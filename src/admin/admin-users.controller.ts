@@ -17,13 +17,18 @@ import { UsersService } from '@users/users.service';
 import { UserQueryDto } from '@users/dto/user-query.dto';
 import { UpdateUserDto } from '@users/dto/update-user.dto';
 import { ParsePublicIdPipe } from '@common/pipes/parse-public-id.pipe';
+import { DataRequestsService } from '@data-requests/data-requests.service';
+import { DataRequestKind, DataRequestSource } from '@data-requests/schemas/data-request.schema';
 
 @ApiTags('Admin — Users')
 @ApiBearerAuth()
 @AccountTypes(AccountType.ADMIN)
 @Controller('admin/users')
 export class AdminUsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly dataRequestsService: DataRequestsService,
+  ) {}
 
   @Get()
   @ApiOperation({ summary: 'List users (admin-scoped, supports search + accountType filter)' })
@@ -44,10 +49,23 @@ export class AdminUsersController {
   }
 
   @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Soft-delete a user (admin)' })
+  @HttpCode(HttpStatus.ACCEPTED)
+  @ApiOperation({ summary: 'Request buyer erasure or soft-delete a non-buyer account (admin)' })
   async remove(@Param('id', ParsePublicIdPipe) id: string) {
+    const user = await this.usersService.findById(id);
+    if (user.accountType === AccountType.BUYER) {
+      const request = await this.dataRequestsService.create(
+        id,
+        DataRequestKind.DELETE,
+        'Deletion requested by an administrator; pending compliance review',
+        user.email,
+        user.isPhoneVerified ? user.phoneNumber : null,
+        DataRequestSource.ADMIN,
+      );
+      return { id: request.id, status: request.status, submittedAt: request.createdAt };
+    }
     await this.usersService.remove(id);
+    return { id, status: 'soft_deleted' };
   }
 
   @Post(':id/suspend')

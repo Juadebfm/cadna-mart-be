@@ -16,6 +16,7 @@ import { AdminDeliveryController } from './admin-delivery.controller';
 import { AdminReportingController } from './admin-reporting.controller';
 import { AdminComplianceController } from './admin-compliance.controller';
 import { AdminPricingService } from './pricing/admin-pricing.service';
+import { DataRequestsModule } from '@data-requests/data-requests.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { AdminPricingService } from './pricing/admin-pricing.service';
     OrdersModule,
     ReturnsModule,
     SiteConfigModule,
+    DataRequestsModule,
   ],
   controllers: [
     AdminProductsController,

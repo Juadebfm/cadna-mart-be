@@ -50,6 +50,7 @@ model User {
   otpRecords               Otp[]
   dataRequests             DataRequest[] @relation("DataRequestOwner")
   processedDataRequests    DataRequest[] @relation("DataRequestProcessor")
+  purgedDataRetentions     DataRequestRetention[] @relation("DataRequestRetentionProcessor")
   notifications            Notification[]
   notificationDevices      NotificationDevice[]
   recentlyViewed           RecentlyViewed[]
@@ -373,22 +374,55 @@ model Otp {
 }
 
 model DataRequest {
-  id          String   @id @db.VarChar(24)
-  userId      String   @db.VarChar(24)
-  kind        String
-  status      String   @default("pending")
-  processedById String? @db.VarChar(24)
-  processedAt DateTime?
-  notes       String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                        String    @id @db.VarChar(24)
+  userId                    String?   @db.VarChar(24)
+  kind                      String
+  source                    String    @default("buyer")
+  status                    String    @default("pending")
+  processedById             String?   @db.VarChar(24)
+  processedAt               DateTime?
+  processingStartedAt       DateTime?
+  completedAt               DateTime?
+  responseDueAt             DateTime?
+  acknowledgedAt            DateTime?
+  responseSentAt            DateTime?
+  requesterEmail            String?
+  requesterPhone            String?
+  decisionNotes             String?
+  externalIdentityDeletedAt DateTime?
+  avatarMediaDeletedAt      DateTime?
+  notes                     String?
+  createdAt                 DateTime  @default(now())
+  updatedAt                 DateTime  @updatedAt
 
-  user        User     @relation("DataRequestOwner", fields: [userId], references: [id], onDelete: Cascade)
-  processedBy User?    @relation("DataRequestProcessor", fields: [processedById], references: [id], onDelete: SetNull)
+  user           User?                  @relation("DataRequestOwner", fields: [userId], references: [id], onDelete: SetNull)
+  processedBy    User?                  @relation("DataRequestProcessor", fields: [processedById], references: [id], onDelete: SetNull)
+  retentionItems DataRequestRetention[]
 
   @@index([userId, kind, status])
   @@index([status])
   @@map("data_requests")
+}
+
+model DataRequestRetention {
+  id          String    @id @db.VarChar(24)
+  requestId   String    @db.VarChar(24)
+  category    String
+  lawfulBasis String
+  purpose     String
+  retainUntil DateTime
+  purgedAt    DateTime?
+  purgedById  String?   @db.VarChar(24)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  request  DataRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  purgedBy User?       @relation("DataRequestRetentionProcessor", fields: [purgedById], references: [id], onDelete: SetNull)
+
+  @@unique([requestId, category])
+  @@index([retainUntil, purgedAt])
+  @@index([purgedById])
+  @@map("data_request_retentions")
 }
 
 model RegistrationSession {

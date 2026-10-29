@@ -21,7 +21,7 @@ export const ERROR_MESSAGES = {
   OTP_COOLDOWN: 'Please wait before requesting a new code',
   PASSWORD_TOO_WEAK: 'Password does not meet strength requirements',
   PASSWORD_CONTAINS_NAME: 'Password cannot include your name or email address',
-  PASSWORD_NO_SYMBOL_OR_NUMBER: 'Password must have at least one symbol and a number',
+  PASSWORD_NO_SYMBOL_OR_NUMBER: 'Password must include at least one letter, number, and symbol',
   PASSWORD_CONTAINS_SPACES: 'Password cannot contain spaces',
   TWO_FACTOR_REQUIRED: 'Two-factor authentication code required',
   TWO_FACTOR_ALREADY_ENABLED: 'Two-factor authentication is already enabled',

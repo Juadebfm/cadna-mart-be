@@ -66,13 +66,17 @@ export class UsersController {
   }
 
   @Post('data/delete-request')
+  @AccountTypes(AccountType.BUYER)
   @HttpCode(HttpStatus.ACCEPTED)
   @ApiOperation({ summary: 'Submit right-to-be-forgotten request (NDPR)' })
   async requestDeletion(@CurrentUser('userId') userId: string, @Body() dto: DataDeleteRequestDto) {
+    const user = await this.usersService.findById(userId);
     const record = await this.dataRequestsService.create(
       userId,
       DataRequestKind.DELETE,
       dto.reason,
+      user.email,
+      user.isPhoneVerified ? user.phoneNumber : null,
     );
     return {
       id: (record as unknown as { _id: { toString(): string } })._id.toString(),

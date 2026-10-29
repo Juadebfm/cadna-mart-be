@@ -14,7 +14,8 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AccountTypes } from '@auth/decorators/account-types.decorator';
 import { CurrentUser } from '@auth/decorators/current-user.decorator';
 import { AccountType } from '@users/enums/account-type.enum';
-import { DataRequestStatus } from '@data-requests/schemas/data-request.schema';
+import { DataRequestsService } from '@data-requests/data-requests.service';
+import { ProcessDataRequestDto } from '@data-requests/dto/process-data-request.dto';
 import { SiteConfigService } from '@site-config/site-config.service';
 import { PrismaService } from '@database/prisma.service';
 
@@ -26,6 +27,7 @@ export class AdminComplianceController {
   constructor(
     private readonly prisma: PrismaService,
     private readonly siteConfigService: SiteConfigService,
+    private readonly dataRequestsService: DataRequestsService,
   ) {}
 
   @Get('/audit-logs')
@@ -58,6 +60,7 @@ export class AdminComplianceController {
         orderBy: { createdAt: 'desc' },
         skip,
         take: l,
+        include: { retentionItems: { orderBy: { retainUntil: 'asc' } } },
       }),
       this.prisma.dataRequest.count({ where: status ? { status } : {} }),
     ]);
@@ -73,33 +76,41 @@ export class AdminComplianceController {
   async processDataRequest(
     @Param('id') id: string,
     @CurrentUser('id') adminId: string,
-    @Body('decision') decision: 'approve' | 'reject',
-    @Body('notes') notes?: string,
+    @Body() dto: ProcessDataRequestDto,
   ): Promise<object> {
-    const req = await this.prisma.dataRequest.findUnique({ where: { id } });
-    if (!req) throw new NotFoundException('Data request not found');
+    return this.dataRequestsService.processDeletionRequest(
+      id,
+      adminId,
+      dto.decision,
+      dto.notes,
+      dto.retentionItems,
+    );
+  }
 
-    const updated = await this.prisma.dataRequest.update({
-      where: { id },
-      data: {
-        status: decision === 'approve' ? DataRequestStatus.PROCESSED : DataRequestStatus.REJECTED,
-        processedById: adminId,
-        processedAt: new Date(),
-        ...(notes ? { notes } : {}),
-      },
-    });
+  @Post('/compliance/data-requests/:id/purge-expired')
+  @HttpCode(HttpStatus.OK)
+  async purgeExpiredRetention(
+    @Param('id') id: string,
+    @CurrentUser('id') adminId: string,
+  ): Promise<object> {
+    return this.dataRequestsService.purgeExpiredRetention(id, adminId);
+  }
 
-    return { id, status: updated.status, processedAt: updated.processedAt };
+  @Post('/compliance/data-requests/:id/retry-notification')
+  @HttpCode(HttpStatus.OK)
+  async retryDataRequestNotification(@Param('id') id: string): Promise<object> {
+    return this.dataRequestsService.retryRequesterNotification(id);
   }
 
   @Get('/compliance/retention')
   getRetentionPolicy(): object {
     return {
-      retentionYears: 5,
-      policy:
-        'All transactional data is retained for a minimum of 5 years per FIRS and NDPR requirements.',
-      autoDeleteAfterYears: null,
-      note: 'Automated retention enforcement is deferred pending legal sign-off on deletion scope.',
+      retentionPeriods:
+        'No default period is configured. Each retained category requires a case-specific lawful basis, purpose, and deadline supplied by an authorized administrator.',
+      enforcement:
+        'Expired retained categories can be deleted with POST /admin/compliance/data-requests/:id/purge-expired. This action is manual; no scheduled purge is configured.',
+      requestResponseTargetDays: 30,
+      note: 'This endpoint records operational policy inputs; it does not certify legal compliance. The business must provide and approve the lawful basis and deadlines.',
     };
   }
 
